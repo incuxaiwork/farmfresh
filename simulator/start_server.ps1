@@ -9,7 +9,7 @@ try {
     exit 1
 }
 
-$localPath = "C:\Users\kbhav\OneDrive\Desktop\eapp\simulator"
+$localPath = $PSScriptRoot
 
 # Clean cleanups on script abort
 Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
