@@ -1567,6 +1567,8 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
         'potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500&auto=format&fit=crop&q=80',
         'onion': 'https://images.unsplash.com/photo-1508747703725-719ae257c26a?w=500&auto=format&fit=crop&q=80',
         'onions': 'https://images.unsplash.com/photo-1508747703725-719ae257c26a?w=500&auto=format&fit=crop&q=80',
+        'grapes': 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=500&auto=format&fit=crop&q=80',
+        'grape': 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=500&auto=format&fit=crop&q=80',
         'tomato': 'assets/cherry_tomatoes.jpg',
         'tomatoes': 'assets/cherry_tomatoes.jpg',
         'carrot': 'assets/organic_carrots.jpg',
@@ -1604,60 +1606,68 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
         'dairy': 'https://images.unsplash.com/photo-1528498033373-3c6c08e93d79?w=500&auto=format&fit=crop&q=80'
     };
 
-    // Get optional input value
-    const customImage = document.getElementById('form-new-image').value.trim();
-    let productImg = '';
+    function publishFarmerProduct(productImg) {
+        const newProd = {
+            id: `prod-${STATE.products.length + 1}`,
+            name: name,
+            price: price,
+            originalPrice: price,
+            discount: null,
+            origin: 'Organico Farm, US',
+            category: category,
+            image: productImg,
+            description: `Freshly harvested organic ${name} grown by local farmers at Organico Farm. Packed carefully for delivery.`,
+            calories: '120 kcal',
+            protein: '3 gram',
+            fat: '0 gram',
+            weight: weight
+        };
+        
+        STATE.products.unshift(newProd);
+        
+        // Clear forms
+        document.getElementById('form-new-pname').value = '';
+        document.getElementById('form-new-price').value = '';
+        document.getElementById('form-new-unit').value = '';
+        const fileInput = document.getElementById('form-new-image-file');
+        if (fileInput) fileInput.value = '';
+        
+        Logger.log(`Farmer published new product harvest: "${name}" ($${price.toFixed(2)} per ${weight}) to storefront.`, 'farmer');
+        
+        // Rerender grids
+        renderProducts();
+        renderFarmerInventory();
+        Notification.show('New Harvest Item!', `Merchant published ${name} to the online market.`);
+        
+        // Automatically switch viewpoint to customer view to see the new item
+        setTimeout(() => {
+            switchRole('customer');
+            showToast(`Switched to Customer view to see your published ${name}! 🍏`);
+        }, 850);
+    }
 
-    if (customImage) {
-        productImg = customImage;
+    // Check for custom file upload
+    const fileInput = document.getElementById('form-new-image-file');
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            publishFarmerProduct(e.target.result);
+        };
+        reader.readAsDataURL(file);
     } else {
-        // Resolve using name mapping
+        // Resolve using name mapping or category fallback
         const cleanName = name.toLowerCase();
+        let productImg = '';
         let matchedKey = Object.keys(IMAGE_MAPPING).find(key => cleanName.includes(key));
+        
         if (matchedKey) {
             productImg = IMAGE_MAPPING[matchedKey];
         } else {
-            // Category stock fallback
             productImg = categoryFallbacks[category] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=80';
         }
+        publishFarmerProduct(productImg);
     }
-
-    const newProd = {
-        id: `prod-${STATE.products.length + 1}`,
-        name: name,
-        price: price,
-        originalPrice: price,
-        discount: null,
-        origin: 'Organico Farm, US',
-        category: category,
-        image: productImg,
-        description: `Freshly harvested organic ${name} grown by local farmers at Organico Farm. Packed carefully for delivery.`,
-        calories: '120 kcal',
-        protein: '3 gram',
-        fat: '0 gram',
-        weight: weight
-    };
-    
-    STATE.products.unshift(newProd);
-    
-    // Clear forms
-    document.getElementById('form-new-pname').value = '';
-    document.getElementById('form-new-price').value = '';
-    document.getElementById('form-new-unit').value = '';
-    document.getElementById('form-new-image').value = '';
-    
-    Logger.log(`Farmer published new product harvest: "${name}" ($${price.toFixed(2)} per ${weight}) to storefront.`, 'farmer');
-    
-    // Rerender grids
-    renderProducts();
-    renderFarmerInventory();
-    Notification.show('New Harvest Item!', `Merchant published ${name} to the online market.`);
-    
-    // Automatically switch viewpoint to customer view to see the new item
-    setTimeout(() => {
-        switchRole('customer');
-        showToast(`Switched to Customer view to see your published ${name}! 🍏`);
-    }, 850);
 });
 
 // ADMIN PANEL DASHBOARD
