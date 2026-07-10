@@ -622,7 +622,7 @@ function renderProducts() {
     }
 
     container.innerHTML = filtered.map(p => {
-        const isDetailsImage = p.image.endsWith('.jpg');
+        const isDetailsImage = p.image.includes('/') || p.image.includes('.') || p.image.length > 5;
         const imgContent = isDetailsImage 
             ? `<img src="${p.image}" alt="${p.name}">` 
             : `<div class="svg-placeholder">${p.image}</div>`;
@@ -755,7 +755,7 @@ window.renderWishlistScreen = function() {
         const p = STATE.products.find(item => item.id === prodId);
         if (!p) return '';
         
-        const isDetailsImage = p.image.endsWith('.jpg');
+        const isDetailsImage = p.image.includes('/') || p.image.includes('.') || p.image.length > 5;
         const imgContent = isDetailsImage 
             ? `<img class="wishlist-item-img" src="${p.image}" alt="${p.name}">` 
             : `<div class="wishlist-item-img" style="display:flex; align-items:center; justify-content:center; font-size:24px; background:#F1F8F4; border:1px solid rgba(46,125,50,0.05);">${p.image}</div>`;
@@ -827,7 +827,7 @@ window.viewProductDetails = function(prodId) {
     document.getElementById('nutrition-weight').innerText = product.weight;
     
     const imgEl = document.getElementById('details-product-img');
-    if (product.image.endsWith('.jpg')) {
+    if (product.image.endsWith('.jpg') || product.image.includes('/') || product.image.length > 5) {
         imgEl.src = product.image;
         imgEl.style.display = 'block';
     } else {
@@ -924,7 +924,7 @@ function renderCart() {
 
     container.innerHTML = STATE.cart.map(item => {
         const prod = STATE.products.find(p => p.id === item.productId);
-        const imageHtml = prod.image.endsWith('.jpg') 
+        const imageHtml = (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5) 
             ? `<img class="cart-item-img" src="${prod.image}" alt="${prod.name}">` 
             : `<div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#EAF6EC;">${prod.image}</div>`;
 
@@ -1561,12 +1561,67 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
     // Store price internally in base USD
     const price = priceInput / currentCurrencyRate;
     
-    // Pick dynamic food emojis based on categories
-    let emoji = '🍏';
-    if (category === 'vegetables') emoji = '🥦';
-    else if (category === 'meat') emoji = '🥩';
-    else if (category === 'dairy') emoji = '🧀';
-    
+    // Image Mapping & Fallbacks System
+    const IMAGE_MAPPING = {
+        'potato': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500&auto=format&fit=crop&q=80',
+        'potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500&auto=format&fit=crop&q=80',
+        'onion': 'https://images.unsplash.com/photo-1508747703725-719ae257c26a?w=500&auto=format&fit=crop&q=80',
+        'onions': 'https://images.unsplash.com/photo-1508747703725-719ae257c26a?w=500&auto=format&fit=crop&q=80',
+        'tomato': 'assets/cherry_tomatoes.jpg',
+        'tomatoes': 'assets/cherry_tomatoes.jpg',
+        'carrot': 'assets/organic_carrots.jpg',
+        'carrots': 'assets/organic_carrots.jpg',
+        'spinach': 'assets/baby_spinach.jpg',
+        'cucumber': 'assets/english_cucumbers.jpg',
+        'cucumbers': 'assets/english_cucumbers.jpg',
+        'apple': 'assets/crisp_red_apples.jpg',
+        'apples': 'assets/crisp_red_apples.jpg',
+        'blueberries': 'assets/fresh_blueberries.jpg',
+        'blueberry': 'assets/fresh_blueberries.jpg',
+        'eggs': 'assets/fresh_farm_eggs.jpg',
+        'egg': 'assets/fresh_farm_eggs.jpg',
+        'butter': 'assets/grassfed_butter.jpg',
+        'milk': 'assets/organic_whole_milk.jpg',
+        'steak': 'assets/ribeye_steak.jpg',
+        'beef': 'assets/ribeye_steak.jpg',
+        'salmon': 'assets/salmon_fillet.jpg',
+        'fish': 'assets/salmon_fillet.jpg',
+        'chicken': 'assets/chicken_breast.jpg',
+        'avocado': 'assets/hass_avocados.jpg',
+        'avocados': 'assets/hass_avocados.jpg',
+        'orange': 'assets/organic_oranges.jpg',
+        'oranges': 'assets/organic_oranges.jpg',
+        'broccoli': 'assets/organic_broccolini.jpg',
+        'broccolini': 'assets/organic_broccolini.jpg',
+        'strawberry': 'assets/organic_strawberries.jpg',
+        'strawberries': 'assets/organic_strawberries.jpg',
+    };
+
+    const categoryFallbacks = {
+        'vegetables': 'https://images.unsplash.com/photo-1566385962061-f24cedde3a2c?w=500&auto=format&fit=crop&q=80',
+        'fruits': 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=500&auto=format&fit=crop&q=80',
+        'meat': 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=500&auto=format&fit=crop&q=80',
+        'dairy': 'https://images.unsplash.com/photo-1528498033373-3c6c08e93d79?w=500&auto=format&fit=crop&q=80'
+    };
+
+    // Get optional input value
+    const customImage = document.getElementById('form-new-image').value.trim();
+    let productImg = '';
+
+    if (customImage) {
+        productImg = customImage;
+    } else {
+        // Resolve using name mapping
+        const cleanName = name.toLowerCase();
+        let matchedKey = Object.keys(IMAGE_MAPPING).find(key => cleanName.includes(key));
+        if (matchedKey) {
+            productImg = IMAGE_MAPPING[matchedKey];
+        } else {
+            // Category stock fallback
+            productImg = categoryFallbacks[category] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=80';
+        }
+    }
+
     const newProd = {
         id: `prod-${STATE.products.length + 1}`,
         name: name,
@@ -1575,7 +1630,7 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
         discount: null,
         origin: 'Organico Farm, US',
         category: category,
-        image: emoji,
+        image: productImg,
         description: `Freshly harvested organic ${name} grown by local farmers at Organico Farm. Packed carefully for delivery.`,
         calories: '120 kcal',
         protein: '3 gram',
@@ -1589,6 +1644,7 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
     document.getElementById('form-new-pname').value = '';
     document.getElementById('form-new-price').value = '';
     document.getElementById('form-new-unit').value = '';
+    document.getElementById('form-new-image').value = '';
     
     Logger.log(`Farmer published new product harvest: "${name}" ($${price.toFixed(2)} per ${weight}) to storefront.`, 'farmer');
     
