@@ -568,7 +568,9 @@ function switchRole(role) {
     
     // View Switch matching the role
     if (role === 'customer') {
-        switchScreen('screen-customer-home');
+        switchScreen('screen-customer-home', 'tab-home');
+        renderCategories();
+        renderProducts();
     } else if (role === 'farmer') {
         switchScreen('screen-farmer-dashboard');
         renderFarmerOrders();
@@ -1594,6 +1596,12 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
     renderProducts();
     renderFarmerInventory();
     Notification.show('New Harvest Item!', `Merchant published ${name} to the online market.`);
+    
+    // Automatically switch viewpoint to customer view to see the new item
+    setTimeout(() => {
+        switchRole('customer');
+        showToast(`Switched to Customer view to see your published ${name}! 🍏`);
+    }, 850);
 });
 
 // ADMIN PANEL DASHBOARD
