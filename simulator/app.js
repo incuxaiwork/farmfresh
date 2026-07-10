@@ -490,6 +490,9 @@ function switchScreen(screenId, activeTabId = null) {
             const emailEl = document.getElementById('profile-header-email');
             if (emailEl) emailEl.innerText = STATE.userEmail;
         }
+        if (screenId === 'screen-customer-categories') {
+            renderCategoriesScreen();
+        }
         
         // Hide/show bottom nav bar based on screen
         const bottomNav = document.getElementById('phone-bottom-navbar');
@@ -1620,11 +1623,74 @@ document.getElementById('btn-role-farmer').addEventListener('click', () => switc
 document.getElementById('btn-role-delivery').addEventListener('click', () => switchRole('delivery'));
 document.getElementById('btn-role-admin').addEventListener('click', () => switchRole('admin'));
 
+// CATEGORIES SCREEN RENDER & NAVIGATION FLOW
+window.renderCategoriesScreen = function() {
+    const grid = document.getElementById('categories-large-grid');
+    if (!grid) return;
+    
+    const query = (STATE.categoriesSearchQuery || '').toLowerCase();
+    
+    const categoriesData = [
+        { id: 'fruits', label: 'Fresh Fruits', icon: '🍎', color: '#FAD2E1', text: '#C9184A', desc: 'Organic orchard harvests' },
+        { id: 'vegetables', label: 'Vegetables', icon: '🥕', color: '#EAF6EC', text: '#2E7D32', desc: 'Fresh farm green veggies' },
+        { id: 'meat', label: 'Premium Meat', icon: '🥩', color: '#FFE5D9', text: '#D04A02', desc: 'Grass-fed cuts & poultry' },
+        { id: 'dairy', label: 'Dairy & Eggs', icon: '🥛', color: '#FFF1E6', text: '#E28C43', desc: 'Butter, cheese & farm eggs' }
+    ];
+    
+    const filtered = categoriesData.filter(c => c.label.toLowerCase().includes(query) || c.desc.toLowerCase().includes(query));
+    
+    if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: span 2; text-align:center; padding: 30px; color:var(--text-muted); font-size:12px;">No matching categories.</div>';
+        return;
+    }
+    
+    grid.innerHTML = filtered.map(c => {
+        const count = STATE.products.filter(p => p.category === c.id).length;
+        
+        return `
+            <div class="category-large-card" onclick="selectCategoryFromScreen('${c.id}')" style="background: ${c.color}33; border: 1px solid ${c.color}; border-radius: 20px; padding: 16px; display:flex; flex-direction:column; gap:12px; cursor:pointer;">
+                <div style="font-size: 32px;">${c.icon}</div>
+                <div>
+                    <h3 style="font-size: 13px; font-weight: 800; color: ${c.text};">${c.label}</h3>
+                    <p style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">${c.desc}</p>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                    <span style="font-size: 9px; font-weight: 700; color: ${c.text}; background: ${c.color}66; padding: 2px 8px; border-radius: 8px;">${count} items</span>
+                    <i class="fa-solid fa-circle-arrow-right" style="color: ${c.text}; font-size:16px;"></i>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+window.filterCategoriesScreen = function(val) {
+    STATE.categoriesSearchQuery = val;
+    renderCategoriesScreen();
+};
+
+window.selectCategoryFromScreen = function(catId) {
+    STATE.activeCategory = catId;
+    
+    // Sync active class on horizontal home page pills
+    const pills = document.querySelectorAll('.category-pill');
+    pills.forEach(p => {
+        if (p.getAttribute('data-id') === catId) {
+            p.classList.add('active');
+        } else {
+            p.classList.remove('active');
+        }
+    });
+    
+    renderProducts();
+    switchScreen('screen-customer-home', 'tab-home');
+    Logger.log(`Selected category "${catId}" from category browser screen.`, 'customer');
+};
+
 // TAB NAV BAR LISTENERS
 document.getElementById('tab-home').addEventListener('click', () => switchScreen('screen-customer-home', 'tab-home'));
 document.getElementById('tab-categories').addEventListener('click', () => {
-    switchScreen('screen-customer-home', 'tab-categories');
-    document.getElementById('product-search-input').focus();
+    switchScreen('screen-customer-categories', 'tab-categories');
+    renderCategoriesScreen();
 });
 document.getElementById('tab-cart').addEventListener('click', () => {
     switchScreen('screen-customer-cart', 'tab-cart');

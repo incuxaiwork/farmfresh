@@ -159,6 +159,30 @@
                         </div>
                     </div>
 
+                    <!-- SCREEN 2.5: Customer Categories -->
+                    <div class="app-screen" id="screen-customer-categories" style="background:#F6F8FA;">
+                        <div class="cart-header" style="background:var(--white); border-bottom:1px solid #ECECEC;">
+                            <button class="btn-round-nav" id="btn-categories-back" onclick="switchScreen('screen-customer-home', 'tab-home')" style="width:32px; height:32px;">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span class="section-title">All Categories</span>
+                            <div style="width:32px;"></div> <!-- placeholder to center title -->
+                        </div>
+
+                        <div class="profile-scroll-content" style="flex:1; overflow-y:auto; padding: 12px 14px 20px; display:flex; flex-direction:column; gap:12px;">
+                            <!-- Search Bar inside categories -->
+                            <div class="search-bar-container" style="margin-bottom: 4px;">
+                                <input class="search-input" type="text" id="categories-search-input" placeholder="Search categories..." oninput="filterCategoriesScreen(this.value)">
+                                <i class="fa-solid fa-sliders search-filter-icon"></i>
+                            </div>
+
+                            <!-- Categories grid container -->
+                            <div class="categories-large-grid" id="categories-large-grid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:6px;">
+                                <!-- Categories cards injected by Javascript -->
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- SCREEN 3: Product Details -->
                     <div class="app-screen" id="screen-customer-details">
                         <div class="details-nav-header">
