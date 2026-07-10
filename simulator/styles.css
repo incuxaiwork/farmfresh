@@ -25,6 +25,9 @@
     font-family: var(--font-body);
     -webkit-tap-highlight-color: transparent;
 }
+html, body {
+    overscroll-behavior: none;
+}
 
 body {
     background-color: #121A16;
@@ -146,7 +149,7 @@ body {
     height: 100%;
     background: var(--bg-gradient);
     border-radius: 38px;
-    overflow-y: auto;
+    overflow: hidden;
     position: relative;
     padding-top: 38px; /* Safe area */
     padding-bottom: 24px;
