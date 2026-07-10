@@ -30,8 +30,8 @@ html, body {
 }
 
 body {
-    background-color: #121A16;
-    color: #E2ECE8;
+    background: linear-gradient(135deg, #F0F7F4 0%, #FAF2EC 100%);
+    color: #23312B;
     height: 100vh;
     width: 100vw;
     display: flex;
