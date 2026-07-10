@@ -1382,11 +1382,32 @@ function renderFarmerInventory() {
                     <div style="font-weight:700; font-size:12px;">${p.name}</div>
                     <div style="font-size:10px; color:var(--text-muted);">${p.weight} | ${priceStr}</div>
                 </div>
-                <button class="btn-action-small" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px;" onclick="farmerDeleteProduct('${p.id}')">Delete</button>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-action-small" style="background:#EAF6EC; color:#2E7D32; border:none; padding:4px 8px; font-weight:700;" onclick="farmerAddAndVisitProduct('${p.id}')">Add</button>
+                    <button class="btn-action-small" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px;" onclick="farmerDeleteProduct('${p.id}')">Delete</button>
+                </div>
             </div>
         `;
     }).join('');
 }
+
+window.farmerAddAndVisitProduct = function(pId) {
+    const product = STATE.products.find(p => p.id === pId);
+    if (!product) return;
+    
+    const existing = STATE.cart.find(item => item.productId === pId);
+    if (existing) {
+        switchRole('customer');
+        showToast(`${product.name} is already added! 🛒`);
+        Logger.log(`Farmer visited customer view. Product "${product.name}" was already in customer cart.`, 'farmer');
+    } else {
+        STATE.cart.push({ productId: pId, quantity: 1 });
+        updateCartStats();
+        switchRole('customer');
+        showToast(`${product.name} added to cart! 🛒`);
+        Logger.log(`Farmer added "${product.name}" to customer cart and switched view.`, 'farmer');
+    }
+};
 
 window.farmerDeleteProduct = function(pId) {
     STATE.products = STATE.products.filter(p => p.id !== pId);
