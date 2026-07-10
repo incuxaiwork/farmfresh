@@ -1,0 +1,553 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  CUSTOMER
+  FARMER
+  DELIVERY_PARTNER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  ACCEPTED
+  REJECTED
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  NET_BANKING
+  CASH_ON_DELIVERY
+}
+
+enum DeliveryStatus {
+  PENDING_ASSIGNMENT
+  ASSIGNED
+  ACCEPTED
+  REJECTED
+  HEADING_TO_PICKUP
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum FarmerVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+enum InventoryAction {
+  ADD
+  REMOVE
+  ADJUST
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  PROMOTION
+  SECURITY
+  ACCOUNT
+}
+
+enum ReviewStatus {
+  PENDING_MODERATION
+  APPROVED
+  REJECTED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  TRANSFERRED
+}
+
+model User {
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String        @db.VarChar(100)
+  email         String        @unique @db.VarChar(150)
+  phone         String?       @db.VarChar(20)
+  passwordHash  String        @map("password_hash") @db.VarChar(255)
+  role          UserRole      @default(CUSTOMER)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  deletedAt     DateTime?     @map("deleted_at")
+
+  addresses     UserAddress[]
+  tokens        RefreshToken[]
+  farmerProfile FarmerProfile?
+  cart          Cart?
+  orders        Order[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  reviews       Review[]
+  withdrawals   Withdrawal[]
+  inventoryHistories InventoryHistory[]
+  deliveries    DeliveryAssignment[] @relation("DriverDeliveries")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model UserAddress {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  addressLine1 String    @map("address_line_1") @db.VarChar(255)
+  addressLine2 String?   @map("address_line_2") @db.VarChar(255)
+  city         String    @db.VarChar(100)
+  state        String    @db.VarChar(100)
+  postalCode   String    @map("postal_code") @db.VarChar(20)
+  country      String    @db.VarChar(100)
+  isDefault    Boolean   @default(false) @map("is_default")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_addresses")
+}
+
+model FarmerProfile {
+  id           String                   @id @default(uuid()) @db.Uuid
+  userId       String                   @unique @map("user_id") @db.Uuid
+  farmName     String                   @map("farm_name") @db.VarChar(150)
+  farmAddress  String                   @map("farm_address") @db.VarChar(255)
+  kycStatus    FarmerVerificationStatus @default(PENDING) @map("kyc_status")
+  kycDocUrl    String?                  @map("kyc_doc_url") @db.VarChar(255)
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankAccount  BankAccount?
+  products     Product[]
+  earnings     FarmerEarning[]
+  inventories  Inventory[]
+  orderItems   OrderItem[]
+
+  @@map("farmer_profiles")
+}
+
+model BankAccount {
+  id            String        @id @default(uuid()) @db.Uuid
+  farmerId      String        @unique @map("farmer_id") @db.Uuid
+  bankName      String        @map("bank_name") @db.VarChar(100)
+  accountNumber String        @map("account_number") @db.VarChar(100)
+  routingNumber String        @map("routing_number") @db.VarChar(50)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  farmer        FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@map("bank_accounts")
+}
+
+model Category {
+  id           String         @id @default(uuid()) @db.Uuid
+  name         String         @unique @db.VarChar(100)
+  slug         String         @unique @db.VarChar(120)
+  description  String?        @db.Text
+  image        String?        @db.VarChar(255)
+  displayOrder Int            @default(0) @map("display_order")
+  status       CategoryStatus @default(ACTIVE)
+  parentId     String?        @map("parent_id") @db.Uuid
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  deletedAt    DateTime?      @map("deleted_at")
+
+  parent       Category?      @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: Restrict)
+  children     Category[]     @relation("CategoryToCategory")
+  products     Product[]
+  subProducts  Product[]      @relation("SubCategoryRelation")
+
+  @@index([parentId])
+  @@index([status])
+  @@map("categories")
+}
+
+model Product {
+  id               String        @id @default(uuid()) @db.Uuid
+  farmerId         String        @map("farmer_id") @db.Uuid
+  categoryId       String        @map("category_id") @db.Uuid
+  subCategoryId    String?       @map("sub_category_id") @db.Uuid
+  name             String        @db.VarChar(150)
+  slug             String        @unique @db.VarChar(170)
+  description      String        @db.Text
+  shortDescription String?       @map("short_description") @db.VarChar(255)
+  price            Decimal       @db.Decimal(10, 2)
+  discountPrice    Decimal?      @map("discount_price") @db.Decimal(10, 2)
+  unit             String        @db.VarChar(50)
+  minOrderQty      Int           @default(1) @map("min_order_qty")
+  maxOrderQty      Int           @default(10) @map("max_order_qty")
+  organic          Boolean       @default(false)
+  featured         Boolean       @default(false)
+  seasonal         Boolean       @default(false)
+  status           ProductStatus @default(DRAFT)
+  harvestDate      DateTime?     @map("harvest_date")
+  expiryDate       DateTime?     @map("expiry_date")
+  rating           Decimal       @default(0.00) @db.Decimal(3, 2)
+  reviewCount      Int           @default(0) @map("review_count")
+  viewCount        Int           @default(0) @map("view_count")
+  soldCount        Int           @default(0) @map("sold_count")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  deletedAt        DateTime?     @map("deleted_at")
+
+  farmer           FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+  category         Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subCategory      Category?     @relation("SubCategoryRelation", fields: [subCategoryId], references: [id], onDelete: Restrict)
+  images           ProductImage[]
+  inventory        Inventory?
+  orderItems       OrderItem[]
+  reviews          Review[]
+  cartItems        CartItem[]
+
+  @@index([farmerId])
+  @@index([categoryId])
+  @@index([subCategoryId])
+  @@index([status])
+  @@index([slug])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  imageUrl  String   @map("image_url") @db.VarChar(255)
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Inventory {
+  id            String      @id @default(uuid()) @db.Uuid
+  productId     String      @unique @map("product_id") @db.Uuid
+  farmerId      String      @map("farmer_id") @db.Uuid
+  currentStock  Decimal     @default(0.00) @map("current_stock") @db.Decimal(10, 2)
+  reservedStock Decimal     @default(0.00) @map("reserved_stock") @db.Decimal(10, 2)
+  minStockLevel Decimal     @default(5.00) @map("min_stock_level") @db.Decimal(10, 2)
+  maxStockLevel Decimal     @default(1000.00) @map("max_stock_level") @db.Decimal(10, 2)
+  reorderLevel  Decimal     @default(10.00) @map("reorder_level") @db.Decimal(10, 2)
+  status        StockStatus @default(IN_STOCK)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  farmer        FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+  history       InventoryHistory[]
+
+  @@index([farmerId])
+  @@index([status])
+  @@map("inventories")
+}
+
+model InventoryHistory {
+  id          String          @id @default(uuid()) @db.Uuid
+  inventoryId String          @map("inventory_id") @db.Uuid
+  action      InventoryAction
+  quantity    Decimal         @db.Decimal(10, 2)
+  reason      String          @db.VarChar(255)
+  userId      String          @map("user_id") @db.Uuid
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  inventory   Inventory       @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([inventoryId])
+  @@map("inventory_histories")
+}
+
+model Cart {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @unique @map("user_id") @db.Uuid
+  subtotal       Decimal    @default(0.00) @db.Decimal(10, 2)
+  discount       Decimal    @default(0.00) @db.Decimal(10, 2)
+  tax            Decimal    @default(0.00) @db.Decimal(10, 2)
+  deliveryCharge Decimal    @default(0.00) @map("delivery_charge") @db.Decimal(10, 2)
+  grandTotal     Decimal    @default(0.00) @map("grand_total") @db.Decimal(10, 2)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id             String    @id @default(uuid()) @db.Uuid
+  cartId         String    @map("cart_id") @db.Uuid
+  productId      String    @map("product_id") @db.Uuid
+  farmerId       String    @map("farmer_id") @db.Uuid
+  quantity       Int       @default(1)
+  unitPrice      Decimal   @map("unit_price") @db.Decimal(10, 2)
+  totalPrice     Decimal   @map("total_price") @db.Decimal(10, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  cart      Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id                String              @id @default(uuid()) @db.Uuid
+  orderNumber       String              @unique @map("order_number") @db.VarChar(50)
+  customerId        String              @map("customer_id") @db.Uuid
+  status            OrderStatus         @default(PENDING)
+  paymentStatus     PaymentStatus       @default(PENDING) @map("payment_status")
+  subtotal          Decimal             @db.Decimal(10, 2)
+  discount          Decimal             @default(0.00) @db.Decimal(10, 2)
+  deliveryFee       Decimal             @map("delivery_fee") @db.Decimal(10, 2)
+  total             Decimal             @db.Decimal(10, 2)
+  otpCode           String              @map("otp_code") @db.VarChar(6)
+  address           String              @db.VarChar(255)
+  notes             String?             @db.VarChar(255)
+  estimatedDelivery DateTime?           @map("estimated_delivery")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  customer          User                @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items             OrderItem[]
+  payment           Payment?
+  delivery          DeliveryAssignment?
+
+  @@index([customerId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String        @id @default(uuid()) @db.Uuid
+  orderId         String        @map("order_id") @db.Uuid
+  productId       String        @map("product_id") @db.Uuid
+  farmerId        String        @map("farmer_id") @db.Uuid
+  quantity        Int
+  price           Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @default(0.00) @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDING)
+
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  farmer          FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, productId])
+  @@map("order_items")
+}
+
+model Payment {
+  id            String        @id @default(uuid()) @db.Uuid
+  orderId       String        @unique @map("order_id") @db.Uuid
+  status        PaymentStatus @default(PENDING)
+  method        PaymentMethod
+  transactionId String?       @unique @map("transaction_id") @db.VarChar(100)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+
+  @@map("payments")
+}
+
+model Transaction {
+  id        String   @id @default(uuid()) @db.Uuid
+  paymentId String   @map("payment_id") @db.Uuid
+  amount    Decimal  @db.Decimal(10, 2)
+  gatewayLog String?  @map("gateway_log") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+model DeliveryAssignment {
+  id                String         @id @default(uuid()) @db.Uuid
+  orderId           String         @unique @map("order_id") @db.Uuid
+  driverId          String         @map("driver_id") @db.Uuid
+  status            DeliveryStatus @default(PENDING_ASSIGNMENT)
+  pickupTime        DateTime?      @map("pickup_time")
+  deliveryStartTime DateTime?      @map("delivery_start_time")
+  deliveredTime     DateTime?      @map("delivered_time")
+  currentLat        Decimal?       @map("current_lat") @db.Decimal(10, 8)
+  currentLng        Decimal?       @map("current_lng") @db.Decimal(11, 8)
+  distance          Decimal?       @db.Decimal(10, 2)
+  deliveryCharge    Decimal        @default(0.00) @map("delivery_charge") @db.Decimal(10, 2)
+  notes             String?        @db.VarChar(255)
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  order             Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driver            User           @relation("DriverDeliveries", fields: [driverId], references: [id], onDelete: Restrict)
+
+  @@index([driverId])
+  @@index([status])
+  @@map("delivery_assignments")
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String           @db.VarChar(150)
+  body      String           @db.Text
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model Review {
+  id        String       @id @default(uuid()) @db.Uuid
+  productId String       @map("product_id") @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  rating    Int
+  comment   String?      @db.Text
+  status    ReviewStatus @default(PENDING_MODERATION)
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("reviews")
+}
+
+model Coupon {
+  id             String    @id @default(uuid()) @db.Uuid
+  code           String    @unique @db.VarChar(50)
+  discountType   String    @map("discount_type") @db.VarChar(20)
+  value          Decimal   @db.Decimal(10, 2)
+  minOrderAmount Decimal   @default(0.00) @map("min_order_amount") @db.Decimal(10, 2)
+  expiresAt      DateTime  @map("expires_at")
+  usageLimit     Int?      @map("usage_limit")
+  usedCount      Int       @default(0) @map("used_count")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  usages         CouponUsage[]
+
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id        String   @id @default(uuid()) @db.Uuid
+  couponId  String   @map("coupon_id") @db.Uuid
+  customerId String  @map("customer_id") @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  usedAt    DateTime @default(now()) @map("used_at")
+
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@map("coupon_usages")
+}
+
+model FarmerEarning {
+  id        String        @id @default(uuid()) @db.Uuid
+  farmerId  String        @map("farmer_id") @db.Uuid
+  orderId   String        @map("order_id") @db.Uuid
+  amount    Decimal       @db.Decimal(10, 2)
+  isSettled Boolean       @default(false) @map("is_settled")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  farmer    FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@index([farmerId])
+  @@map("farmer_earnings")
+}
+
+model Withdrawal {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @map("user_id") @db.Uuid
+  amount      Decimal          @db.Decimal(10, 2)
+  status      WithdrawalStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  processedAt DateTime?        @map("processed_at")
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("withdrawals")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  action    String   @db.VarChar(100)
+  metadata  String?  @db.Text
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}

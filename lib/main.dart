@@ -11,10 +11,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize the Supabase backend using credentials securely stored in AppConstants.
-  await Supabase.initialize(
-    url: AppConstants.supabaseUrl,
-    anonKey: AppConstants.supabaseAnonKey,
-  );
+  try {
+    if (AppConstants.supabaseUrl != 'https://YOUR_PROJECT_ID.supabase.co') {
+      await Supabase.initialize(
+        url: AppConstants.supabaseUrl,
+        anonKey: AppConstants.supabaseAnonKey,
+      );
+    }
+  } catch (e) {
+    debugPrint('Supabase initialization failed, running in local-only fallback mode: $e');
+  }
 
   // Run the app wrapped with ProviderScope.
   // This is required for flutter_riverpod to manage global state.

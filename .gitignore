@@ -2,3 +2,12 @@
 .idea/
 .vscode/
 *.log
+node_modules/
+build/
+.gradle/
+*.apk
+*.aab
+dist/
+.env
+.env.local
+backend/.env

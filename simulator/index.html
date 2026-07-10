@@ -43,8 +43,38 @@
                 <!-- App Viewport -->
                 <div class="app-viewport" id="app-viewport">
 
+                    <!-- SCREEN 0: Login -->
+                    <div class="app-screen active screen-login" id="screen-login" style="padding: 44px 20px; justify-content: center; box-sizing: border-box; background: var(--white);">
+                        <div style="text-align: center; margin-bottom: 24px;">
+                            <i class="fa-solid fa-spa" style="font-size: 64px; color: var(--primary);"></i>
+                            <h1 style="font-size: 24px; font-weight: 800; color: var(--green-dark); margin-top: 12px;">FarmFresh Portal</h1>
+                            <p style="font-size: 11px; color: #8D99AE; margin-top: 4px;">Connecting local farms directly with you</p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <div class="input-field-group">
+                                <label style="font-size: 10px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block;">Select Portal Role</label>
+                                <select id="login-role" class="input-box" style="width: 100%; height: 38px; border-radius: 10px;" onchange="updateDefaultLoginEmail(this.value)">
+                                    <option value="customer">Customer Marketplace</option>
+                                    <option value="farmer">Farmer Dashboard</option>
+                                    <option value="delivery">Delivery Partner Portal</option>
+                                </select>
+                            </div>
+                            <div class="input-field-group">
+                                <label style="font-size: 10px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block;">Email Address</label>
+                                <input type="email" id="login-email" class="input-box" style="width: 100%; height: 38px; border-radius: 10px;" value="customer@farmfresh.com">
+                            </div>
+                            <div class="input-field-group">
+                                <label style="font-size: 10px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block;">Password</label>
+                                <input type="password" id="login-password" class="input-box" style="width: 100%; height: 38px; border-radius: 10px;" value="password123">
+                            </div>
+                            <button class="btn-primary-gradient" id="btn-login-submit" onclick="submitSimulatorLogin()" style="width: 100%; height: 40px; margin-top: 10px; border-radius: 10px; font-weight: 700;">
+                                Login
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- SCREEN 1: Onboarding -->
-                    <div class="app-screen active screen-onboarding" id="screen-onboarding">
+                    <div class="app-screen screen-onboarding" id="screen-onboarding">
                         <div class="onboarding-title-group">
                             <h1 class="onboarding-title">Fresh Groceries<br>Delivered to <span class="accent-door">Door</span><br>Doorstep</h1>
                             
@@ -781,50 +811,7 @@
                         </div>
                     </div>
 
-                    <!-- SCREEN 8: Admin Panel -->
-                    <div class="app-screen" id="screen-admin-dashboard">
-                        <div class="cart-header">
-                            <h2 class="section-title">Admin Terminal</h2>
-                        </div>
 
-                        <div class="dashboard-header">
-                            <div class="dashboard-stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                                <div class="stat-box" style="padding: 6px;">
-                                    <label style="font-size:8px;">Total Gross</label>
-                                    <span id="admin-total-sales" style="font-size:11px;">$0.00</span>
-                                </div>
-                                <div class="stat-box" style="padding: 6px;">
-                                    <label style="font-size:8px;">All Orders</label>
-                                    <span id="admin-total-orders" style="font-size:11px;">0</span>
-                                </div>
-                                <div class="stat-box" style="padding: 6px;">
-                                    <label style="font-size:8px;">Riders Active</label>
-                                    <span style="font-size:11px; color:#2E7D32;">1 Online</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- System metrics chart container -->
-                        <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">Order Sales Analytics</div>
-                        <div class="analytics-chart-container">
-                            <!-- Draw dynamic beautiful SVG chart detailing mock data -->
-                            <svg width="100%" height="80" viewBox="0 0 300 80" style="overflow: visible;">
-                                <path d="M 0,60 Q 50,40 100,55 T 200,25 T 300,10" fill="none" stroke="var(--primary)" stroke-width="3" />
-                                <circle cx="100" cy="55" r="4" fill="var(--primary)" />
-                                <circle cx="200" cy="25" r="4" fill="var(--primary)" />
-                                <circle cx="300" cy="10" r="4" fill="var(--primary)" />
-                                <text x="100" y="72" font-size="8" text-anchor="middle" fill="var(--text-muted)">Monday</text>
-                                <text x="200" y="72" font-size="8" text-anchor="middle" fill="var(--text-muted)">Tuesday</text>
-                                <text x="280" y="72" font-size="8" text-anchor="middle" fill="var(--text-muted)">Today</text>
-                            </svg>
-                        </div>
-
-                        <!-- User verification queues -->
-                        <div style="font-size: 12px; font-weight: 700; margin: 15px 0 8px;">Merchant Verification Queue</div>
-                        <div class="orders-list-container" id="admin-merchant-verification-list">
-                            <!-- Verification cards -->
-                        </div>
-                    </div>
 
                     <!-- Bottom Nav Tab Bar (only active/visible on customer screens) -->
                     <nav class="phone-bottom-nav" id="phone-bottom-navbar">
@@ -918,10 +905,6 @@
                 <button class="role-btn" id="btn-role-delivery" data-role="delivery">
                     <i class="fa-solid fa-motorcycle" style="color: #a78bfa;"></i>
                     <span>Delivery View</span>
-                </button>
-                <button class="role-btn" id="btn-role-admin" data-role="admin">
-                    <i class="fa-solid fa-shield-halved" style="color: #60a5fa;"></i>
-                    <span>Admin View</span>
                 </button>
             </div>
 

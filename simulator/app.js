@@ -1667,7 +1667,6 @@ document.getElementById('btn-tracking-cancel').addEventListener('click', () => {
 document.getElementById('btn-role-customer').addEventListener('click', () => switchRole('customer'));
 document.getElementById('btn-role-farmer').addEventListener('click', () => switchRole('farmer'));
 document.getElementById('btn-role-delivery').addEventListener('click', () => switchRole('delivery'));
-document.getElementById('btn-role-admin').addEventListener('click', () => switchRole('admin'));
 
 // CATEGORIES SCREEN RENDER & NAVIGATION FLOW
 window.renderCategoriesScreen = function() {
@@ -2086,6 +2085,34 @@ window.openPartnerRewards = function() {
         </div>
     `;
     openAccountModal('Partner Program Deals', html);
+};
+
+window.updateDefaultLoginEmail = function(role) {
+    const emailField = document.getElementById('login-email');
+    if (role === 'farmer') {
+        emailField.value = 'farmer@farmfresh.com';
+    } else if (role === 'delivery') {
+        emailField.value = 'delivery@farmfresh.com';
+    } else {
+        emailField.value = 'customer@farmfresh.com';
+    }
+};
+
+window.submitSimulatorLogin = function() {
+    const role = document.getElementById('login-role').value;
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        showToast('Please enter credentials');
+        return;
+    }
+
+    showToast(`Logged in successfully as ${role}!`);
+    Logger.log(`Authenticated via database matching role: ${role.toUpperCase()}`, 'system');
+
+    // Switch view automatically based on the selected role
+    switchRole(role);
 };
 
 window.toggleContactPermission = function(el) {
