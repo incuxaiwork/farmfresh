@@ -2125,19 +2125,38 @@ window.deleteSavedAddress = function(addrId) {
 
 window.openAddNewAddressForm = function() {
     const html = `
-        <div style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+        <div style="display:flex; flex-direction:column; gap:10px; text-align:left; max-height:380px; overflow-y:auto; padding-right:4px;">
             <div class="input-field-group" style="margin:0;">
                 <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Address Tag</label>
-                <input type="text" class="input-box" id="new-addr-tag" placeholder="e.g. Home 🏠, Office 💼, Gym 🏋️" style="height: 34px; font-size: 11px; padding:0 10px; border-radius:10px;">
+                <input type="text" class="input-box" id="new-addr-tag" placeholder="e.g. Home 🏠, Office 💼" style="height: 32px; font-size: 11px; padding:0 10px; border-radius:10px;">
             </div>
+            
+            <!-- Inline Auto-detect Location Button -->
+            <button onclick="detectLocationInForm()" class="btn-primary-gradient" id="btn-form-detect-loc" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; font-weight: 700; width: 100%; border: none; border-radius: 10px; cursor: pointer;">
+                <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
+            </button>
+            
             <div class="input-field-group" style="margin:0;">
-                <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Full Address</label>
-                <textarea class="input-box" id="new-addr-text" placeholder="House/Flat No, Building, Street, City" style="height: 60px; font-size: 11px; padding:6px 10px; resize:none; font-family:inherit; border-radius:10px; line-height:1.4;"></textarea>
+                <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Address Line 1 (Full Address)</label>
+                <input type="text" class="input-box" id="new-addr-line1" placeholder="Flat/House No, Building, Street, Area" style="height: 32px; font-size: 11px; padding:0 10px; border-radius:10px;">
             </div>
+            
+            <div style="display:flex; gap:8px; margin:0;">
+                <div class="input-field-group" style="flex:1; margin:0;">
+                    <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Landmark</label>
+                    <input type="text" class="input-box" id="new-addr-landmark" placeholder="e.g. Near Park" style="height: 32px; font-size: 11px; padding:0 10px; border-radius:10px;">
+                </div>
+                <div class="input-field-group" style="flex:1; margin:0;">
+                    <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Pincode</label>
+                    <input type="text" class="input-box" id="new-addr-pincode" placeholder="e.g. 400001" style="height: 32px; font-size: 11px; padding:0 10px; border-radius:10px;">
+                </div>
+            </div>
+            
             <div class="input-field-group" style="margin:0;">
                 <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Rider Instructions (Optional)</label>
-                <input type="text" class="input-box" id="new-addr-instructions" placeholder="e.g. Leave with security guard" style="height: 34px; font-size: 11px; padding:0 10px; border-radius:10px;">
+                <input type="text" class="input-box" id="new-addr-instructions" placeholder="e.g. Leave with guard" style="height: 32px; font-size: 11px; padding:0 10px; border-radius:10px;">
             </div>
+            
             <div style="display:flex; gap:10px; margin-top:8px;">
                 <button onclick="openProfileAddresses()" style="flex:1; height:36px; background:#ECECEC; color:#555; border:none; border-radius:12px; font-weight:700; cursor:pointer; font-size:11px;">Cancel</button>
                 <button onclick="saveNewAddress()" class="btn-primary-gradient" style="flex:1; height:36px; font-size:11px; cursor:pointer; border:none; font-weight:700; border-radius:12px;">Save Address</button>
@@ -2147,27 +2166,125 @@ window.openAddNewAddressForm = function() {
     openAccountModal('Add New Address', html);
 };
 
-window.saveNewAddress = function() {
-    const tagVal = document.getElementById('new-addr-tag').value.trim();
-    const addrVal = document.getElementById('new-addr-text').value.trim();
-    const instrVal = document.getElementById('new-addr-instructions').value.trim();
+window.detectLocationInForm = function() {
+    const btn = document.getElementById('btn-form-detect-loc');
+    if (!btn) return;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+    btn.disabled = true;
 
-    if (!tagVal || !addrVal) {
-        showToast('Please enter Tag and Full Address!');
+    if (!navigator.geolocation) {
+        fetchIpLocationForForm(btn, originalText);
         return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(res => res.json())
+                .then(data => {
+                    let road = data.address.road || data.address.suburb || data.address.neighbourhood || '';
+                    let city = data.address.city || data.address.town || data.address.village || '';
+                    let state = data.address.state || '';
+                    let country = data.address.country || '';
+                    let pincode = data.address.postcode || '';
+                    
+                    let parts = [];
+                    if (road) parts.push(road);
+                    if (city) parts.push(city);
+                    if (state) parts.push(state);
+                    if (country) parts.push(country);
+                    
+                    let line1 = parts.join(', ');
+                    
+                    const line1Input = document.getElementById('new-addr-line1');
+                    const pinInput = document.getElementById('new-addr-pincode');
+                    
+                    if (line1Input) line1Input.value = line1;
+                    if (pinInput && pincode) pinInput.value = pincode;
+                    
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    showToast('Location detected successfully! 📍');
+                })
+                .catch(() => {
+                    let line1 = `${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`;
+                    const line1Input = document.getElementById('new-addr-line1');
+                    if (line1Input) line1Input.value = line1;
+                    
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    showToast('Location coordinates captured! 📍');
+                });
+        },
+        function(error) {
+            fetchIpLocationForForm(btn, originalText);
+        },
+        { timeout: 7000 }
+    );
+};
+
+function fetchIpLocationForForm(btn, originalText) {
+    fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+            let line1 = '';
+            if (data.city && data.region) {
+                line1 = `${data.city}, ${data.region}, ${data.country_name}`;
+            } else {
+                line1 = data.city || '';
+            }
+            
+            const line1Input = document.getElementById('new-addr-line1');
+            const pinInput = document.getElementById('new-addr-pincode');
+            
+            if (line1Input) line1Input.value = line1;
+            if (pinInput && data.postal) pinInput.value = data.postal;
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            showToast('IP Location detected! 📍');
+        })
+        .catch(() => {
+            showToast('Location detection failed. Enter manually!');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+}
+
+window.saveNewAddress = function() {
+    const tagVal = document.getElementById('new-addr-tag').value.trim();
+    const line1Val = document.getElementById('new-addr-line1').value.trim();
+    const landmarkVal = document.getElementById('new-addr-landmark').value.trim();
+    const pincodeVal = document.getElementById('new-addr-pincode').value.trim();
+    const instrVal = document.getElementById('new-addr-instructions').value.trim();
+
+    if (!tagVal || !line1Val || !pincodeVal) {
+        showToast('Please fill Tag, Line 1 Address, and Pincode!');
+        return;
+    }
+
+    // Neat composition of full address: Line 1, Landmark (Optional) - Pincode
+    let fullAddress = line1Val;
+    if (landmarkVal) {
+        fullAddress += `, near ${landmarkVal}`;
+    }
+    fullAddress += ` - ${pincodeVal}`;
 
     const newAddr = {
         id: `addr-${Date.now()}`,
         tag: tagVal,
-        address: addrVal,
+        address: fullAddress,
         instructions: instrVal,
         isDefault: STATE.addresses.length === 0
     };
 
     STATE.addresses.push(newAddr);
     showToast('Address saved successfully!');
-    Logger.log(`Customer saved new address: "${tagVal}" - "${addrVal}"`, 'customer');
+    Logger.log(`Customer saved new address: "${tagVal}" - "${fullAddress}"`, 'customer');
     
     syncCartAddress();
     openProfileAddresses();
