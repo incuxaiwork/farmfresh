@@ -117,14 +117,19 @@
                                 <div class="location-icon-container">
                                     <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i>
                                 </div>
-                                <div class="location-details">
-                                    <label>Location</label>
-                                    <select id="user-location-selector">
-                                        <option value="New York, US" selected>New York, US</option>
-                                        <option value="Santorini, Greece">Santorini, Greece</option>
-                                        <option value="Rome, Italy">Rome, Italy</option>
-                                        <option value="Mumbai, India">Mumbai, India</option>
-                                    </select>
+                                <div class="location-details" style="display:flex; align-items:center; gap:4px;">
+                                    <div style="display:flex; flex-direction:column;">
+                                        <label>Location</label>
+                                        <select id="user-location-selector" style="max-width: 120px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+                                            <option value="New York, US" selected>New York, US</option>
+                                            <option value="Santorini, Greece">Santorini, Greece</option>
+                                            <option value="Rome, Italy">Rome, Italy</option>
+                                            <option value="Mumbai, India">Mumbai, India</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="openAddLocationModal()" style="border:none; background:#EAF6EC; color:var(--green-dark); width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; margin-top:12px;" title="Add Location">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
@@ -960,6 +965,37 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Custom Add Location Modal -->
+    <div id="modal-add-location" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: all 0.3s ease;">
+        <div style="background: var(--white); width: 85%; max-width: 320px; border-radius: 24px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 14px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 14px; font-weight: 800; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Add Location</h3>
+                <span onclick="closeAddLocationModal()" style="cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 4px;"><i class="fa-solid fa-xmark"></i></span>
+            </div>
+            
+            <!-- Option 1: Detect Current Location -->
+            <button onclick="detectCurrentLocation()" class="btn-primary-gradient" id="btn-detect-loc" style="height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; font-weight: 700; width: 100%; border: none; border-radius: 12px; cursor: pointer;">
+                <i class="fa-solid fa-location-crosshairs"></i> Detect Current Location
+            </button>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0;">
+                <hr style="flex: 1; border: none; border-top: 1px solid #ECECEC;">
+                <span style="font-size: 8px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">or enter manually</span>
+                <hr style="flex: 1; border: none; border-top: 1px solid #ECECEC;">
+            </div>
+            
+            <!-- Option 2: Enter manually -->
+            <div class="input-field-group" style="margin: 0;">
+                <label for="input-custom-location" style="font-size: 9px; margin-bottom: 4px; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Location Name</label>
+                <input type="text" class="input-box" id="input-custom-location" placeholder="e.g. Paris, France" style="height: 36px; font-size: 11px; padding: 0 12px; border-radius: 10px;">
+            </div>
+            
+            <button onclick="saveCustomLocation()" class="btn-primary-gradient" style="height: 38px; background: var(--text-main); color: var(--white); font-size: 11px; font-weight: 700; width: 100%; border: none; border-radius: 12px; cursor: pointer; margin-top: 4px;">
+                Save & Select
+            </button>
+        </div>
     </div>
 
     <!-- Application Script -->

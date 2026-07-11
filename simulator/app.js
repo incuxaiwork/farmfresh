@@ -1923,7 +1923,7 @@ document.getElementById('btn-clear-logs').addEventListener('click', () => Logger
 // Location Picker Currency updates
 document.getElementById('user-location-selector').addEventListener('change', (e) => {
     const val = e.target.value;
-    if (val === 'Mumbai, India') {
+    if (val.toLowerCase().includes('india')) {
         currentCurrencySymbol = 'Rs. ';
         currentCurrencyRate = 83.0; // Exchange rate: 1 USD = 83 INR
         Logger.log('Location switched to India. Currency updated to Rupees (Rs.)', 'customer');
@@ -2283,6 +2283,125 @@ window.addEventListener('click', () => {
         dropdown.style.display = 'none';
     }
 });
+
+// CUSTOM ADD LOCATION MODAL FUNCTIONS
+window.openAddLocationModal = function() {
+    const modal = document.getElementById('modal-add-location');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('input-custom-location').value = '';
+    }
+};
+
+window.closeAddLocationModal = function() {
+    const modal = document.getElementById('modal-add-location');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveCustomLocation = function() {
+    const input = document.getElementById('input-custom-location');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) {
+        showToast('Please enter a location name!');
+        return;
+    }
+    addAndSelectUserLocation(val);
+    closeAddLocationModal();
+    showToast(`Location added: ${val}! 📍`);
+};
+
+window.detectCurrentLocation = function() {
+    const btn = document.getElementById('btn-detect-loc');
+    if (!btn) return;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
+    btn.disabled = true;
+
+    if (!navigator.geolocation) {
+        fetchIpLocation(btn, originalText);
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(res => res.json())
+                .then(data => {
+                    let city = data.address.city || data.address.town || data.address.village || data.address.suburb || 'Current Location';
+                    let country = data.address.country || '';
+                    let locationName = country ? `${city}, ${country}` : city;
+                    
+                    addAndSelectUserLocation(locationName);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeAddLocationModal();
+                    showToast(`Located: ${locationName}! 📍`);
+                })
+                .catch(() => {
+                    let locationName = `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`;
+                    addAndSelectUserLocation(locationName);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    closeAddLocationModal();
+                    showToast(`Located: ${locationName}! 📍`);
+                });
+        },
+        function(error) {
+            fetchIpLocation(btn, originalText);
+        },
+        { timeout: 7000 }
+    );
+};
+
+function fetchIpLocation(btn, originalText) {
+    fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.city && data.country_name) {
+                let locationName = `${data.city}, ${data.country_name}`;
+                addAndSelectUserLocation(locationName);
+                showToast(`Located: ${locationName}! 📍`);
+            } else {
+                showToast('Could not detect location. Enter manually!');
+            }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            closeAddLocationModal();
+        })
+        .catch(() => {
+            showToast('Location detection failed. Enter manually!');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+}
+
+window.addAndSelectUserLocation = function(name) {
+    const select = document.getElementById('user-location-selector');
+    if (!select) return;
+    
+    let exists = false;
+    for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value.toLowerCase() === name.toLowerCase()) {
+            select.selectedIndex = i;
+            exists = true;
+            break;
+        }
+    }
+    
+    if (!exists) {
+        const newOpt = document.createElement('option');
+        newOpt.value = name;
+        newOpt.text = name;
+        select.add(newOpt);
+        select.selectedIndex = select.options.length - 1;
+    }
+    
+    select.dispatchEvent(new Event('change'));
+};
 
 // INITIAL SETUP RUNS
 renderCategories();
