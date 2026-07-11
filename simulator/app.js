@@ -402,6 +402,65 @@ const STATE = {
     userEmail: 'ritih@gmail.com'
 };
 
+// LocalStorage Persistence Layer
+(function restoreStateFromStorage() {
+    try {
+        const saved = localStorage.getItem('FARMFRESH_STATE');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            
+            // Restore products: merge saved farmer products with default ones
+            if (parsed.products) {
+                const defaultIds = STATE.products.map(p => p.id);
+                const farmerProds = parsed.products.filter(p => p.addedByFarmer && !defaultIds.includes(p.id));
+                STATE.products.push(...farmerProds);
+                
+                // Sync properties for default products if changed
+                parsed.products.forEach(p => {
+                    if (!p.addedByFarmer) {
+                        const target = STATE.products.find(tp => tp.id === p.id);
+                        if (target) {
+                            Object.assign(target, p);
+                        }
+                    }
+                });
+            }
+            
+            if (parsed.cart) STATE.cart = parsed.cart;
+            if (parsed.wishlist) STATE.wishlist = parsed.wishlist;
+            if (parsed.orders) STATE.orders = parsed.orders;
+            if (parsed.addresses) STATE.addresses = parsed.addresses;
+            if (parsed.couponApplied) STATE.couponApplied = parsed.couponApplied;
+            if (parsed.currentRole) STATE.currentRole = parsed.currentRole;
+            if (parsed.customerLocation) STATE.customerLocation = parsed.customerLocation;
+            if (parsed.merchants) STATE.merchants = parsed.merchants;
+            if (parsed.rider) STATE.rider = parsed.rider;
+        }
+    } catch (e) {
+        console.error("Failed to restore FarmFresh state", e);
+    }
+})();
+
+window.saveStateToStorage = function() {
+    try {
+        const select = document.getElementById('user-location-selector');
+        localStorage.setItem('FARMFRESH_STATE', JSON.stringify({
+            products: STATE.products,
+            cart: STATE.cart,
+            wishlist: STATE.wishlist,
+            orders: STATE.orders,
+            addresses: STATE.addresses,
+            couponApplied: STATE.couponApplied,
+            currentRole: STATE.currentRole,
+            merchants: STATE.merchants,
+            rider: STATE.rider,
+            customerLocation: select ? select.value : (STATE.customerLocation || 'New York, US')
+        }));
+    } catch (e) {
+        console.error("Failed to save FarmFresh state", e);
+    }
+};
+
 // Currency State System
 let currentCurrencySymbol = '$';
 let currentCurrencyRate = 1.0;
@@ -559,6 +618,7 @@ function updateActiveBottomTab(activeId) {
 // Role Switcher Control
 function switchRole(role) {
     STATE.currentRole = role;
+    saveStateToStorage();
     
     // UI update for role buttons
     document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
@@ -720,6 +780,7 @@ window.toggleWishlist = function(e, prodId) {
     
     updateWishlistBadge();
     renderProducts();
+    saveStateToStorage();
     
     // If the wishlist screen is active, re-render it
     if (document.getElementById('screen-customer-wishlist').classList.contains('active')) {
@@ -925,6 +986,7 @@ function updateCartStats() {
     syncCartAddress();
     renderCart();
     renderFarmerInventory();
+    saveStateToStorage();
 }
 
 function renderCart() {
@@ -1534,6 +1596,7 @@ window.farmerAcceptOrder = function(orderId) {
     order.status = 'accepted';
     Logger.log(`Farmer accepted order #${orderId}. Preparing products for packaging...`, 'farmer');
     renderFarmerOrders();
+    saveStateToStorage();
     
     // Simulate push alert to customer
     Notification.show('Order Preparing', `Farmer accepted your order #${orderId}. Fresh produce is being gathered!`);
@@ -1551,6 +1614,7 @@ window.farmerPrepareOrder = function(orderId) {
     if (farmer.activeOrders > 0) farmer.activeOrders -= 1;
     updateFarmerStats();
     renderFarmerOrders();
+    saveStateToStorage();
     
     // Trigger notification to Rider & Customer
     Notification.show('Harvest Ready!', `Order #${orderId} is prepared and waiting for pickup.`);
@@ -1644,6 +1708,7 @@ window.riderAcceptJob = function(orderId) {
     
     Logger.log(`Rider Alex Rider accepted delivery trip for order #${orderId}. Navigating to client address...`, 'delivery');
     renderRiderDashboard();
+    saveStateToStorage();
     
     // Simulate push alert to customer
     Notification.show('Rider Out for Delivery!', `Rider Alex is on his way with your FarmFresh vegetables.`);
@@ -1686,6 +1751,7 @@ document.getElementById('btn-delivery-submit-otp').addEventListener('click', () 
         Logger.log(`Rider verified OTP correctly. Delivery completed! Payout of ${formatPrice(riderPayout)} credited to Rider. Farmer credited ${formatPrice(farmerEarnings)}`, 'delivery');
         
         renderRiderDashboard();
+        saveStateToStorage();
         
         // Alert Customer
         Notification.show('Order Delivered!', `Your delivery for order #${orderId} is complete. Bon Appétit!`);
@@ -2774,8 +2840,10 @@ window.addAndSelectUserLocation = function(name) {
 };
 
 // INITIAL SETUP RUNS
-renderCategories();
-renderProducts();
+if (STATE.customerLocation) {
+    addAndSelectUserLocation(STATE.customerLocation);
+}
+switchRole(STATE.currentRole || 'customer');
 updateCartStats();
 Logger.log('Interactive Multi-Vendor FarmFresh Simulator re-initialized.', 'system');
 Logger.log('Ready to test. Switch roles above to inspect screens.', 'system');
