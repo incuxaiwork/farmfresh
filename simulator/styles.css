@@ -2007,3 +2007,31 @@ body {
 .account-modal-overlay.active .account-modal-sheet {
     transform: translateY(0) !important;
 }
+
+/* Geolocation Auto-detect Custom Button Styling */
+.btn-detect-location-custom {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    background: var(--primary-gradient);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(46,125,50,0.15);
+    transition: all 0.2s ease;
+}
+.btn-detect-location-custom:hover {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%) !important;
+    box-shadow: 0 6px 16px rgba(27,94,32,0.3);
+    transform: translateY(-1px);
+}
+.btn-detect-location-custom:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(46,125,50,0.1);
+}

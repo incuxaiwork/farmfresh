@@ -2132,7 +2132,7 @@ window.openAddNewAddressForm = function() {
             </div>
             
             <!-- Inline Auto-detect Location Button -->
-            <button onclick="detectLocationInForm()" class="btn-primary-gradient" id="btn-form-detect-loc" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; font-weight: 700; width: 100%; border: none; border-radius: 10px; cursor: pointer;">
+            <button onclick="detectLocationInForm()" class="btn-detect-location-custom" id="btn-form-detect-loc">
                 <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
             </button>
             
