@@ -910,6 +910,7 @@ function updateCartStats() {
         document.getElementById('onboard-items-count').innerText = totalItems;
         let sub = STATE.cart.reduce((sum, item) => {
             const p = STATE.products.find(prod => prod.id === item.productId);
+            if (!p) return sum;
             return sum + (p.price * item.quantity);
         }, 0);
         document.getElementById('onboard-total-price').innerText = formatPrice(sub + 3.99);
@@ -930,9 +931,11 @@ function renderCart() {
 
     container.innerHTML = STATE.cart.map(item => {
         const prod = STATE.products.find(p => p.id === item.productId);
-        const imageHtml = (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5) 
+        if (!prod) return '';
+        
+        const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
             ? `<img class="cart-item-img" src="${prod.image}" alt="${prod.name}">` 
-            : `<div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#EAF6EC;">${prod.image}</div>`;
+            : `<div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#EAF6EC;">${prod.image || '📦'}</div>`;
 
         return `
             <div class="cart-item-card">
@@ -1428,8 +1431,12 @@ window.farmerAddAndVisitProduct = function(pId) {
 
 window.farmerDeleteProduct = function(pId) {
     STATE.products = STATE.products.filter(p => p.id !== pId);
+    STATE.cart = STATE.cart.filter(item => item.productId !== pId);
+    STATE.wishlist = STATE.wishlist.filter(id => id !== pId);
+    
     renderFarmerInventory();
     renderProducts();
+    updateCartStats();
     Logger.log(`Farmer deleted product ID: ${pId} from online market.`, 'farmer');
 };
 
@@ -1664,7 +1671,7 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
 
     function publishFarmerProduct(productImg) {
         const newProd = {
-            id: `prod-${STATE.products.length + 1}`,
+            id: `prod-${Date.now()}`,
             name: name,
             price: price,
             originalPrice: price,
