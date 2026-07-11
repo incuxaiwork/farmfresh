@@ -796,6 +796,80 @@
                         </div>
                     </div>
 
+                    <!-- SCREEN 6D: Farmer Orders -->
+                    <div class="app-screen" id="screen-farmer-orders">
+                        <!-- Location Row -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:var(--white); border:1px solid #EAEAEA; padding:8px 12px; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,0.02); flex-shrink:0;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="color:var(--green-dark); width:24px; height:24px; border-radius:50%; background:#F1F8F4; display:flex; align-items:center; justify-content:center; font-size:11px;">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <label style="font-size:8px; color:var(--text-muted); display:block; line-height:1; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Farm Location</label>
+                                    <select id="farmer-orders-location-selector" style="font-size:10px; font-weight:700; color:var(--text-main); border:none; background:transparent; outline:none; padding:0; cursor:pointer;" onchange="syncLocationSelectors(this.value)">
+                                        <option value="California, US" selected>California, US</option>
+                                        <option value="Texas, US">Texas, US</option>
+                                        <option value="Washington, US">Washington, US</option>
+                                        <option value="Punjab, India">Punjab, India</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cart-header">
+                            <h2 class="section-title">Client Orders</h2>
+                            <span class="btn-action-small" style="background:#EAF6EC; color:#2E7D32;" id="farmer-orders-badge">0 Pending</span>
+                        </div>
+
+                        <!-- Active Incoming Orders -->
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Pending Client Orders</div>
+                        <div class="orders-list-container" id="farmer-orders-list-dedicated">
+                            <!-- Injected Dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 6E: Farmer Wallet -->
+                    <div class="app-screen" id="screen-farmer-wallet">
+                        <div class="cart-header">
+                            <h2 class="section-title">My Wallet</h2>
+                            <span class="btn-action-small" style="background:#ECEFFC; color:#3F51B5;">Payout System</span>
+                        </div>
+
+                        <div class="dashboard-header" style="background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(46,125,50,0.15); margin-bottom: 20px;">
+                            <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85;">Total Earnings Balance</span>
+                            <h2 style="font-size: 28px; font-weight: 900; margin: 6px 0 16px; color: var(--white);" id="farmer-wallet-balance-display">$0.00</h2>
+                            
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-action-small" style="background: rgba(255,255,255,0.25); color: var(--white); border: none; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; flex: 1; transition: all 0.2s;" onclick="farmerRequestPayout()">
+                                    <i class="fa-solid fa-money-bill-transfer" style="margin-right: 4px;"></i> Request Payout
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 13px; font-weight: 700; margin: 15px 0 10px;">Payout Account Details</div>
+                        <div class="dashboard-header" style="margin-bottom: 20px; font-size: 11px;">
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EEE; padding-bottom: 6px;">
+                                    <span style="color: var(--text-muted);">Bank Name:</span>
+                                    <span style="font-weight: 700; color: var(--text-main);">Organic Agriculture Bank</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EEE; padding-bottom: 6px;">
+                                    <span style="color: var(--text-muted);">Account Number:</span>
+                                    <span style="font-weight: 700; color: var(--text-main);">**** **** 8299</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--text-muted);">Routing Code:</span>
+                                    <span style="font-weight: 700; color: var(--text-main);">OAGR82XX</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Recent Wallet Transactions</div>
+                        <div id="farmer-wallet-transactions-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+                            <div style="font-size: 11px; text-align: center; color: var(--text-muted); padding: 15px; background: var(--white); border-radius: 12px; border: 1px solid #EAEAEA;">No wallet history yet.</div>
+                        </div>
+                    </div>
+
                     <!-- SCREEN 6C: Farmer Profile -->
                     <div class="app-screen" id="screen-farmer-profile">
                         <div class="cart-header">
@@ -950,12 +1024,20 @@
                     <!-- Farmer Bottom Nav Tab Bar -->
                     <nav class="phone-bottom-nav" id="farmer-bottom-navbar" style="display: none; border-top: 1px solid #e2e8f0;">
                         <div class="nav-tab-item active" id="tab-farmer-dashboard">
-                            <i class="fa-solid fa-chart-line"></i>
-                            <span>Dashboard</span>
+                            <i class="fa-solid fa-house"></i>
+                            <span>Home</span>
                         </div>
                         <div class="nav-tab-item" id="tab-farmer-products">
                             <i class="fa-solid fa-seedling"></i>
                             <span>Products</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-farmer-orders">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                            <span>Orders</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-farmer-wallet">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>Wallet</span>
                         </div>
                         <div class="nav-tab-item" id="tab-farmer-profile">
                             <i class="fa-solid fa-store"></i>

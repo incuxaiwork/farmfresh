@@ -435,6 +435,7 @@ const STATE = {
             if (parsed.customerLocation) STATE.customerLocation = parsed.customerLocation;
             if (parsed.merchants) STATE.merchants = parsed.merchants;
             if (parsed.rider) STATE.rider = parsed.rider;
+            if (parsed.farmerPayouts) STATE.farmerPayouts = parsed.farmerPayouts;
         }
     } catch (e) {
         console.error("Failed to restore FarmFresh state", e);
@@ -454,6 +455,7 @@ window.saveStateToStorage = function() {
             currentRole: STATE.currentRole,
             merchants: STATE.merchants,
             rider: STATE.rider,
+            farmerPayouts: STATE.farmerPayouts || [],
             customerLocation: select ? select.value : (STATE.customerLocation || 'New York, US')
         }));
     } catch (e) {
@@ -602,6 +604,12 @@ function updateActiveBottomTab(activeId) {
         if (el) el.classList.add('active');
     } else if (activeId === 'screen-farmer-products') {
         const el = document.getElementById('tab-farmer-products');
+        if (el) el.classList.add('active');
+    } else if (activeId === 'screen-farmer-orders') {
+        const el = document.getElementById('tab-farmer-orders');
+        if (el) el.classList.add('active');
+    } else if (activeId === 'screen-farmer-wallet') {
+        const el = document.getElementById('tab-farmer-wallet');
         if (el) el.classList.add('active');
     } else if (activeId === 'screen-farmer-profile') {
         const el = document.getElementById('tab-farmer-profile');
@@ -1491,57 +1499,147 @@ function updateFarmerStats() {
 }
 
 function renderFarmerOrders() {
-    const container = document.getElementById('farmer-orders-list');
     const pending = STATE.orders.filter(o => o.status === 'placed' || o.status === 'accepted');
-    
-    if (pending.length === 0) {
-        container.innerHTML = '<div style="font-size:11px; text-align:center; padding: 20px; color:var(--text-muted);">No active pending orders.</div>';
-        return;
-    }
+    const badge = document.getElementById('farmer-orders-badge');
+    if (badge) badge.innerText = `${pending.length} Pending`;
 
-    container.innerHTML = pending.map(o => {
-        const itemsListHtml = o.items.map(i => {
-            const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
-            const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
-                ? `<img src="${prod.image}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0;">` 
-                : `<span style="font-size:12px; width:20px; height:20px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:4px; flex-shrink:0;">${prod.image || '📦'}</span>`;
-            
-            return `
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; gap:6px; text-align:left;">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        ${imageHtml}
-                        <span style="font-weight:700; color:var(--text-main);">${i.quantity}x</span>
-                        <span style="color:#555; max-width:120px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.name}</span>
+    const htmlContent = pending.length === 0 
+        ? '<div style="font-size:11px; text-align:center; padding: 20px; color:var(--text-muted);">No active pending orders.</div>'
+        : pending.map(o => {
+            const itemsListHtml = o.items.map(i => {
+                const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
+                const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
+                    ? `<img src="${prod.image}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0;">` 
+                    : `<span style="font-size:12px; width:20px; height:20px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:4px; flex-shrink:0;">${prod.image || '📦'}</span>`;
+                
+                return `
+                    <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; gap:6px; text-align:left;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            ${imageHtml}
+                            <span style="font-weight:700; color:var(--text-main);">${i.quantity}x</span>
+                            <span style="color:#555; max-width:120px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.name}</span>
+                        </div>
+                        <span style="font-weight:700; color:var(--text-main);">${formatPrice(i.price * i.quantity)}</span>
                     </div>
-                    <span style="font-weight:700; color:var(--text-main);">${formatPrice(i.price * i.quantity)}</span>
+                `;
+            }).join('');
+            
+            let actionBtn = '';
+            if (o.status === 'placed') {
+                actionBtn = `<button class="btn-action-small" onclick="farmerAcceptOrder('${o.id}')">Accept Order</button>`;
+            } else if (o.status === 'accepted') {
+                actionBtn = `<button class="btn-action-small" style="background:var(--primary-gradient); color:white;" onclick="farmerPrepareOrder('${o.id}')">Mark Prepared</button>`;
+            }
+
+            return `
+                <div class="order-card-merchant">
+                    <div class="order-card-header">
+                        <span style="font-weight:700;">#${o.id}</span>
+                        <span style="color:var(--primary);text-transform:uppercase;font-size:9px;">${o.status}</span>
+                    </div>
+                    <div class="order-card-items-list" style="display:flex; flex-direction:column; gap:2px; margin:6px 0; border-bottom:1px dashed #EEE; padding-bottom:6px;">
+                        ${itemsListHtml}
+                    </div>
+                    <div class="order-card-footer" style="margin-top:4px;">
+                        <span class="order-card-price">${formatPrice(o.total)}</span>
+                        ${actionBtn}
+                    </div>
                 </div>
             `;
         }).join('');
-        
-        let actionBtn = '';
-        if (o.status === 'placed') {
-            actionBtn = `<button class="btn-action-small" onclick="farmerAcceptOrder('${o.id}')">Accept Order</button>`;
-        } else if (o.status === 'accepted') {
-            actionBtn = `<button class="btn-action-small" style="background:var(--primary-gradient); color:white;" onclick="farmerPrepareOrder('${o.id}')">Mark Prepared</button>`;
-        }
 
+    const container1 = document.getElementById('farmer-orders-list');
+    if (container1) container1.innerHTML = htmlContent;
+
+    const container2 = document.getElementById('farmer-orders-list-dedicated');
+    if (container2) container2.innerHTML = htmlContent;
+}
+
+window.renderFarmerWallet = function() {
+    const merchant = STATE.merchants[0]; // Organico Farm
+    
+    // Update earnings display
+    const balanceDisplay = document.getElementById('farmer-wallet-balance-display');
+    if (balanceDisplay) {
+        balanceDisplay.innerText = formatPrice(merchant.earnings);
+    }
+    
+    // Render transaction history list
+    const listContainer = document.getElementById('farmer-wallet-transactions-list');
+    if (!listContainer) return;
+    
+    const completedOrders = STATE.orders.filter(o => o.status === 'completed');
+    
+    if (completedOrders.length === 0 && (!STATE.farmerPayouts || STATE.farmerPayouts.length === 0)) {
+        listContainer.innerHTML = '<div style="font-size:11px; text-align:center; color:var(--text-muted); padding: 15px; background:var(--white); border-radius: 12px; border: 1px solid #EAEAEA;">No wallet history yet.</div>';
+        return;
+    }
+    
+    // Combine completed orders credit and debit payouts
+    let txs = completedOrders.map(o => {
+        const deliveryFee = 3.99;
+        const farmerEarnings = o.total - deliveryFee;
+        return {
+            title: `Order #${o.id} Credit`,
+            amount: `+${formatPrice(farmerEarnings)}`,
+            time: o.timestamp || 'Today',
+            type: 'credit'
+        };
+    });
+    
+    if (STATE.farmerPayouts) {
+        STATE.farmerPayouts.forEach(p => {
+            txs.push({
+                title: 'Withdrawal to Bank',
+                amount: `-${formatPrice(p.amount)}`,
+                time: p.time,
+                type: 'debit'
+            });
+        });
+    }
+    
+    // Render list
+    listContainer.innerHTML = txs.map(t => {
+        const color = t.type === 'credit' ? '#2E7D32' : '#EF4444';
+        const signStyle = t.type === 'credit' ? 'font-weight:700;' : 'font-weight:700;';
         return `
-            <div class="order-card-merchant">
-                <div class="order-card-header">
-                    <span style="font-weight:700;">#${o.id}</span>
-                    <span style="color:var(--primary);text-transform:uppercase;font-size:9px;">${o.status}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--white); border:1px solid #EAEAEA; padding:8px 12px; border-radius:12px; font-size:11px; margin-bottom:6px;">
+                <div>
+                    <div style="font-weight:700; color:var(--text-main);">${t.title}</div>
+                    <div style="font-size:9px; color:var(--text-muted); margin-top:2px;">${t.time}</div>
                 </div>
-                <div class="order-card-items-list" style="display:flex; flex-direction:column; gap:2px; margin:6px 0; border-bottom:1px dashed #EEE; padding-bottom:6px;">
-                    ${itemsListHtml}
-                </div>
-                <div class="order-card-footer" style="margin-top:4px;">
-                    <span class="order-card-price">${formatPrice(o.total)}</span>
-                    ${actionBtn}
-                </div>
+                <div style="color:${color}; ${signStyle}">${t.amount}</div>
             </div>
         `;
     }).join('');
-}
+};
+
+window.farmerRequestPayout = function() {
+    const merchant = STATE.merchants[0]; // Organico Farm
+    if (merchant.earnings <= 0) {
+        showToast('No earnings balance to withdraw! 💸');
+        return;
+    }
+    
+    const amount = merchant.earnings;
+    
+    // Add transaction to history
+    if (!STATE.farmerPayouts) STATE.farmerPayouts = [];
+    STATE.farmerPayouts.push({
+        amount: amount,
+        time: new Date().toLocaleTimeString()
+    });
+    
+    // Reset balance
+    merchant.earnings = 0;
+    
+    // Save, update UI
+    saveStateToStorage();
+    updateFarmerStats();
+    renderFarmerWallet();
+    showToast(`Withdrawal of ${formatPrice(amount)} requested! 🏦`);
+    Logger.log(`Farmer requested bank payout of ${formatPrice(amount)}. Account balance reset.`, 'farmer');
+};
 
 function renderFarmerInventory() {
     const container = document.getElementById('farmer-inventory-list');
@@ -2103,6 +2201,14 @@ document.getElementById('tab-farmer-dashboard').addEventListener('click', () => 
 document.getElementById('tab-farmer-products').addEventListener('click', () => {
     switchScreen('screen-farmer-products');
     renderFarmerInventory();
+});
+document.getElementById('tab-farmer-orders').addEventListener('click', () => {
+    switchScreen('screen-farmer-orders');
+    renderFarmerOrders();
+});
+document.getElementById('tab-farmer-wallet').addEventListener('click', () => {
+    switchScreen('screen-farmer-wallet');
+    renderFarmerWallet();
 });
 document.getElementById('tab-farmer-profile').addEventListener('click', () => {
     switchScreen('screen-farmer-profile');
