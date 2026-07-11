@@ -809,6 +809,9 @@ window.addWishlistItemToCart = function(prodId) {
     showToast(`Added ${prod.name} to Cart! 🛒`);
     Logger.log(`Added wishlisted product "${prod.name}" to cart & removed from saved basket.`, 'customer');
     
+    // Switch to Cart view
+    switchScreen('screen-customer-cart', 'tab-cart');
+    
     // Refresh UI
     renderProducts();
     renderWishlistScreen();
@@ -893,6 +896,9 @@ window.addToCart = function(e, prodId) {
     updateCartStats();
     Notification.show('Added to Cart', `${product.name} has been added to your shopping cart.`);
     showToast('Added to Cart! 🛒');
+    
+    // Switch to Cart view
+    switchScreen('screen-customer-cart', 'tab-cart');
     
     // Refresh UI
     renderProducts();
@@ -1418,12 +1424,14 @@ window.farmerAddAndVisitProduct = function(pId) {
     const existing = STATE.cart.find(item => item.productId === pId);
     if (existing) {
         switchRole('customer');
+        switchScreen('screen-customer-cart', 'tab-cart');
         showToast(`${product.name} is already added! 🛒`);
         Logger.log(`Farmer visited customer view. Product "${product.name}" was already in customer cart.`, 'farmer');
     } else {
         STATE.cart.push({ productId: pId, quantity: 1 });
         updateCartStats();
         switchRole('customer');
+        switchScreen('screen-customer-cart', 'tab-cart');
         showToast(`${product.name} added to cart! 🛒`);
         Logger.log(`Farmer added "${product.name}" to customer cart and switched view.`, 'farmer');
     }
