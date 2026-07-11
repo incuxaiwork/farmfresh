@@ -637,10 +637,29 @@ function switchRole(role) {
         renderCategories();
         renderProducts();
     } else if (role === 'farmer') {
-        switchScreen('screen-farmer-dashboard');
-        renderFarmerOrders();
-        updateFarmerStats();
-        renderFarmerInventory();
+        const splash = document.getElementById('farmer-splash-screen');
+        if (splash) {
+            splash.style.display = 'flex';
+            splash.style.opacity = '1';
+            
+            switchScreen('screen-farmer-dashboard');
+            renderFarmerOrders();
+            updateFarmerStats();
+            renderFarmerInventory();
+            
+            setTimeout(() => {
+                splash.style.transition = 'opacity 0.6s ease';
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 600);
+            }, 2000);
+        } else {
+            switchScreen('screen-farmer-dashboard');
+            renderFarmerOrders();
+            updateFarmerStats();
+            renderFarmerInventory();
+        }
     } else if (role === 'delivery') {
         switchScreen('screen-delivery-dashboard');
         renderRiderDashboard();
