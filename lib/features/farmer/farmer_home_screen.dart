@@ -62,7 +62,7 @@ class FarmerHomeScreen extends ConsumerWidget {
                     mainAxisSpacing: 12,
                     childAspectRatio: 1.3,
                     children: [
-                      _buildStatCard('Total Earnings', '\$${totalEarnings.toStringAsFixed(2)}', Icons.attach_money, Colors.green),
+                      _buildStatCard('Total Earnings', '₹${totalEarnings.toStringAsFixed(2)}', Icons.attach_money, Colors.green),
                       _buildStatCard('Active Products', '$activeProductsCount Items', Icons.agriculture, Colors.orange),
                       _buildStatCard('Pending Orders', '$pendingOrdersCount Orders', Icons.pending_actions, Colors.blue),
                       _buildStatCard('Out of Stock', '$outOfStockCount Items', Icons.warning_amber_rounded, Colors.red),
@@ -86,7 +86,7 @@ class FarmerHomeScreen extends ConsumerWidget {
                         )
                       : Column(
                           children: recentOrders.map((order) {
-                            final dateStr = DateFormat('MMM dd').format(order.date);
+                            final dateStr = DateFormat('dd/MM').format(order.date);
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(

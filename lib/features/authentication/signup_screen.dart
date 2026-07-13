@@ -16,6 +16,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  // Farmer specific controllers
+  final _farmNameController = TextEditingController();
+  final _farmAddressController = TextEditingController();
+  final _governmentIdController = TextEditingController();
+  final _bankAccountController = TextEditingController();
+
+  // Delivery specific controllers
+  final _licenseController = TextEditingController();
+  final _vehicleTypeController = TextEditingController(text: 'Two-Wheeler');
+  final _vehicleNumberController = TextEditingController();
+
   String _selectedRole = 'Customer';
   final _formKey = GlobalKey<FormState>();
 
@@ -25,6 +37,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _farmNameController.dispose();
+    _farmAddressController.dispose();
+    _governmentIdController.dispose();
+    _bankAccountController.dispose();
+    _licenseController.dispose();
+    _vehicleTypeController.dispose();
+    _vehicleNumberController.dispose();
     super.dispose();
   }
 
@@ -37,12 +56,22 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       _passwordController.text,
       _selectedRole,
       _phoneController.text.trim(),
+      farmName: _selectedRole == 'Farmer' ? _farmNameController.text.trim() : null,
+      farmAddress: _selectedRole == 'Farmer' ? _farmAddressController.text.trim() : null,
+      governmentId: _selectedRole == 'Farmer' ? _governmentIdController.text.trim() : null,
+      bankAccountDetails: _selectedRole == 'Farmer' ? _bankAccountController.text.trim() : null,
+      drivingLicenseNumber: _selectedRole == 'Delivery Partner' ? _licenseController.text.trim() : null,
+      vehicleType: _selectedRole == 'Delivery Partner' ? _vehicleTypeController.text.trim() : null,
+      vehicleNumber: _selectedRole == 'Delivery Partner' ? _vehicleNumberController.text.trim() : null,
     );
 
     if (success) {
       if (!mounted) return;
-      if (_selectedRole == 'Farmer') {
+      final role = _selectedRole.toLowerCase();
+      if (role == 'farmer') {
         context.go('/farmer-main');
+      } else if (role == 'delivery partner') {
+        context.go('/delivery-main');
       } else {
         context.go('/customer-main');
       }
@@ -127,6 +156,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   items: const [
                     DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
                     DropdownMenuItem(value: 'Farmer', child: Text('Farmer Partner')),
+                    DropdownMenuItem(value: 'Delivery Partner', child: Text('Delivery Partner')),
                   ],
                   onChanged: (val) {
                     if (val != null) {
@@ -311,12 +341,141 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
                     }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+
+                // Farmer Specific Fields
+                if (_selectedRole == 'Farmer') ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Farm Details', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                  ),
+                  TextFormField(
+                    controller: _farmNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Farm Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.agriculture_outlined),
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
+                        return 'Farm name is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _farmAddressController,
+                    decoration: const InputDecoration(
+                      labelText: 'Farm Address',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.location_on_outlined),
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
+                        return 'Farm address is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _governmentIdController,
+                    decoration: const InputDecoration(
+                      labelText: 'Government Tax ID / License',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.receipt_long_outlined),
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
+                        return 'Government ID is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _bankAccountController,
+                    decoration: const InputDecoration(
+                      labelText: 'Bank Account Number',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.account_balance_outlined),
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
+                        return 'Bank account details are required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Delivery Specific Fields
+                if (_selectedRole == 'Delivery Partner') ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Vehicle & License Details', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                  ),
+                  TextFormField(
+                    controller: _licenseController,
+                    decoration: const InputDecoration(
+                      labelText: 'Driving License Number',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.card_membership_outlined),
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == 'Delivery Partner' && (value == null || value.trim().isEmpty)) {
+                        return 'Driving License is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _vehicleTypeController.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Vehicle Type',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.pedal_bike_outlined),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'Two-Wheeler', child: Text('Two-Wheeler (Motorcycle/Scooter)')),
+                      DropdownMenuItem(value: 'Three-Wheeler', child: Text('Three-Wheeler (Auto)')),
+                      DropdownMenuItem(value: 'Four-Wheeler', child: Text('Four-Wheeler (Mini Truck)')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _vehicleTypeController.text = val;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _vehicleNumberController,
+                    decoration: const InputDecoration(
+                      labelText: 'Vehicle Number Plate',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.numbers_outlined),
+                    ),
+                    validator: (value) {
+                      if (_selectedRole == 'Delivery Partner' && (value == null || value.trim().isEmpty)) {
+                        return 'Vehicle number is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
                 const SizedBox(height: 24),
                 
                 // Sign Up button

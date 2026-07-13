@@ -63,6 +63,10 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildStatusHeader(order, displayStatus, statusColor),
+            if (order.otpCode != null && order.otpCode!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildOtpCard(order.otpCode!),
+            ],
             const SizedBox(height: 16),
             _buildOrderTimeline(order),
             const SizedBox(height: 16),
@@ -78,6 +82,61 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
             const SizedBox(height: 24),
             _buildActionButtons(order, canCancel),
             const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOtpCard(String otpCode) {
+    return Card(
+      color: Colors.green[50],
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.green[200]!, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.vpn_key_outlined, color: Colors.green[700], size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Delivery OTP Code',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.green[800],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    otpCode,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.green[700],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'Share with Driver',
+                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
       ),
@@ -113,7 +172,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                           color: statusColor)),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('MMM dd, yyyy - hh:mm a').format(order.date),
+                    DateFormat('dd/MM/yyyy - HH:mm').format(order.date),
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],
@@ -323,7 +382,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis),
                             Text(
-                              '${item.quantity}x \$${item.unitPrice.toStringAsFixed(2)}',
+                              '${item.quantity}x ₹${item.unitPrice.toStringAsFixed(2)}',
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey[600]),
                             ),
@@ -331,7 +390,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                         ),
                       ),
                       Text(
-                        '\$${item.totalPrice.toStringAsFixed(2)}',
+                        '₹${item.totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
                       ),
@@ -362,15 +421,15 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
             const Text('Price Summary',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _priceRow('Subtotal', '\$${order.subtotal.toStringAsFixed(2)}'),
+            _priceRow('Subtotal', '₹${order.subtotal.toStringAsFixed(2)}'),
             if (order.discount > 0)
-              _priceRow('Discount', '-\$${order.discount.toStringAsFixed(2)}',
+              _priceRow('Discount', '-₹${order.discount.toStringAsFixed(2)}',
                   valueColor: Colors.green),
             _priceRow(
                 'Delivery Fee',
                 order.deliveryFee == 0
                     ? 'FREE'
-                    : '\$${order.deliveryFee.toStringAsFixed(2)}',
+                    : '₹${order.deliveryFee.toStringAsFixed(2)}',
                 valueColor:
                     order.deliveryFee == 0 ? Colors.green : Colors.black),
             const Divider(height: 20),
@@ -381,7 +440,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text(
-                  '\$${order.total.toStringAsFixed(2)}',
+                  '₹${order.total.toStringAsFixed(2)}',
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -455,7 +514,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
             const SizedBox(height: 12),
             _infoRow('Order ID', orderDisplay),
             _infoRow('Date',
-                DateFormat('MMM dd, yyyy - hh:mm a').format(order.date)),
+                DateFormat('dd/MM/yyyy - HH:mm').format(order.date)),
             if (order.paymentStatus != null)
               _infoRow('Payment', order.paymentStatus!),
             if (order.notes != null && order.notes!.isNotEmpty)

@@ -62,10 +62,10 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
     try {
       if (order.deliveredAt != null) {
         final parsed = DateTime.parse(order.deliveredAt!);
-        dateStr = DateFormat('MMM dd, yyyy • hh:mm a').format(parsed);
+        dateStr = DateFormat('dd/MM/yyyy • HH:mm').format(parsed);
       } else if (order.assignedAt != null) {
         final parsed = DateTime.parse(order.assignedAt!);
-        dateStr = DateFormat('MMM dd, yyyy • hh:mm a').format(parsed);
+        dateStr = DateFormat('dd/MM/yyyy • HH:mm').format(parsed);
       }
     } catch (_) {}
 

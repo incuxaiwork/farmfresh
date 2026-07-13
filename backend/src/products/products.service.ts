@@ -80,7 +80,7 @@ export class ProductsService {
           organic: dto.organic ?? false,
           featured: dto.featured ?? false,
           seasonal: dto.seasonal ?? false,
-          status: 'DRAFT' as any, // Start in DRAFT
+          status: 'APPROVED' as any, // Default to APPROVED in this sandbox
           harvestDate: dto.harvestDate ? new Date(dto.harvestDate) : null,
           expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
           inventory: {
@@ -266,7 +266,9 @@ export class ProductsService {
     if (dto.organic !== undefined) updateData.organic = dto.organic;
     if (dto.featured !== undefined) updateData.featured = dto.featured;
     if (dto.seasonal !== undefined) updateData.seasonal = dto.seasonal;
-    if ((dto as any).status !== undefined) updateData.status = (dto as any).status;
+    if ((dto as any).status !== undefined) {
+      updateData.status = userRole === 'FARMER' ? 'APPROVED' as any : (dto as any).status;
+    }
 
     if (dto.harvestDate !== undefined) updateData.harvestDate = dto.harvestDate ? new Date(dto.harvestDate) : null;
     if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;

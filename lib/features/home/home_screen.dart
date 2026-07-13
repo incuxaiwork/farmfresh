@@ -422,12 +422,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '\$${product.price.toStringAsFixed(2)}',
+                                '₹${product.price.toStringAsFixed(2)}',
                                 style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 14),
                               ),
                               if (product.originalPrice > product.price)
                                 Text(
-                                  '\$${product.originalPrice.toStringAsFixed(2)}',
+                                  '₹${product.originalPrice.toStringAsFixed(2)}',
                                   style: const TextStyle(fontSize: 9, color: Colors.grey, decoration: TextDecoration.lineThrough),
                                 ),
                             ],

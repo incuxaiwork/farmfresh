@@ -13,7 +13,7 @@ class FarmerEarningsScreen extends ConsumerStatefulWidget {
 
 class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
   final ScrollController _scrollController = ScrollController();
-  final DateFormat _dateFormat = DateFormat('MMM dd, yyyy');
+  final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
 
   @override
   void initState() {
@@ -55,7 +55,7 @@ class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
             ),
           ),
           Text(
-            '\$${amount.toStringAsFixed(2)}',
+            '₹${amount.toStringAsFixed(2)}',
             style: TextStyle(
               fontSize: large ? 28 : 18,
               fontWeight: FontWeight.bold,
@@ -126,7 +126,7 @@ class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${isCredit ? '+' : '-'}\$${txn.amount.toStringAsFixed(2)}',
+                  '${isCredit ? '+' : '-'}₹${txn.amount.toStringAsFixed(2)}',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: amountColor),
                 ),
                 const SizedBox(height: 4),

@@ -23,9 +23,11 @@ enum DeliveryOrderStatus {
 class DeliveryOrder {
   final String id;
   final String orderId;
+  final String? orderNumber;
   final String? farmerId;
   final String? customerId;
   final DeliveryOrderStatus status;
+  final double? total;
   final String? assignedAt;
   final String? acceptedAt;
   final String? pickedUpAt;
@@ -47,9 +49,11 @@ class DeliveryOrder {
   DeliveryOrder({
     required this.id,
     required this.orderId,
+    this.orderNumber,
     this.farmerId,
     this.customerId,
     required this.status,
+    this.total,
     this.assignedAt,
     this.acceptedAt,
     this.pickedUpAt,
@@ -73,9 +77,11 @@ class DeliveryOrder {
     return DeliveryOrder(
       id: json['id'] ?? '',
       orderId: json['orderId'] ?? json['order_id'] ?? '',
+      orderNumber: json['orderNumber'] ?? json['order_number'],
       farmerId: json['farmerId'] ?? json['farmer_id'],
       customerId: json['customerId'] ?? json['customer_id'],
       status: DeliveryOrderStatus.fromApiValue(json['status'] ?? 'PENDING'),
+      total: (json['total'] ?? json['order']?['total'])?.toDouble(),
       assignedAt: json['assignedAt'] ?? json['assigned_at'],
       acceptedAt: json['acceptedAt'] ?? json['accepted_at'],
       pickedUpAt: json['pickedUpAt'] ?? json['picked_up_at'],
@@ -83,7 +89,7 @@ class DeliveryOrder {
       estimatedDeliveryTime:
           json['estimatedDeliveryTime'] ?? json['estimated_delivery_time'],
       distance: json['distance']?.toDouble(),
-      deliveryFee: json['deliveryFee']?.toDouble(),
+      deliveryFee: (json['deliveryFee'] ?? json['deliveryCharge'])?.toDouble(),
       specialInstructions: json['specialInstructions'],
       cancellationReason: json['cancellationReason'],
       pickupAddress: json['pickupAddress'] != null

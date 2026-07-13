@@ -244,7 +244,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        'Location updated ${DateFormat('hh:mm:ss a').format(DateTime.now())}',
+                        'Location updated ${DateFormat('HH:mm:ss').format(DateTime.now())}',
                         style:
                             TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
@@ -394,9 +394,9 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
             _infoRow('Order ID', orderDisplay),
             _infoRow('Status', displayStatus),
             _infoRow('Items', '${order.items.length} items'),
-            _infoRow('Total', '\$${order.total.toStringAsFixed(2)}'),
+            _infoRow('Total', '₹${order.total.toStringAsFixed(2)}'),
             _infoRow(
-                'Ordered', DateFormat('MMM dd, hh:mm a').format(order.date)),
+                'Ordered', DateFormat('dd/MM/yyyy HH:mm').format(order.date)),
             if (order.notes != null && order.notes!.isNotEmpty)
               _infoRow('Notes', order.notes!),
           ],

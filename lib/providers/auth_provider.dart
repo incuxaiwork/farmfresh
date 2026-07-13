@@ -84,11 +84,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> signup(String name, String email, String password, String role, String phone) async {
+  Future<bool> signup(
+    String name,
+    String email,
+    String password,
+    String role,
+    String phone, {
+    String? farmName,
+    String? farmAddress,
+    String? governmentId,
+    String? bankAccountDetails,
+    String? drivingLicenseNumber,
+    String? vehicleType,
+    String? vehicleNumber,
+  }) async {
     if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
-      final user = await _ref.read(authRepositoryProvider).signup(name, email, password, role, phone);
+      final user = await _ref.read(authRepositoryProvider).signup(
+            name,
+            email,
+            password,
+            role,
+            phone,
+            farmName: farmName,
+            farmAddress: farmAddress,
+            governmentId: governmentId,
+            bankAccountDetails: bankAccountDetails,
+            drivingLicenseNumber: drivingLicenseNumber,
+            vehicleType: vehicleType,
+            vehicleNumber: vehicleNumber,
+          );
       if (_mounted) {
         state = AuthState(user: user);
       }

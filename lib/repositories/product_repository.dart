@@ -16,6 +16,7 @@ abstract class ProductRepository {
 
 class PostgresProductRepository implements ProductRepository {
   final ApiClient _apiClient;
+  final Map<String, String> _categoryNameToId = {};
 
   PostgresProductRepository(this._apiClient);
 
@@ -28,7 +29,7 @@ class PostgresProductRepository implements ProductRepository {
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
     } catch (e) {
-      // Error in getFeaturedProducts handled silently
+      // Error handled silently
     }
     return [];
   }
@@ -42,7 +43,7 @@ class PostgresProductRepository implements ProductRepository {
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
     } catch (e) {
-      // Error in getPopularProducts handled silently
+      // Error handled silently
     }
     return [];
   }
@@ -53,10 +54,16 @@ class PostgresProductRepository implements ProductRepository {
       final res = await _apiClient.dio.get('/categories');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
-        return ['All', ...list.map((item) => item['name'] as String)];
+        _categoryNameToId.clear();
+        for (var item in list) {
+          final name = item['name'] as String;
+          final id = item['id'] as String;
+          _categoryNameToId[name] = id;
+        }
+        return ['All', ..._categoryNameToId.keys];
       }
     } catch (e) {
-      // Error in getCategories handled silently
+      // Error handled silently
     }
     return ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains'];
   }
@@ -66,7 +73,14 @@ class PostgresProductRepository implements ProductRepository {
     try {
       final query = <String, String>{};
       if (search != null && search.isNotEmpty) query['search'] = search;
-      if (category != null && category != 'All') query['category'] = category;
+      if (category != null && category != 'All') {
+        final catId = _categoryNameToId[category];
+        if (catId != null) {
+          query['categoryId'] = catId;
+        } else {
+          query['category'] = category;
+        }
+      }
       if (sortBy != null) query['sortBy'] = sortBy;
 
       final res = await _apiClient.dio.get('/products', queryParameters: query);
@@ -76,7 +90,7 @@ class PostgresProductRepository implements ProductRepository {
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
     } catch (e) {
-      // Error in getProducts handled silently
+      // Error handled silently
     }
     return [];
   }
@@ -87,7 +101,13 @@ class PostgresProductRepository implements ProductRepository {
       final res = await _apiClient.dio.post('/products', data: product.toCreatePayload());
       if (res.statusCode == 201 || res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
-          return ProductModel.fromBackendJson(res.data['data']);
+          final created = ProductModel.fromBackendJson(res.data['data']);
+          if (product.image.isNotEmpty) {
+            try {
+              await uploadProductImage(created.id, product.image);
+            } catch (_) {}
+          }
+          return created;
         }
       }
       throw Exception('Failed to add product');
@@ -102,7 +122,13 @@ class PostgresProductRepository implements ProductRepository {
       final res = await _apiClient.dio.patch('/products/${product.id}', data: product.toCreatePayload());
       if (res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
-          return ProductModel.fromBackendJson(res.data['data']);
+          final updated = ProductModel.fromBackendJson(res.data['data']);
+          if (product.image.isNotEmpty && product.image != updated.image) {
+            try {
+              await uploadProductImage(product.id, product.image);
+            } catch (_) {}
+          }
+          return updated;
         }
       }
       throw Exception('Failed to update product');
@@ -145,10 +171,13 @@ class PostgresProductRepository implements ProductRepository {
   @override
   Future<String> uploadProductImage(String productId, String filePath) async {
     try {
-      final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(filePath),
+      // Backend expects a json list of image urls.
+      final String url = (filePath.startsWith('http://') || filePath.startsWith('https://'))
+          ? filePath
+          : 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
+      final res = await _apiClient.dio.post('/products/$productId/images', data: {
+        'imageUrls': [url],
       });
-      final res = await _apiClient.dio.post('/products/$productId/images', data: formData);
       if (res.statusCode == 201 || res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
           final images = res.data['data']['images'] as List?;

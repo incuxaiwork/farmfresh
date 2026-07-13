@@ -44,7 +44,7 @@ class PostgresOrderRepository implements OrderRepository {
       };
       if (status != null) query['status'] = status;
 
-      final res = await _apiClient.dio.get('/orders/farmer', queryParameters: query);
+      final res = await _apiClient.dio.get('/orders', queryParameters: query);
 
       if (res.statusCode == 200 &&
           res.data['success'] == true &&
@@ -61,7 +61,7 @@ class PostgresOrderRepository implements OrderRepository {
   @override
   Future<List<OrderModel>> getCustomerOrders({int page = 1, int limit = 10}) async {
     try {
-      final res = await _apiClient.dio.get('/orders/customer', queryParameters: {'page': page, 'limit': limit});
+      final res = await _apiClient.dio.get('/orders', queryParameters: {'page': page, 'limit': limit});
 
       if (res.statusCode == 200 &&
           res.data['success'] == true &&
@@ -95,17 +95,11 @@ class PostgresOrderRepository implements OrderRepository {
   @override
   Future<OrderModel> createOrder(OrderModel order, {String? address, String? notes}) async {
     try {
-      final itemsPayload = order.items
-          .map((item) => {
-                'productId': item.product.id,
-                'quantity': item.quantity,
-              })
-          .toList();
-
+      // The backend builds order items from the user's cart server-side,
+      // so we only send address/notes (items must NOT be sent or validation fails).
       final res = await _apiClient.dio.post('/orders', data: {
         'address': address ?? '',
         'notes': notes ?? '',
-        'items': itemsPayload,
       });
 
       if (res.statusCode == 201 || res.statusCode == 200) {
@@ -159,15 +153,15 @@ class PostgresOrderRepository implements OrderRepository {
   @override
   Future<void> reorder(String orderId) async {
     try {
-      final res = await _apiClient.dio.post('/orders/$orderId/reorder');
-
-      if (res.statusCode != 200 && res.statusCode != 201) {
-        throw Exception(res.data['message'] ?? 'Failed to reorder');
+      final order = await getOrderById(orderId);
+      for (final item in order.items) {
+        await _apiClient.dio.post('/cart/items', data: {
+          'productId': item.product.id,
+          'quantity': item.quantity,
+        });
       }
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
-          e.message ??
-          'Failed to reorder');
+    } catch (e) {
+      throw Exception('Failed to reorder: $e');
     }
   }
 }

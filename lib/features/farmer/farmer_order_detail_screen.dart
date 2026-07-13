@@ -213,7 +213,7 @@ class _FarmerOrderDetailScreenState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('MMM dd, yyyy hh:mm a').format(order.date),
+                    DateFormat('dd/MM/yyyy HH:mm').format(order.date),
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],
@@ -350,7 +350,7 @@ class _FarmerOrderDetailScreenState
                       SizedBox(
                         width: 80,
                         child: Text(
-                          '\$${(item.totalPrice).toStringAsFixed(2)}',
+                          '₹${(item.totalPrice).toStringAsFixed(2)}',
                           textAlign: TextAlign.right,
                           style: const TextStyle(
                             fontSize: 14,
@@ -416,7 +416,7 @@ class _FarmerOrderDetailScreenState
             ),
           ),
           Text(
-            '\$${amount.toStringAsFixed(2)}',
+            '₹${amount.toStringAsFixed(2)}',
             style: TextStyle(
               fontSize: 14,
               fontWeight: bold ? FontWeight.bold : FontWeight.normal,

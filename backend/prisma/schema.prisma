@@ -228,7 +228,7 @@ model Product {
   organic          Boolean       @default(false)
   featured         Boolean       @default(false)
   seasonal         Boolean       @default(false)
-  status           ProductStatus @default(DRAFT)
+  status           String        @default("DRAFT")
   harvestDate      DateTime?     @map("harvest_date")
   expiryDate       DateTime?     @map("expiry_date")
   rating           Decimal       @default(0.00) @db.Decimal(3, 2)

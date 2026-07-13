@@ -14,7 +14,7 @@ class FarmerWithdrawalScreen extends ConsumerStatefulWidget {
 
 class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen> {
   final ScrollController _scrollController = ScrollController();
-  final DateFormat _dateFormat = DateFormat('MMM dd, yyyy');
+  final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
   final _amountController = TextEditingController();
   final _bankNameController = TextEditingController();
   final _accountNumberController = TextEditingController();
@@ -128,7 +128,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '\$${withdrawal.amount.toStringAsFixed(2)}',
+                  '₹${withdrawal.amount.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
                 ),
                 _buildStatusBadge(withdrawal.status),
@@ -214,7 +214,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           decoration: const InputDecoration(
                             labelText: 'Amount',
-                            prefixText: '\$ ',
+                            prefixText: '₹ ',
                             border: OutlineInputBorder(),
                           ),
                         ),

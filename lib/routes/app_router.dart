@@ -35,8 +35,9 @@ import '../features/delivery/delivery_navigation_screen.dart';
 import '../features/delivery/delivery_earnings_screen.dart';
 import '../features/delivery/delivery_history_screen.dart';
 import '../features/delivery/delivery_notifications_screen.dart';
-import '../features/delivery/delivery_profile_screen.dart';
 import '../models/delivery_model.dart';
+import '../features/delivery/delivery_profile_screen.dart';
+import '../features/admin/admin_main_screen.dart';
 
 /// Riverpod provider for the GoRouter instance.
 /// Listens to authProvider changes for reactive routing and redirection.
@@ -75,6 +76,11 @@ final appRouter = Provider<GoRouter>((ref) {
         path: '/delivery-main',
         name: 'delivery-main',
         builder: (context, state) => const DeliveryMainScreen(),
+      ),
+      GoRoute(
+        path: '/admin-main',
+        name: 'admin-main',
+        builder: (context, state) => const AdminMainScreen(),
       ),
       GoRoute(
         path: '/delivery-detail',
@@ -262,6 +268,8 @@ final appRouter = Provider<GoRouter>((ref) {
           return '/farmer-main';
         } else if (role == 'DELIVERY_PARTNER') {
           return '/delivery-main';
+        } else if (role == 'ADMIN') {
+          return '/admin-main';
         } else {
           return '/customer-main';
         }

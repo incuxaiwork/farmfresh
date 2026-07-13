@@ -58,7 +58,12 @@ class ApiClient {
       final response = await Dio().post(
         '${AppConstants.apiBaseUrl}/auth/refresh',
         data: {'refreshToken': refreshToken},
-        options: Options(headers: {'Content-Type': 'application/json'}),
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $refreshToken',
+          },
+        ),
       );
 
       if (response.statusCode == 200 && response.data['success'] == true) {

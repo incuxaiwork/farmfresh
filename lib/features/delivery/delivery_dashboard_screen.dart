@@ -22,6 +22,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
   Widget build(BuildContext context) {
     final dashboardState = ref.watch(deliveryDashboardProvider);
     final ordersState = ref.watch(deliveryOrdersProvider);
+    final profileState = ref.watch(deliveryProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,6 +30,24 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         actions: [
+          Row(
+            children: [
+              Text(
+                profileState.profile.isAvailable ? 'Online' : 'Offline',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              Switch(
+                value: profileState.profile.isAvailable,
+                activeColor: Colors.lightGreenAccent,
+                inactiveThumbColor: Colors.grey[400],
+                inactiveTrackColor: Colors.grey[700],
+                onChanged: (val) async {
+                  await ref.read(deliveryProfileProvider.notifier).toggleAvailability();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
           Stack(
             children: [
               IconButton(

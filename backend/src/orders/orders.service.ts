@@ -130,7 +130,7 @@ export class OrdersService {
       });
 
       return order;
-    });
+    }, { timeout: 30000 });
   }
 
   async findAll(
@@ -282,11 +282,17 @@ export class OrdersService {
         // Re-read order items to see if main order status can progress
         const allItems = await tx.orderItem.findMany({ where: { orderId: id } });
         const allAccepted = allItems.every(i => i.status === ('ACCEPTED' as any));
+        const allPreparing = allItems.every(i => i.status === ('PREPARING' as any) || i.status === ('READY_FOR_PICKUP' as any));
         const allReady = allItems.every(i => i.status === ('READY_FOR_PICKUP' as any));
 
         let nextMainStatus: string | null = null;
-        if (allAccepted) nextMainStatus = 'ACCEPTED';
-        if (allReady) nextMainStatus = 'READY_FOR_PICKUP';
+        if (allReady) {
+          nextMainStatus = 'READY_FOR_PICKUP';
+        } else if (allPreparing) {
+          nextMainStatus = 'PREPARING';
+        } else if (allAccepted) {
+          nextMainStatus = 'ACCEPTED';
+        }
 
         if (nextMainStatus) {
           await tx.order.update({
@@ -302,7 +308,7 @@ export class OrdersService {
       }
 
       throw new BadRequestException('Role not authorized to update order status');
-    });
+    }, { timeout: 15000 });
   }
 
   async cancel(id: string, userId: string, role: string) {

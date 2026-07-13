@@ -40,15 +40,19 @@ async function bootstrap() {
   );
 
   // Security Middleware
-  const allowedOrigins = config.get<string>('CORS_ORIGINS')?.split(',') || [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:8080',
-    'http://localhost:8081',
-  ];
-  
+  const allowedOrigins = config.get<string>('CORS_ORIGINS')?.split(',');
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow non-browser / server-to-server calls (origin is undefined)
+      if (!origin) return callback(null, true);
+      // Allow explicitly configured origins
+      if (allowedOrigins?.includes(origin)) return callback(null, true);
+      // Allow any localhost / 127.0.0.1 origin on any port (covers Flutter web dev server, admin, api)
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return callback(null, true);
+      }
+      callback(null, false);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],

@@ -137,3 +137,94 @@ class ProductNotifier extends StateNotifier<ProductState> {
 final productProvider = StateNotifierProvider<ProductNotifier, ProductState>((ref) {
   return ProductNotifier(ref);
 });
+
+class FarmerProductsNotifier extends StateNotifier<ProductState> {
+  final Ref _ref;
+  bool _mounted = true;
+
+  FarmerProductsNotifier(this._ref) : super(ProductState()) {
+    loadFarmerProducts();
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
+  Future<void> loadFarmerProducts({String? search, String? status}) async {
+    if (!_mounted) return;
+    state = state.copyWith(isLoading: true);
+    try {
+      final repo = _ref.read(productRepositoryProvider);
+      final list = await repo.getFarmerProducts(
+        search: search,
+        status: status,
+      );
+      if (!_mounted) return;
+      state = ProductState(
+        products: list,
+      );
+    } catch (e) {
+      if (_mounted) {
+        state = ProductState(errorMessage: e.toString());
+      }
+    }
+  }
+
+  Future<bool> addProduct(ProductModel product) async {
+    if (!_mounted) return false;
+    state = state.copyWith(isLoading: true);
+    try {
+      await _ref.read(productRepositoryProvider).addProduct(product);
+      if (_mounted) {
+        await loadFarmerProducts();
+      }
+      return true;
+    } catch (e) {
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
+      return false;
+    }
+  }
+
+  Future<bool> updateProduct(ProductModel product) async {
+    if (!_mounted) return false;
+    state = state.copyWith(isLoading: true);
+    try {
+      await _ref.read(productRepositoryProvider).updateProduct(product);
+      if (_mounted) {
+        await loadFarmerProducts();
+      }
+      return true;
+    } catch (e) {
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
+      return false;
+    }
+  }
+
+  Future<bool> deleteProduct(String id) async {
+    if (!_mounted) return false;
+    state = state.copyWith(isLoading: true);
+    try {
+      await _ref.read(productRepositoryProvider).deleteProduct(id);
+      if (_mounted) {
+        await loadFarmerProducts();
+      }
+      return true;
+    } catch (e) {
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
+      return false;
+    }
+  }
+}
+
+final farmerProductsProvider = StateNotifierProvider<FarmerProductsNotifier, ProductState>((ref) {
+  return FarmerProductsNotifier(ref);
+});
+

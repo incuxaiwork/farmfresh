@@ -126,12 +126,12 @@ class ProductDetailsScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '\$${product!.price.toStringAsFixed(2)} / ${product!.weight}',
+                            '₹${product!.price.toStringAsFixed(2)} / ${product!.weight}',
                             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green[700]),
                           ),
                           if (hasDiscount)
                             Text(
-                              '\$${product!.originalPrice.toStringAsFixed(2)}',
+                              '₹${product!.originalPrice.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey,

@@ -185,7 +185,7 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
 
   Widget _buildOrderCard(OrderModel order) {
     final color = _statusColor(order.status);
-    final dateStr = DateFormat('MMM dd, hh:mm a').format(order.date);
+    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(order.date);
     final displayStatus = OrderStatus.fromApiValue(order.status).displayName;
 
     return Card(
@@ -241,7 +241,7 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total: \$${order.total.toStringAsFixed(2)}',
+                    'Total: ₹${order.total.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,

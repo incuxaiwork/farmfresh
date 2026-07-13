@@ -179,7 +179,7 @@ class ProductCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '\$${product.price.toStringAsFixed(2)} / ${product.weight}',
+                              '₹${product.price.toStringAsFixed(2)} / ${product.weight}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.green,
@@ -188,7 +188,7 @@ class ProductCard extends StatelessWidget {
                             ),
                             if (hasDiscount)
                               Text(
-                                '\$${product.originalPrice.toStringAsFixed(2)}',
+                                '₹${product.originalPrice.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   fontSize: 10,
                                   color: Colors.grey,
