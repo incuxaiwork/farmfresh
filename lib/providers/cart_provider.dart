@@ -38,7 +38,7 @@ class CartState {
   // ── Local fallback calculations (used when summary hasn't loaded) ─────────
   double get localSubtotal => items.fold(0.0, (s, i) => s + (i.product.price * i.quantity));
 
-  double get localDeliveryFee => items.isEmpty ? 0.0 : (localSubtotal >= 20.0 ? 0.0 : 2.00);
+  double get localDeliveryFee => items.isEmpty ? 0.0 : (localSubtotal >= 30.0 ? 0.0 : 5.00);
 
   double get localDiscountAmount => localSubtotal * discountPercent;
 

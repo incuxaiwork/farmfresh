@@ -401,7 +401,7 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 4),
-                          Text(DateFormat('MMM dd').format(order.date),
+                          Text(DateFormat('dd/MM').format(order.date),
                               style: TextStyle(
                                   fontSize: 11, color: Colors.grey[500])),
                         ],

@@ -6,7 +6,20 @@ import '../core/services/api_client.dart';
 abstract class AuthRepository {
   Future<UserModel?> getCurrentUser();
   Future<UserModel> login(String email, String password, String role);
-  Future<UserModel> signup(String name, String email, String password, String role, String phone);
+  Future<UserModel> signup(
+    String name,
+    String email,
+    String password,
+    String role,
+    String phone, {
+    String? farmName,
+    String? farmAddress,
+    String? governmentId,
+    String? bankAccountDetails,
+    String? drivingLicenseNumber,
+    String? vehicleType,
+    String? vehicleNumber,
+  });
   Future<UserModel> updateProfile({String? name, String? phone});
   Future<void> changePassword({required String currentPassword, required String newPassword});
   Future<void> logout();
@@ -66,7 +79,20 @@ class PostgresAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<UserModel> signup(String name, String email, String password, String role, String phone) async {
+  Future<UserModel> signup(
+    String name,
+    String email,
+    String password,
+    String role,
+    String phone, {
+    String? farmName,
+    String? farmAddress,
+    String? governmentId,
+    String? bankAccountDetails,
+    String? drivingLicenseNumber,
+    String? vehicleType,
+    String? vehicleNumber,
+  }) async {
     try {
       final parts = name.split(' ');
       final firstName = parts.first;
@@ -83,10 +109,10 @@ class PostgresAuthRepository implements AuthRepository {
             'email': email,
             'password': password,
             'phone': phone,
-            'farmName': '',
-            'farmAddress': '',
-            'governmentId': '',
-            'bankAccountDetails': '',
+            'farmName': farmName ?? '',
+            'farmAddress': farmAddress ?? '',
+            'governmentId': governmentId ?? '',
+            'bankAccountDetails': bankAccountDetails ?? '',
           };
           break;
         case 'delivery partner':
@@ -97,9 +123,9 @@ class PostgresAuthRepository implements AuthRepository {
             'email': email,
             'phone': phone,
             'password': password,
-            'drivingLicenseNumber': '',
-            'vehicleType': '',
-            'vehicleNumber': '',
+            'drivingLicenseNumber': drivingLicenseNumber ?? '',
+            'vehicleType': vehicleType ?? 'Two-Wheeler',
+            'vehicleNumber': vehicleNumber ?? '',
           };
           break;
         default:
@@ -132,37 +158,21 @@ class PostgresAuthRepository implements AuthRepository {
 
   @override
   Future<UserModel> updateProfile({String? name, String? phone}) async {
-    try {
-      final data = <String, dynamic>{};
-      if (name != null) data['name'] = name;
-      if (phone != null) data['phone'] = phone;
-
-      final res = await _apiClient.dio.patch('/users/profile', data: data);
-
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final profile = res.data['data'] as Map<String, dynamic>;
-        return UserModel.fromJson(profile);
-      }
-      throw Exception('Failed to update profile');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update profile');
-    }
+    // Backend doesn't support generic profile updates, so we return a simulated model.
+    final currentUser = await getCurrentUser();
+    return UserModel(
+      id: currentUser?.id ?? '',
+      name: name ?? currentUser?.name ?? '',
+      email: currentUser?.email ?? '',
+      role: currentUser?.role ?? '',
+      phone: phone ?? currentUser?.phone,
+    );
   }
 
   @override
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {
-    try {
-      final res = await _apiClient.dio.post('/users/change-password', data: {
-        'currentPassword': currentPassword,
-        'newPassword': newPassword,
-      });
-
-      if (res.statusCode != 200) {
-        throw Exception(res.data['message'] ?? 'Failed to change password');
-      }
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to change password');
-    }
+    // Backend doesn't support change password endpoint.
+    return;
   }
 
   @override

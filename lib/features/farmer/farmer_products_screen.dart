@@ -24,15 +24,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
   }
 
   List<ProductModel> _getFilteredProducts(List<ProductModel> products) {
-    final authState = ref.read(authProvider);
-    final userId = authState.user?.id;
-
-    var filtered = products.where((p) {
-      if (userId != null && p.farmerId != null && p.farmerId != userId) {
-        return false;
-      }
-      return true;
-    }).toList();
+    var filtered = products;
 
     if (_selectedFilter != 'All') {
       filtered = filtered.where((p) {
@@ -117,7 +109,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final success = await ref.read(productProvider.notifier).deleteProduct(product.id);
+              final success = await ref.read(farmerProductsProvider.notifier).deleteProduct(product.id);
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -134,7 +126,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productState = ref.watch(productProvider);
+    final productState = ref.watch(farmerProductsProvider);
     final filteredProducts = _getFilteredProducts(productState.products);
 
     return Scaffold(
@@ -254,7 +246,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: () async {
-                          await ref.read(productProvider.notifier).loadProducts();
+                          await ref.read(farmerProductsProvider.notifier).loadFarmerProducts();
                         },
                         child: ListView.builder(
                           padding: const EdgeInsets.all(12),

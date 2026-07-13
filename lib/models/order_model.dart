@@ -14,6 +14,7 @@ class OrderModel {
   final String? paymentStatus;
   final String? address;
   final String? notes;
+  final String? otpCode;
 
   OrderModel({
     required this.id,
@@ -28,7 +29,15 @@ class OrderModel {
     this.paymentStatus,
     this.address,
     this.notes,
+    this.otpCode,
   });
+
+  static double _toDouble(dynamic v, [double fallback = 0]) {
+    if (v == null) return fallback;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? fallback;
+    return fallback;
+  }
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
@@ -38,14 +47,15 @@ class OrderModel {
       items: (json['items'] as List<dynamic>)
           .map((item) => CartItemModel.fromJson(item as Map<String, dynamic>))
           .toList(),
-      total: (json['total'] as num).toDouble(),
-      deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
-      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      discount: (json['discount'] as num?)?.toDouble() ?? 0,
+      total: _toDouble(json['total']),
+      deliveryFee: _toDouble(json['deliveryFee']),
+      subtotal: _toDouble(json['subtotal']),
+      discount: _toDouble(json['discount']),
       status: json['status'] as String,
       paymentStatus: json['paymentStatus'] as String?,
       address: json['address'] as String?,
       notes: json['notes'] as String?,
+      otpCode: json['otpCode'] as String?,
     );
   }
 
@@ -65,20 +75,21 @@ class OrderModel {
                           id: item['productId'] as String? ?? '',
                         ),
                   quantity: item['quantity'] as int,
-                  unitPrice: (item['price'] as num?)?.toDouble(),
-                  totalPrice: (item['total'] as num?)?.toDouble(),
+                  unitPrice: _toDouble(item['price']),
+                  totalPrice: _toDouble(item['total']),
                 );
               })
               .toList()
           : [],
-      total: (json['total'] as num).toDouble(),
-      deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 0,
-      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      discount: (json['discount'] as num?)?.toDouble() ?? 0,
+      total: _toDouble(json['total']),
+      deliveryFee: _toDouble(json['deliveryFee']),
+      subtotal: _toDouble(json['subtotal']),
+      discount: _toDouble(json['discount']),
       status: json['status'] as String,
       paymentStatus: json['paymentStatus'] as String?,
       address: json['address'] as String?,
       notes: json['notes'] as String?,
+      otpCode: json['otpCode'] as String?,
     );
   }
 
@@ -96,6 +107,7 @@ class OrderModel {
       if (paymentStatus != null) 'paymentStatus': paymentStatus,
       if (address != null) 'address': address,
       if (notes != null) 'notes': notes,
+      if (otpCode != null) 'otpCode': otpCode,
     };
   }
 
@@ -112,6 +124,7 @@ class OrderModel {
     String? paymentStatus,
     String? address,
     String? notes,
+    String? otpCode,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -126,6 +139,7 @@ class OrderModel {
       paymentStatus: paymentStatus ?? this.paymentStatus,
       address: address ?? this.address,
       notes: notes ?? this.notes,
+      otpCode: otpCode ?? this.otpCode,
     );
   }
 }

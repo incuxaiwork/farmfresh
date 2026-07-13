@@ -13,7 +13,7 @@ class FarmerEarningsScreen extends ConsumerStatefulWidget {
 
 class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
   final ScrollController _scrollController = ScrollController();
-  final DateFormat _dateFormat = DateFormat('MMM dd, yyyy');
+  final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
 
   @override
   void initState() {

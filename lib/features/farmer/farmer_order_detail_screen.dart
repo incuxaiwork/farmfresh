@@ -213,7 +213,7 @@ class _FarmerOrderDetailScreenState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('MMM dd, yyyy hh:mm a').format(order.date),
+                    DateFormat('dd/MM/yyyy HH:mm').format(order.date),
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],

@@ -37,6 +37,62 @@ export class DeliveryController {
     return new SuccessResponseDto('Deliveries loaded successfully', data);
   }
 
+  @Get('dashboard')
+  @Roles('DELIVERY_PARTNER')
+  async getDashboard(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.getDashboard(user.id);
+    return new SuccessResponseDto('Dashboard loaded successfully', data);
+  }
+
+  @Get('statistics')
+  @Roles('DELIVERY_PARTNER')
+  async getStatistics(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.getStatistics(user.id);
+    return new SuccessResponseDto('Statistics loaded successfully', data);
+  }
+
+  @Get('earnings')
+  @Roles('DELIVERY_PARTNER')
+  async getEarnings(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.getEarnings(user.id);
+    return new SuccessResponseDto('Earnings loaded successfully', data);
+  }
+
+  @Get('transactions')
+  @Roles('DELIVERY_PARTNER')
+  async getTransactions(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.getTransactions(user.id);
+    return new SuccessResponseDto('Transactions loaded successfully', data);
+  }
+
+  @Get('history')
+  @Roles('DELIVERY_PARTNER')
+  async getHistory(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.getHistory(user.id);
+    return new SuccessResponseDto('History loaded successfully', data);
+  }
+
+  @Get('profile')
+  @Roles('DELIVERY_PARTNER')
+  async getProfile(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.getProfile(user.id);
+    return new SuccessResponseDto('Profile loaded successfully', data);
+  }
+
+  @Patch('profile')
+  @Roles('DELIVERY_PARTNER')
+  async updateProfile(@CurrentUser() user: CurrentUserPayload, @Body() body: any) {
+    const data = await this.deliveryService.updateProfile(user.id, body);
+    return new SuccessResponseDto('Profile updated successfully', data);
+  }
+
+  @Patch('toggle-availability')
+  @Roles('DELIVERY_PARTNER')
+  async toggleAvailability(@CurrentUser() user: CurrentUserPayload) {
+    const data = await this.deliveryService.toggleAvailability(user.id);
+    return new SuccessResponseDto('Availability toggled successfully', data);
+  }
+
   @Get(':id')
   @Roles('DELIVERY_PARTNER', 'ADMIN', 'CUSTOMER')
   @ApiOperation({ summary: 'Retrieve specific delivery status details by assignment ID' })

@@ -4,9 +4,17 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting Database Seeding...');
+  console.log('🌱 Starting Database Seeding (Indian Localization)...');
 
-  // Reset database rows
+  // Reset database rows in correct dependency order
+  await prisma.transaction.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.deliveryAssignment.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.userAddress.deleteMany();
   await prisma.inventoryHistory.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.productImage.deleteMany();
@@ -53,14 +61,14 @@ async function main() {
   const farmerProfile = await prisma.farmerProfile.create({
     data: {
       userId: farmerUser.id,
-      farmName: 'Organic Green Farms',
-      farmAddress: '44 Orchard Valley, NY',
+      farmName: 'Swarna Bharat Farms',
+      farmAddress: 'House No. 12, Main Street, Guntur, Andhra Pradesh',
       kycStatus: 'APPROVED',
       bankAccount: {
         create: {
-          bankName: 'Federal Bank',
+          bankName: 'State Bank of India',
           accountNumber: '9988112233',
-          routingNumber: '021000021',
+          routingNumber: 'SBIN0001234', // IFSC Code format
         },
       },
     },
@@ -89,18 +97,28 @@ async function main() {
     },
   });
 
-  console.log('✅ Created categories: Fruits, Vegetables');
+  const grains = await prisma.category.create({
+    data: {
+      name: 'Grains & Millets',
+      slug: 'grains-millets',
+      description: 'Harvested organic grains, wheat, rice, and millets.',
+      displayOrder: 3,
+      status: 'ACTIVE',
+    },
+  });
 
-  // 4. Create Products & Inventories
-  const apple = await prisma.product.create({
+  console.log('✅ Created categories: Fruits, Vegetables, Grains & Millets');
+
+  // 4. Create Indian Products & Inventories
+  const tomato = await prisma.product.create({
     data: {
       farmerId: farmerProfile.id,
-      categoryId: fruits.id,
-      name: 'Fuji Apples',
-      slug: 'fuji-apples',
-      description: 'Sweet crunchy organic red apples.',
-      shortDescription: 'Sweet crunchy red apples.',
-      price: 3.99,
+      categoryId: vegetables.id,
+      name: 'Organic Tomato',
+      slug: 'organic-tomato',
+      description: 'Fresh farm grown organic red tomatoes.',
+      shortDescription: 'Fresh farm grown red tomatoes.',
+      price: 30.00,
       unit: '1 kg',
       status: 'APPROVED',
       organic: true,
@@ -118,23 +136,49 @@ async function main() {
     },
   });
 
-  const spinach = await prisma.product.create({
+  const onion = await prisma.product.create({
     data: {
       farmerId: farmerProfile.id,
       categoryId: vegetables.id,
-      name: 'Organic Spinach',
-      slug: 'organic-spinach',
-      description: 'Orchard-grown clean green iron-rich spinach leaves.',
-      shortDescription: 'Clean green iron-rich spinach.',
-      price: 2.49,
-      unit: '1 bunch',
+      name: 'Fresh Red Onion',
+      slug: 'fresh-red-onion',
+      description: 'Crisp and pungent red onions from Maharashtra fields.',
+      shortDescription: 'Maharashtra red onions.',
+      price: 40.00,
+      unit: '1 kg',
       status: 'APPROVED',
-      organic: true,
-      featured: false,
+      organic: false,
+      featured: true,
       inventory: {
         create: {
           farmerId: farmerProfile.id,
-          currentStock: 50,
+          currentStock: 150,
+          minStockLevel: 20,
+          maxStockLevel: 1000,
+          reorderLevel: 50,
+          status: 'IN_STOCK',
+        },
+      },
+    },
+  });
+
+  const mango = await prisma.product.create({
+    data: {
+      farmerId: farmerProfile.id,
+      categoryId: fruits.id,
+      name: 'Alphonso Mango',
+      slug: 'alphonso-mango',
+      description: 'Deliciously sweet premium Alphonso mangoes from Devgad orchards.',
+      shortDescription: 'Sweet Devgad Alphonso mangoes.',
+      price: 150.00,
+      unit: '1 kg',
+      status: 'APPROVED',
+      organic: true,
+      featured: true,
+      inventory: {
+        create: {
+          farmerId: farmerProfile.id,
+          currentStock: 80,
           minStockLevel: 5,
           maxStockLevel: 200,
           reorderLevel: 15,
@@ -144,7 +188,33 @@ async function main() {
     },
   });
 
-  console.log('✅ Created catalog products: Fuji Apples, Spinach');
+  const rice = await prisma.product.create({
+    data: {
+      farmerId: farmerProfile.id,
+      categoryId: grains.id,
+      name: 'Basmati Rice',
+      slug: 'basmati-rice',
+      description: 'Long grain aromatic aged Basmati rice from Himalayan fields.',
+      shortDescription: 'Aromatically aged Basmati rice.',
+      price: 90.00,
+      unit: '1 kg',
+      status: 'APPROVED',
+      organic: true,
+      featured: false,
+      inventory: {
+        create: {
+          farmerId: farmerProfile.id,
+          currentStock: 200,
+          minStockLevel: 25,
+          maxStockLevel: 2000,
+          reorderLevel: 100,
+          status: 'IN_STOCK',
+        },
+      },
+    },
+  });
+
+  console.log('✅ Created catalog products: Tomato, Onion, Mango, Basmati Rice');
   console.log('🌱 Seeding Completed successfully!');
 }
 

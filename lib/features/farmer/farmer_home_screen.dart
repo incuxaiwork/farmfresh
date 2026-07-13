@@ -86,7 +86,7 @@ class FarmerHomeScreen extends ConsumerWidget {
                         )
                       : Column(
                           children: recentOrders.map((order) {
-                            final dateStr = DateFormat('MMM dd').format(order.date);
+                            final dateStr = DateFormat('dd/MM').format(order.date);
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(

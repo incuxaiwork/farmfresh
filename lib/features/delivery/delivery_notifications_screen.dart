@@ -65,7 +65,7 @@ class _DeliveryNotificationsScreenState extends ConsumerState<DeliveryNotificati
   Widget _buildNotificationTile(AppNotificationModel notif) {
     String dateStr = '';
     try {
-      dateStr = DateFormat('MMM dd, hh:mm a').format(notif.createdAt);
+      dateStr = DateFormat('dd/MM • HH:mm').format(notif.createdAt);
     } catch (_) {
       dateStr = notif.createdAt.toString();
     }

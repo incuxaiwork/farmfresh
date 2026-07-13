@@ -41,7 +41,7 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
     _stateController = TextEditingController(text: address?.state ?? '');
     _zipController = TextEditingController(text: address?.zipCode ?? '');
     _countryController =
-        TextEditingController(text: address?.country ?? 'US');
+        TextEditingController(text: address?.country ?? 'India');
     _phoneController =
         TextEditingController(text: address?.contactPhone ?? '');
     _isDefault = address?.isDefault ?? false;
@@ -131,12 +131,15 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
                 children: [
                   Expanded(
                     child: CustomTextField(
-                      label: 'ZIP Code',
+                      label: 'PIN Code',
                       controller: _zipController,
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Required';
+                        }
+                        if (!RegExp(r'^\d{6}$').hasMatch(value.trim())) {
+                          return 'Must be 6 digits';
                         }
                         return null;
                       },
@@ -217,7 +220,7 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
     if (cityState.isNotEmpty) parts.add(cityState.join(', '));
     if (_zipController.text.isNotEmpty) parts.add(_zipController.text);
     if (_countryController.text.isNotEmpty &&
-        _countryController.text.toUpperCase() != 'US') {
+        _countryController.text.toUpperCase() != 'INDIA') {
       parts.add(_countryController.text);
     }
     return parts.isNotEmpty ? parts.join('\n') : 'Enter address details above';

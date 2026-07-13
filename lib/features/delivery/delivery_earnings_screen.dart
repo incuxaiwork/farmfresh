@@ -113,7 +113,7 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
   Widget _buildTransactionTile(dynamic transaction) {
     String dateStr = '';
     try {
-      dateStr = DateFormat('MMM dd, yyyy').format(transaction.createdAt);
+      dateStr = DateFormat('dd/MM/yyyy').format(transaction.createdAt);
     } catch (_) {
       dateStr = '';
     }

@@ -165,7 +165,7 @@ export class CartService {
       }
 
       return this._recalculateCart(cart.id, tx);
-    });
+    }, { timeout: 30000 });
   }
 
   async updateItem(userId: string, itemId: string, dto: UpdateCartItemDto) {
@@ -214,7 +214,7 @@ export class CartService {
       });
 
       return this._recalculateCart(cart.id, tx);
-    });
+    }, { timeout: 30000 });
   }
 
   async removeItem(userId: string, itemId: string) {
@@ -231,7 +231,7 @@ export class CartService {
       });
 
       return this._recalculateCart(cart.id, tx);
-    });
+    }, { timeout: 30000 });
   }
 
   async clearCart(userId: string) {
@@ -253,6 +253,6 @@ export class CartService {
         },
         include: { items: true },
       });
-    });
+    }, { timeout: 30000 });
   }
 }

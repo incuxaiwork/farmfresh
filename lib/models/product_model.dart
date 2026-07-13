@@ -73,23 +73,24 @@ class ProductModel {
   }
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final price = _toNum(json['price']);
+    final originalPrice = json['originalPrice'] != null ? _toNum(json['originalPrice']) : price;
     return ProductModel(
       id: json['id'] as String,
       name: json['name'] as String,
       slug: json['slug'] as String? ?? '',
-      price: (json['price'] as num).toDouble(),
-      originalPrice: (json['originalPrice'] as num?)?.toDouble() ?? (json['price'] as num).toDouble(),
+      price: price,
+      originalPrice: originalPrice,
       discount: json['discount'] as String?,
       origin: json['origin'] as String? ?? 'Local',
-      category: json['category'] as String? ?? 'Other',
-      categoryId: json['categoryId'] as String?,
+      category: json['category'] as String? ?? 'Produce',
       image: json['image'] as String? ?? '',
       description: json['description'] as String? ?? '',
       calories: json['calories'] as String? ?? '',
       protein: json['protein'] as String? ?? '',
       fat: json['fat'] as String? ?? '',
       weight: json['weight'] as String? ?? '1 kg',
-      stock: (json['stock'] as num?)?.toDouble() ?? 0,
+      stock: _toNum(json['stock']),
       farmName: json['farmName'] as String? ?? '',
       farmerId: json['farmerId'] as String?,
       organic: json['organic'] as bool? ?? false,
@@ -98,7 +99,7 @@ class ProductModel {
       viewCount: json['viewCount'] as int? ?? 0,
       soldCount: json['soldCount'] as int? ?? 0,
       reviewCount: json['reviewCount'] as int? ?? 0,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      rating: _toNum(json['rating']),
       status: json['status'] as String? ?? 'APPROVED',
     );
   }
@@ -165,8 +166,8 @@ class ProductModel {
     Map<String, dynamic> productJson,
     Map<String, dynamic> cartItemJson,
   ) {
-    final price = (productJson['price'] as num?)?.toDouble() ?? (cartItemJson['unitPrice'] as num?)?.toDouble() ?? 0.0;
-    final discountPrice = productJson['discountPrice'] != null ? (productJson['discountPrice'] as num).toDouble() : null;
+    final price = _toNum(productJson['price'], _toNum(cartItemJson['unitPrice'], 0.0));
+    final discountPrice = productJson['discountPrice'] != null ? _toNum(productJson['discountPrice']) : null;
     final discountPct = discountPrice != null && price > 0 ? '${(((price - discountPrice) / price) * 100).round()}% OFF' : null;
 
     return ProductModel(
@@ -182,8 +183,8 @@ class ProductModel {
       description: '',
       weight: productJson['unit'] as String? ?? '1 kg',
       stock: productJson['inventory'] != null
-          ? (((productJson['inventory']['currentStock'] as num?)?.toDouble() ?? 0.0) -
-              ((productJson['inventory']['reservedStock'] as num?)?.toDouble() ?? 0.0))
+          ? (_toNum(productJson['inventory']['currentStock']) -
+              _toNum(productJson['inventory']['reservedStock']))
           : 50.0,
       farmName: 'Farm',
     );

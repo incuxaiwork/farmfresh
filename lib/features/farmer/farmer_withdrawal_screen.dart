@@ -14,7 +14,7 @@ class FarmerWithdrawalScreen extends ConsumerStatefulWidget {
 
 class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen> {
   final ScrollController _scrollController = ScrollController();
-  final DateFormat _dateFormat = DateFormat('MMM dd, yyyy');
+  final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
   final _amountController = TextEditingController();
   final _bankNameController = TextEditingController();
   final _accountNumberController = TextEditingController();

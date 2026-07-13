@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/category_provider.dart';
 
 class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
   final ProductModel? product;
@@ -21,7 +22,9 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
   late final TextEditingController _stockController;
   late final TextEditingController _weightController;
   late final TextEditingController _originController;
-  late String _selectedCategory;
+  late final TextEditingController _imageUrlController;
+  
+  String? _selectedCategoryId;
   bool _isOrganic = false;
   bool _isFeatured = false;
   bool _isSeasonal = false;
@@ -39,10 +42,15 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     _stockController = TextEditingController(text: p != null ? p.stock.toStringAsFixed(0) : '');
     _weightController = TextEditingController(text: p?.weight ?? '');
     _originController = TextEditingController(text: p?.origin ?? '');
-    _selectedCategory = p?.category ?? 'Vegetables';
+    _imageUrlController = TextEditingController(text: p?.image ?? '');
+    _selectedCategoryId = p?.categoryId;
     _isOrganic = p?.organic ?? false;
     _isFeatured = p?.featured ?? false;
     _isSeasonal = p?.seasonal ?? false;
+
+    Future.microtask(() {
+      ref.read(categoryProvider.notifier).loadCategories();
+    });
   }
 
   @override
@@ -53,13 +61,23 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     _stockController.dispose();
     _weightController.dispose();
     _originController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a category'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     setState(() => _isSaving = true);
+
+    final cats = ref.read(categoryProvider).categories;
+    final catName = cats.firstWhere((c) => c.id == _selectedCategoryId, orElse: () => cats.first).name;
 
     final product = ProductModel(
       id: widget.product?.id ?? '',
@@ -69,24 +87,24 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
       originalPrice: widget.product?.originalPrice ?? double.parse(_priceController.text),
       stock: double.parse(_stockController.text),
       weight: _weightController.text.trim(),
-      category: _selectedCategory,
+      category: catName,
       origin: _originController.text.trim(),
       organic: _isOrganic,
       featured: _isFeatured,
       seasonal: _isSeasonal,
-      image: widget.product?.image ?? '',
+      image: _imageUrlController.text.trim(),
       farmName: widget.product?.farmName ?? '',
       farmerId: widget.product?.farmerId,
       slug: widget.product?.slug ?? '',
-      categoryId: widget.product?.categoryId,
-      status: widget.product?.status ?? 'PENDING_APPROVAL',
+      categoryId: _selectedCategoryId,
+      status: widget.product?.status ?? 'APPROVED',
     );
 
     bool success;
     if (_isEditMode) {
-      success = await ref.read(productProvider.notifier).updateProduct(product);
+      success = await ref.read(farmerProductsProvider.notifier).updateProduct(product);
     } else {
-      success = await ref.read(productProvider.notifier).addProduct(product);
+      success = await ref.read(farmerProductsProvider.notifier).addProduct(product);
     }
 
     if (!mounted) return;
@@ -95,18 +113,26 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_isEditMode ? 'Product updated' : 'Product added')),
+        SnackBar(content: Text(_isEditMode ? 'Product updated successfully' : 'Product added successfully')),
       );
       context.pop();
     } else {
+      final error = ref.read(farmerProductsProvider).errorMessage ?? 'Failed to save product';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save product')),
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final catState = ref.watch(categoryProvider);
+
+    // Auto-select first category if edit mode doesn't specify one
+    if (_selectedCategoryId == null && catState.categories.isNotEmpty) {
+      _selectedCategoryId = catState.categories.first.id;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? 'Edit Product' : 'Add Product'),
@@ -140,6 +166,12 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter product description';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             Row(
@@ -202,26 +234,49 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
               },
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
+            
+            // Image URL Field
+            TextFormField(
+              controller: _imageUrlController,
               decoration: const InputDecoration(
-                labelText: 'Category',
+                labelText: 'Product Image URL',
+                hintText: 'e.g. https://images.unsplash.com/...',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.image_outlined),
               ),
-              items: const [
-                DropdownMenuItem(value: 'Vegetables', child: Text('Vegetables')),
-                DropdownMenuItem(value: 'Fruits', child: Text('Fruits')),
-                DropdownMenuItem(value: 'Dairy', child: Text('Dairy')),
-                DropdownMenuItem(value: 'Grains', child: Text('Grains')),
-                DropdownMenuItem(value: 'Herbs', child: Text('Herbs')),
-                DropdownMenuItem(value: 'Other', child: Text('Other')),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => _selectedCategory = val);
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter image URL';
                 }
+                return null;
               },
             ),
+            const SizedBox(height: 16),
+
+            // Dropdown for Categories from Backend
+            if (catState.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (catState.categories.isEmpty)
+              const Text('No categories available from backend')
+            else
+              DropdownButtonFormField<String>(
+                value: _selectedCategoryId,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+                items: catState.categories.map((c) {
+                  return DropdownMenuItem<String>(
+                    value: c.id,
+                    child: Text(c.name),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() => _selectedCategoryId = val);
+                  }
+                },
+              ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _originController,

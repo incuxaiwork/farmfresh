@@ -48,6 +48,13 @@ class PostgresCartRepository implements CartRepository {
     return [];
   }
 
+  double _toDouble(dynamic v) {
+    if (v == null) return 0.0;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0.0;
+    return 0.0;
+  }
+
   @override
   Future<CartSummary> getCartSummary() async {
     try {
@@ -56,11 +63,11 @@ class PostgresCartRepository implements CartRepository {
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final d = res.data['data'];
         return CartSummary(
-          subtotal: (d['subtotal'] as num?)?.toDouble() ?? 0,
-          discount: (d['discount'] as num?)?.toDouble() ?? 0,
-          tax: (d['tax'] as num?)?.toDouble() ?? 0,
-          deliveryCharge: (d['deliveryCharge'] as num?)?.toDouble() ?? 0,
-          grandTotal: (d['grandTotal'] as num?)?.toDouble() ?? 0,
+          subtotal: _toDouble(d['subtotal']),
+          discount: _toDouble(d['discount']),
+          tax: _toDouble(d['tax']),
+          deliveryCharge: _toDouble(d['deliveryCharge']),
+          grandTotal: _toDouble(d['grandTotal']),
         );
       }
     } catch (_) {}

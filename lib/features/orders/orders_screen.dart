@@ -220,7 +220,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
     final statusColor = _getStatusColor(order.status);
     final statusIcon = _getStatusIcon(order.status);
     final displayStatus = OrderStatus.fromApiValue(order.status).displayName;
-    final dateStr = DateFormat('MMM dd, yyyy - hh:mm a').format(order.date);
+    final dateStr = DateFormat('dd/MM/yyyy - HH:mm').format(order.date);
     final orderDisplay =
         order.orderNumber.isNotEmpty ? order.orderNumber : order.id.substring(0, 8);
 

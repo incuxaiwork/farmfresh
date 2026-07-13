@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/address_provider.dart';
 import '../../models/cart_item_model.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -15,6 +16,24 @@ class CartScreen extends ConsumerStatefulWidget {
 
 class _CartScreenState extends ConsumerState<CartScreen> {
   final _couponController = TextEditingController();
+  String _selectedPaymentMethod = 'UPI';
+
+  static const _paymentMethods = [
+    'UPI',
+    'PhonePe',
+    'Google Pay',
+    'Paytm',
+    'BHIM',
+    'Net Banking',
+    'Credit Card',
+    'Cash on Delivery',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(addressProvider.notifier).loadAddresses());
+  }
 
   @override
   void dispose() {
@@ -44,10 +63,25 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final cartState = ref.read(cartProvider);
     if (cartState.items.isEmpty) return;
 
+    final addressState = ref.read(addressProvider);
+    final defaultAddress = addressState.defaultAddress;
+
+    if (defaultAddress == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add a delivery address first!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final createdOrder = await ref.read(orderProvider.notifier).createOrder(
       items: cartState.items,
       total: cartState.grandTotal,
       deliveryFee: cartState.deliveryFee,
+      address: defaultAddress.fullAddress,
+      notes: 'Payment: $_selectedPaymentMethod',
     );
 
     if (!mounted) return;
@@ -65,8 +99,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ref.read(cartProvider.notifier).clearCart();
       context.go('/customer-main');
     } else {
+      final error = ref.read(orderProvider).errorMessage ?? 'Failed to place order';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to place order'), backgroundColor: Colors.red),
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
     }
   }
@@ -186,6 +221,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ],
             ),
           ),
+
+          // Checkout Address and Payment details
+          _buildCheckoutDetails(),
 
           // Price summary & checkout
           _buildPriceSummary(cartState),
@@ -376,7 +414,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           const SizedBox(height: 6),
           _priceRow(
-            'Tax (5%)',
+            'GST (5%)',
             '₹${cartState.tax.toStringAsFixed(2)}',
             valueColor: Colors.grey[700],
           ),
@@ -404,6 +442,99 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ),
               child: const Text('Checkout Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCheckoutDetails() {
+    final addressState = ref.watch(addressProvider);
+    final defaultAddress = addressState.defaultAddress;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Delivery Address',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          defaultAddress != null
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.location_on, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            defaultAddress.label,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(
+                            defaultAddress.fullAddress,
+                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.push('/addresses'),
+                      child: const Text('Change', style: TextStyle(color: Colors.green)),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'No default address found',
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => context.push('/addresses'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      ),
+                      child: const Text('Add Address'),
+                    ),
+                  ],
+                ),
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Payment Method',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              DropdownButton<String>(
+                value: _selectedPaymentMethod,
+                underline: const SizedBox(),
+                icon: const Icon(Icons.payment, color: Colors.green),
+                items: _paymentMethods.map((method) {
+                  return DropdownMenuItem<String>(
+                    value: method,
+                    child: Text(method, style: const TextStyle(fontSize: 14)),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedPaymentMethod = val;
+                    });
+                  }
+                },
+              ),
+            ],
           ),
         ],
       ),

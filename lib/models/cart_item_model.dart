@@ -23,6 +23,13 @@ class CartItemModel {
     );
   }
 
+  static double? _toDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
   /// Parse from the backend GET /cart response (items array inside cart object)
   factory CartItemModel.fromBackendJson(Map<String, dynamic> json) {
     final productJson = json['product'] as Map<String, dynamic>?;
@@ -34,8 +41,8 @@ class CartItemModel {
       cartItemId: json['id'] as String?,
       product: product,
       quantity: (json['quantity'] as num).toInt(),
-      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? product.price,
-      totalPrice: (json['totalPrice'] as num?)?.toDouble(),
+      unitPrice: _toDouble(json['unitPrice']) ?? product.price,
+      totalPrice: _toDouble(json['totalPrice']),
     );
   }
 
