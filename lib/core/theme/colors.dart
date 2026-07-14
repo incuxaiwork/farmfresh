@@ -38,4 +38,7 @@ class AppColors {
   // Chip backgrounds
   static const Color chipBackgroundLight = Color(0xFF1F5B3A);
   static const Color chipBackgroundDark = Color(0xFF1F5B3A);
+
+  // Alias for login screen
+  static const Color dimmedGreen = Color(0xFF1F5B3A);
 }

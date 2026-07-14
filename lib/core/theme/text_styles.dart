@@ -2,6 +2,7 @@
 // It utilizes Google Fonts for a clean, professional look.
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'colors.dart';
 
 class AppTextStyles {
   // Dashboard Hero Numbers - Large, bold stats (32-34px, weight 500)
