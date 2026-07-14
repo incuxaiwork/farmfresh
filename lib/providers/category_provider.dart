@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category_model.dart';
 import '../repositories/category_repository.dart';
 import '../core/services/api_client.dart';
-import 'app_providers.dart';
 
 // Repository provider
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {

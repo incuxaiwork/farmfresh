@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/farmer_provider.dart';
 import '../../models/withdrawal_model.dart';
 import '../../models/bank_account_model.dart';
@@ -47,7 +49,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+        const SnackBar(content: Text('Please enter a valid amount'), backgroundColor: Color(0xFFFF4D6D)),
       );
       return;
     }
@@ -56,7 +58,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
     if (success) {
       _amountController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Withdrawal request submitted'), backgroundColor: Colors.green),
+        const SnackBar(content: Text('Withdrawal request submitted!'), backgroundColor: Color(0xFF2E7D32)),
       );
     }
   }
@@ -64,7 +66,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
   Future<void> _saveBankDetails() async {
     if (_bankNameController.text.isEmpty || _accountNumberController.text.isEmpty || _accountHolderController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all bank details')),
+        const SnackBar(content: Text('Please fill all bank details'), backgroundColor: Color(0xFFFF4D6D)),
       );
       return;
     }
@@ -78,7 +80,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
     if (!mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bank details saved'), backgroundColor: Colors.green),
+        const SnackBar(content: Text('Bank details saved successfully'), backgroundColor: Color(0xFF2E7D32)),
       );
     }
   }
@@ -89,74 +91,105 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
 
     switch (status.toUpperCase()) {
       case 'PENDING':
-        bgColor = Colors.orange[50]!;
-        textColor = Colors.orange[700]!;
+        bgColor = const Color(0xFFFFFDF0);
+        textColor = const Color(0xFFE28C43);
         break;
       case 'COMPLETED':
-        bgColor = Colors.green[50]!;
-        textColor = Colors.green[700]!;
+        bgColor = const Color(0xFFE8F5E9);
+        textColor = const Color(0xFF2E7D32);
         break;
       case 'REJECTED':
-        bgColor = Colors.red[50]!;
-        textColor = Colors.red[700]!;
+        bgColor = const Color(0xFFFFF0F3);
+        textColor = const Color(0xFFFF4D6D);
         break;
       default:
-        bgColor = Colors.grey[100]!;
-        textColor = Colors.grey[700]!;
+        bgColor = const Color(0xFFFAFBF9);
+        textColor = const Color(0xFF647C72);
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(status, style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(
+        status.toUpperCase(),
+        style: GoogleFonts.plusJakartaSans(
+          color: textColor,
+          fontSize: 8,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
     );
   }
 
   Widget _buildWithdrawalItem(WithdrawalModel withdrawal) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '₹${withdrawal.amount.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
-                ),
-                _buildStatusBadge(withdrawal.status),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (withdrawal.bankName != null || withdrawal.accountNumber != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  '${withdrawal.bankName ?? ''} - ${withdrawal.accountNumber ?? ''}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                ),
-              ),
-            if (withdrawal.accountHolder != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  'Holder: ${withdrawal.accountHolder}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '₹${withdrawal.amount.toStringAsFixed(2)}',
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF2E7D32),
                 ),
               ),
-            Text(
-              _dateFormat.format(withdrawal.createdAt),
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              _buildStatusBadge(withdrawal.status),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (withdrawal.bankName != null || withdrawal.accountNumber != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '${withdrawal.bankName ?? ''} - ${withdrawal.accountNumber ?? ''}',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  color: const Color(0xFF647C72),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ],
-        ),
+          if (withdrawal.accountHolder != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                'Holder: ${withdrawal.accountHolder}',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  color: const Color(0xFF647C72),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          Text(
+            _dateFormat.format(withdrawal.createdAt),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 9,
+              color: const Color(0xFF8D99AE),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -168,158 +201,315 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
     ref.listen<FarmerWithdrawalState>(farmerWithdrawalProvider, (prev, next) {
       if (next.actionMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.actionMessage!)),
+          SnackBar(content: Text(next.actionMessage!), backgroundColor: const Color(0xFF2E7D32)),
         );
         ref.read(farmerWithdrawalProvider.notifier).clearMessages();
       }
       if (next.errorMessage != null && next.actionMessage == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.errorMessage!), backgroundColor: Colors.red),
+          SnackBar(content: Text(next.errorMessage!), backgroundColor: const Color(0xFFFF4D6D)),
         );
         ref.read(farmerWithdrawalProvider.notifier).clearMessages();
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Withdrawals'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
       ),
-      body: state.isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.green))
-          : RefreshIndicator(
-              onRefresh: () => ref.read(farmerWithdrawalProvider.notifier).loadWithdrawals(),
-              child: ListView(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.green[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green[200]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Request Withdrawal',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _amountController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(
-                            labelText: 'Amount',
-                            prefixText: '₹ ',
-                            border: OutlineInputBorder(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Request Payout',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: state.isLoading
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
+            : RefreshIndicator(
+                color: const Color(0xFF2E7D32),
+                onRefresh: () => ref.read(farmerWithdrawalProvider.notifier).loadWithdrawals(),
+                child: ListView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  children: [
+                    // Request Amount Card
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A2E5C45),
+                            offset: Offset(0, 4),
+                            blurRadius: 10,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _requestWithdrawal,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text('Request', style: TextStyle(fontSize: 16)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Bank Account',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _bankNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Bank Name',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _accountNumberController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Account Number',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _accountHolderController,
-                          decoration: const InputDecoration(
-                            labelText: 'Account Holder',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: _saveBankDetails,
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.green),
-                              foregroundColor: Colors.green,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text('Save Bank Details', style: TextStyle(fontSize: 16)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Withdrawal History',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  if (state.withdrawals.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Icon(Icons.account_balance_wallet_outlined, size: 60, color: Colors.grey[300]),
-                            const SizedBox(height: 12),
-                            const Text('No withdrawals yet', style: TextStyle(color: Colors.grey, fontSize: 15)),
-                          ],
-                        ),
+                        ],
                       ),
-                    )
-                  else ...[
-                    ...state.withdrawals.map(_buildWithdrawalItem),
-                    if (state.isLoadingMore)
-                      const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(child: CircularProgressIndicator(color: Colors.green)),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Request Amount Withdrawal',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF23312B),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _amountController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Withdrawal Amount',
+                              prefixText: '₹ ',
+                              labelStyle: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFF647C72),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                                ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                                ),
+                              fillColor: const Color(0xFFFAFBF9),
+                              filled: true,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            height: 44,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _requestWithdrawal,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.white,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text(
+                                'Request Withdrawal',
+                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Bank Account Info Form
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A2E5C45),
+                            offset: Offset(0, 4),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Bank Account Details',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF23312B),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _bankNameController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Bank Name',
+                              labelStyle: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFF647C72),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                                ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                                ),
+                              fillColor: const Color(0xFFFAFBF9),
+                              filled: true,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _accountNumberController,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Account Number',
+                              labelStyle: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFF647C72),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                                ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                                ),
+                              fillColor: const Color(0xFFFAFBF9),
+                              filled: true,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _accountHolderController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Account Holder Name',
+                              labelStyle: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFF647C72),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                                ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                                ),
+                              fillColor: const Color(0xFFFAFBF9),
+                              filled: true,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 44,
+                            child: OutlinedButton(
+                              onPressed: _saveBankDetails,
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFF2E7D32)),
+                                foregroundColor: const Color(0xFF2E7D32),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text(
+                                'Save Account Details',
+                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    Text(
+                      'Withdrawal Request History',
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF23312B),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (state.withdrawals.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              const Icon(Icons.account_balance_wallet_outlined, size: 48, color: Color(0xFF647C72)),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No payout withdrawals requested yet.',
+                                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else ...[
+                      ...state.withdrawals.map(_buildWithdrawalItem),
+                      if (state.isLoadingMore)
+                        const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32))),
+                        ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

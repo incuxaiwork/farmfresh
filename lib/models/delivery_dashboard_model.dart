@@ -33,14 +33,14 @@ class DeliveryStats {
   final int totalDeliveries;
 
   const DeliveryStats({
-    this.todayEarnings = 0.0,
-    this.weeklyEarnings = 0.0,
-    this.monthlyEarnings = 0.0,
+    this.todayEarnings = 0,
+    this.weeklyEarnings = 0,
+    this.monthlyEarnings = 0,
     this.activeDeliveries = 0,
     this.pendingDeliveries = 0,
     this.completedToday = 0,
     this.cancelledToday = 0,
-    this.averageRating = 0.0,
+    this.averageRating = 0,
     this.totalDeliveries = 0,
   });
 

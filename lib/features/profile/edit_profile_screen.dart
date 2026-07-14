@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/widgets/custom_text_field.dart';
-import '../../core/widgets/custom_button.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -40,133 +39,237 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profile'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              Center(
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.green[100],
-                  child: Text(
-                    (_nameController.text.isNotEmpty
-                            ? _nameController.text[0]
-                            : 'U')
-                        .toUpperCase(),
-                    style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green),
-                  ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Edit Profile',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+            child: Form(
+              key: _formKey,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A2E5C45),
+                      offset: Offset(0, 10),
+                      blurRadius: 30,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 32),
-              CustomTextField(
-                label: 'Full Name',
-                controller: _nameController,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Name is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                label: 'Email',
-                controller: _emailController,
-                enabled: false,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                label: 'Phone Number',
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value != null && value.trim().isNotEmpty) {
-                    final phoneRegex = RegExp(r'^\+?[\d\s-]{10,}$');
-                    if (!phoneRegex.hasMatch(value.trim())) {
-                      return 'Enter a valid phone number';
-                    }
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Email cannot be changed',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-              if (authState.errorMessage != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0F2E5C45),
+                              offset: Offset(0, 4),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Image.network(
+                            'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Name Field
+                    TextFormField(
+                      controller: _nameController,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: _inputDecoration('Full Name', Icons.person_outline),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Name is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Email Field
+                    TextFormField(
+                      controller: _emailController,
+                      enabled: false,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF647C72),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: _inputDecoration('Email Address', Icons.email_outlined),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Phone Field
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: _inputDecoration('Phone Number', Icons.phone_outlined),
+                      validator: (value) {
+                        if (value != null && value.trim().isNotEmpty) {
+                          final phoneRegex = RegExp(r'^\+?[\d\s-]{10,}$');
+                          if (!phoneRegex.hasMatch(value.trim())) {
+                            return 'Enter a valid phone number';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Email address cannot be modified',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 10, color: const Color(0xFF8D99AE), fontWeight: FontWeight.w500),
+                    ),
+                    
+                    if (authState.errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF0F3),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFF4D6D).withOpacity(0.3)),
+                        ),
                         child: Text(
                           authState.errorMessage!,
-                          style: const TextStyle(
-                              color: Colors.red, fontSize: 13),
+                          style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D), fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ],
-              if (authState.successMessage != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle_outline,
-                          color: Colors.green, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
+                    if (authState.successMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEAF6EC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.3)),
+                        ),
                         child: Text(
                           authState.successMessage!,
-                          style: const TextStyle(
-                              color: Colors.green, fontSize: 13),
+                          style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
-                  ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Save Button
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1FE28C43),
+                            offset: Offset(0, 8),
+                            blurRadius: 16,
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _saveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                'Save Profile Changes',
+                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-              const SizedBox(height: 24),
-              CustomButton(
-                text: 'Save Changes',
-                onPressed: _saveProfile,
-                isLoading: _isSaving,
               ),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: const Color(0xFF647C72),
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+      ),
+      prefixIcon: Icon(icon, color: const Color(0xFF647C72)),
+      fillColor: const Color(0xFFFAFBF9),
+      filled: true,
     );
   }
 
@@ -187,9 +290,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: Text('Profile updated successfully!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
       Future.delayed(const Duration(seconds: 1), () {

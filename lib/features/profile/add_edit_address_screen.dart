@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
-import '../../core/widgets/custom_text_field.dart';
-import '../../core/widgets/custom_button.dart';
 
 class AddEditAddressScreen extends ConsumerStatefulWidget {
   final AddressModel? address;
@@ -45,6 +44,17 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
     _phoneController =
         TextEditingController(text: address?.contactPhone ?? '');
     _isDefault = address?.isDefault ?? false;
+
+    _labelController.addListener(_updatePreview);
+    _streetController.addListener(_updatePreview);
+    _cityController.addListener(_updatePreview);
+    _stateController.addListener(_updatePreview);
+    _zipController.addListener(_updatePreview);
+    _countryController.addListener(_updatePreview);
+  }
+
+  void _updatePreview() {
+    setState(() {});
   }
 
   @override
@@ -61,151 +71,298 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Address' : 'Add Address'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              CustomTextField(
-                label: 'Label (e.g., Home, Work)',
-                controller: _labelController,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Label is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                label: 'Street Address',
-                controller: _streetController,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Street address is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      label: 'City',
-                      controller: _cityController,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Required';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CustomTextField(
-                      label: 'State',
-                      controller: _stateController,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Required';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      label: 'PIN Code',
-                      controller: _zipController,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Required';
-                        }
-                        if (!RegExp(r'^\d{6}$').hasMatch(value.trim())) {
-                          return 'Must be 6 digits';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CustomTextField(
-                      label: 'Country',
-                      controller: _countryController,
-                      enabled: false,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                label: 'Contact Phone (optional)',
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Switch(
-                    value: _isDefault,
-                    onChanged: (value) {
-                      setState(() => _isDefault = value);
-                    },
-                    activeColor: Colors.green,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('Set as default address'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Preview:',
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[700]),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            _isEditing ? 'Edit Address' : 'Add New Address',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+            child: Form(
+              key: _formKey,
+              child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A2E5C45),
+                      offset: Offset(0, 10),
+                      blurRadius: 30,
+                    ),
+                  ],
                 ),
-                child: Text(
-                  _getPreviewAddress(),
-                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Label Field
+                    TextFormField(
+                      controller: _labelController,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: _inputDecoration('Address Label (e.g. Home, Office)', Icons.label_important_outline),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Label is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Street Field
+                    TextFormField(
+                      controller: _streetController,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: _inputDecoration('Street address', Icons.location_on_outlined),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Street address is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // City / State Fields
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _cityController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _inputDecoration('City', Icons.business_outlined),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _stateController,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _inputDecoration('State', Icons.map_outlined),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Zip / Country Fields
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _zipController,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF23312B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _inputDecoration('PIN Code', Icons.pin_drop_outlined),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _countryController,
+                            enabled: false,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF647C72),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: _inputDecoration('Country', Icons.public_outlined),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Contact Phone
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: _inputDecoration('Contact Phone (optional)', Icons.phone_outlined),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Default Address Toggle
+                    Row(
+                      children: [
+                        Switch(
+                          value: _isDefault,
+                          onChanged: (value) {
+                            setState(() => _isDefault = value);
+                          },
+                          activeColor: const Color(0xFF2E7D32),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Set as default shipping address',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF23312B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 32, color: Color(0xFFF3F3F3)),
+                    
+                    // Address Preview Card
+                    Text(
+                      'Preview Address:',
+                      style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF23312B)),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFBF9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5EDE7)),
+                      ),
+                      child: Text(
+                        _getPreviewAddress(),
+                        style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11, height: 1.5, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Save Button
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1FE28C43),
+                            offset: Offset(0, 8),
+                            blurRadius: 16,
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _saveAddress,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                _isEditing ? 'Save Address Details' : 'Add New Address',
+                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              CustomButton(
-                text: _isEditing ? 'Update Address' : 'Add Address',
-                onPressed: _saveAddress,
-                isLoading: _isSaving,
-              ),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: const Color(0xFF647C72),
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+      ),
+      prefixIcon: Icon(icon, color: const Color(0xFF647C72)),
+      fillColor: const Color(0xFFFAFBF9),
+      filled: true,
     );
   }
 
@@ -223,7 +380,7 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
         _countryController.text.toUpperCase() != 'INDIA') {
       parts.add(_countryController.text);
     }
-    return parts.isNotEmpty ? parts.join('\n') : 'Enter address details above';
+    return parts.isNotEmpty ? parts.join('\n') : 'Complete the fields above to render preview.';
   }
 
   Future<void> _saveAddress() async {
@@ -261,9 +418,8 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(_isEditing ? 'Address updated' : 'Address added'),
-          backgroundColor: Colors.green,
+          content: Text(_isEditing ? 'Address updated successfully!' : 'Address added successfully!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
       context.pop();

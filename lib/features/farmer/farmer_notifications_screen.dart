@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/notification_model.dart';
 import '../../providers/farmer_provider.dart';
 
@@ -47,34 +48,34 @@ class _FarmerNotificationsScreenState
   IconData _iconForType(String type) {
     switch (type.toUpperCase()) {
       case 'ORDER':
-        return Icons.shopping_bag;
+        return Icons.shopping_bag_outlined;
       case 'PRODUCT':
-        return Icons.inventory_2;
+        return Icons.inventory_2_outlined;
       case 'STOCK':
-        return Icons.warning_amber;
+        return Icons.warning_amber_outlined;
       case 'WITHDRAWAL':
-        return Icons.account_balance;
+        return Icons.account_balance_outlined;
       case 'PROMOTION':
-        return Icons.campaign;
+        return Icons.campaign_outlined;
       default:
-        return Icons.notifications;
+        return Icons.notifications_none_outlined;
     }
   }
 
   Color _colorForType(String type) {
     switch (type.toUpperCase()) {
       case 'ORDER':
-        return Colors.blue;
+        return const Color(0xFF219EBC);
       case 'PRODUCT':
-        return Colors.teal;
+        return const Color(0xFF2E7D32);
       case 'STOCK':
-        return Colors.orange;
+        return const Color(0xFFE28C43);
       case 'WITHDRAWAL':
-        return Colors.purple;
+        return const Color(0xFF8338EC);
       case 'PROMOTION':
-        return Colors.pink;
+        return const Color(0xFFFF4D6D);
       default:
-        return Colors.green;
+        return const Color(0xFF2E7D32);
     }
   }
 
@@ -111,86 +112,125 @@ class _FarmerNotificationsScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(farmerNotificationProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          if (state.unreadCount > 0)
-            TextButton(
-              onPressed: () {
-                ref
-                    .read(farmerNotificationProvider.notifier)
-                    .markAllRead();
-              },
-              child: const Text(
-                'Mark All Read',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
       ),
-      body: state.isLoading && state.notifications.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.green),
-            )
-          : state.notifications.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.notifications_none,
-                        size: 80,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No notifications yet',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    await ref
-                        .read(farmerNotificationProvider.notifier)
-                        .loadNotifications();
-                  },
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: state.notifications.length +
-                        (state.hasMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == state.notifications.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.green,
-                              strokeWidth: 2,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Notifications',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            if (state.unreadCount > 0)
+              TextButton(
+                onPressed: () {
+                  ref
+                      .read(farmerNotificationProvider.notifier)
+                      .markAllRead();
+                },
+                child: Text(
+                  'Mark All Read',
+                  style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+          ],
+        ),
+        body: state.isLoading && state.notifications.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF2E7D32)),
+              )
+            : state.notifications.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFEAF6EC),
+                            ),
+                            child: const Icon(
+                              Icons.notifications_none_outlined,
+                              size: 28,
+                              color: Color(0xFF2E7D32),
                             ),
                           ),
-                        );
-                      }
-
-                      final notification = state.notifications[index];
-                      return _NotificationCard(
-                        notification: notification,
-                        timeAgo: _timeAgo(notification.createdAt),
-                        icon: _iconForType(notification.type),
-                        iconColor: _colorForType(notification.type),
-                        onTap: () => _onNotificationTap(notification),
-                      );
+                          const SizedBox(height: 16),
+                          Text(
+                            'No notifications yet',
+                            style: GoogleFonts.outfit(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF23312B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'We will alert you on updates regarding your orders, crops, and payouts.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11, height: 1.4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : RefreshIndicator(
+                    color: const Color(0xFF2E7D32),
+                    onRefresh: () async {
+                      await ref
+                          .read(farmerNotificationProvider.notifier)
+                          .loadNotifications();
                     },
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      itemCount: state.notifications.length +
+                          (state.hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == state.notifications.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF2E7D32),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final notification = state.notifications[index];
+                        return _NotificationCard(
+                          notification: notification,
+                          timeAgo: _timeAgo(notification.createdAt),
+                          icon: _iconForType(notification.type),
+                          iconColor: _colorForType(notification.type),
+                          onTap: () => _onNotificationTap(notification),
+                        );
+                      },
+                    ),
                   ),
-                ),
+      ),
     );
   }
 }
@@ -212,81 +252,100 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      elevation: notification.isRead ? 1 : 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: notification.isRead
-            ? BorderSide.none
-            : const BorderSide(color: Colors.green, width: 1.5),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+        border: notification.isRead
+            ? null
+            : Border.all(color: const Color(0xFF2E7D32).withOpacity(0.3), width: 1.5),
       ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: iconColor, size: 24),
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                notification.title,
-                style: TextStyle(
-                  fontWeight:
-                      notification.isRead ? FontWeight.normal : FontWeight.bold,
-                  fontSize: 15,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 20),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              notification.title,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: notification.isRead ? FontWeight.bold : FontWeight.w800,
+                                fontSize: 13,
+                                color: const Color(0xFF23312B),
+                              ),
+                            ),
+                          ),
+                          if (!notification.isRead)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(left: 8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF2E7D32),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        notification.body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        timeAgo,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF8D99AE),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF647C72),
+                  size: 16,
+                ),
+              ],
             ),
-            if (!notification.isRead)
-              Container(
-                width: 10,
-                height: 10,
-                margin: const EdgeInsets.only(left: 8),
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                ),
-              ),
-          ],
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                notification.body,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                timeAgo,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 12,
-                ),
-              ),
-            ],
           ),
-        ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: Colors.grey[400],
         ),
       ),
     );

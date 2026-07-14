@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/product_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../models/product_model.dart';
 
 class FarmerProductsScreen extends ConsumerStatefulWidget {
@@ -70,14 +70,14 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
   Color _getStatusColor(String status) {
     switch (status.toUpperCase()) {
       case 'APPROVED':
-        return Colors.green;
+        return const Color(0xFF2E7D32);
       case 'PENDING_APPROVAL':
       case 'PENDING':
-        return Colors.orange;
+        return const Color(0xFFE28C43);
       case 'REJECTED':
-        return Colors.red;
+        return const Color(0xFFFF4D6D);
       default:
-        return Colors.grey;
+        return const Color(0xFF647C72);
     }
   }
 
@@ -99,12 +99,12 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: Text('Are you sure you want to delete "${product.name}"?'),
+        title: Text('Delete Crop?', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to delete "${product.name}"?', style: GoogleFonts.plusJakartaSans()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72))),
           ),
           TextButton(
             onPressed: () async {
@@ -117,7 +117,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                 ),
               );
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -130,17 +130,18 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
     final filteredProducts = _getFilteredProducts(productState.products);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('My Products'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        title: Text(
+          'My Crops Inventory',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_circle_outline, color: Color(0xFF23312B)),
             onPressed: () {
               context.push('/farmer-add-product');
             },
@@ -149,9 +150,9 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
       ),
       body: Column(
         children: [
-          Container(
-            color: Colors.green[50],
-            padding: const EdgeInsets.all(12.0),
+          // Filter and Search Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
               children: [
                 TextField(
@@ -161,13 +162,15 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                       _searchQuery = val;
                     });
                   },
+                  style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Search products...',
-                    prefixIcon: const Icon(Icons.search, color: Colors.green),
-                    fillColor: Colors.white,
+                    hintText: 'Search my crops...',
+                    hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 12),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF647C72)),
+                    fillColor: const Color(0xFFE5EDE7),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -182,19 +185,24 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                       final isSelected = _selectedFilter == filter;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
+                        child: ChoiceChip(
                           label: Text(filter),
                           selected: isSelected,
-                          selectedColor: Colors.green,
+                          selectedColor: const Color(0xFF2E7D32),
+                          disabledColor: Colors.white,
                           backgroundColor: Colors.white,
-                          labelStyle: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
-                            fontSize: 13,
+                          checkmarkColor: Colors.white,
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: isSelected ? Colors.white : const Color(0xFF23312B),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
                           onSelected: (val) {
-                            setState(() {
-                              _selectedFilter = filter;
-                            });
+                            if (val) {
+                              setState(() {
+                                _selectedFilter = filter;
+                              });
+                            }
                           },
                         ),
                       );
@@ -206,165 +214,223 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
           ),
           Expanded(
             child: productState.isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
                 : filteredProducts.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text(
-                              _searchQuery.isNotEmpty || _selectedFilter != 'All'
-                                  ? 'No products match your filters'
-                                  : 'No products yet',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _searchQuery.isNotEmpty || _selectedFilter != 'All'
-                                  ? 'Try adjusting your search or filters'
-                                  : 'Add your first product to start selling',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                            if (_searchQuery.isEmpty && _selectedFilter == 'All') ...[
-                              const SizedBox(height: 24),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  context.push('/farmer-add-product');
-                                },
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add Product'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFE8F5E9),
                                 ),
+                                child: const Icon(Icons.spa_outlined, color: Color(0xFF2E7D32), size: 28),
                               ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _searchQuery.isNotEmpty || _selectedFilter != 'All'
+                                    ? 'No crops match your filters'
+                                    : 'No crops added yet',
+                                style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _searchQuery.isNotEmpty || _selectedFilter != 'All'
+                                    ? 'Try adjusting search queries or chips filters'
+                                    : 'Tap the button below to add your first fresh crop!',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11, height: 1.4),
+                              ),
+                              if (_searchQuery.isEmpty && _selectedFilter == 'All') ...[
+                                const SizedBox(height: 24),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      context.push('/farmer-add-product');
+                                    },
+                                    icon: const Icon(Icons.add, size: 16),
+                                    label: Text(
+                                      'Add First Crop',
+                                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      foregroundColor: Colors.white,
+                                      shadowColor: Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       )
                     : RefreshIndicator(
+                        color: const Color(0xFF2E7D32),
                         onRefresh: () async {
                           await ref.read(farmerProductsProvider.notifier).loadFarmerProducts();
                         },
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           itemCount: filteredProducts.length,
                           itemBuilder: (context, index) {
                             final product = filteredProducts[index];
                             final statusColor = _getStatusColor(product.status);
 
-                            return Card(
+                            return Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0A2E5C45),
+                                    offset: Offset(0, 4),
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
-                              elevation: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 28,
-                                      backgroundColor: Colors.green[50],
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  // Product Image / Fallback Icon
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: SizedBox(
+                                      width: 60,
+                                      height: 60,
                                       child: product.image.isNotEmpty
-                                          ? ClipOval(
-                                              child: Image.network(
-                                                product.image,
-                                                width: 56,
-                                                height: 56,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) => Icon(
+                                          ? Image.network(
+                                              product.image,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => Container(
+                                                color: const Color(0xFFF1F8F4),
+                                                child: Icon(
                                                   _getCategoryIcon(product.category),
-                                                  color: Colors.green,
-                                                  size: 28,
+                                                  color: const Color(0xFF2E7D32),
+                                                  size: 24,
                                                 ),
                                               ),
                                             )
-                                          : Icon(
-                                              _getCategoryIcon(product.category),
-                                              color: Colors.green,
-                                              size: 28,
+                                          : Container(
+                                              color: const Color(0xFFF1F8F4),
+                                              child: Icon(
+                                                _getCategoryIcon(product.category),
+                                                color: const Color(0xFF2E7D32),
+                                                size: 24,
+                                              ),
                                             ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  product.name,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 2,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: statusColor.withOpacity(0.1),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  border: Border.all(color: statusColor, width: 1),
-                                                ),
-                                                child: Text(
-                                                  _getStatusText(product.status),
-                                                  style: TextStyle(
-                                                    color: statusColor,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Stock: ${product.stock.toStringAsFixed(0)}  •  ${product.weight}',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '₹${product.price.toStringAsFixed(2)}',
-                                            style: const TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.blue, size: 22),
-                                          onPressed: () {
-                                            context.push('/farmer-add-product', extra: product);
-                                          },
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                product.name,
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                  color: const Color(0xFF23312B),
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                _getStatusText(product.status).toUpperCase(),
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  color: statusColor,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red, size: 22),
-                                          onPressed: () => _confirmDelete(product),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Stock: ${product.stock.toStringAsFixed(0)}  •  ${product.weight}',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: const Color(0xFF647C72),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '₹${product.price.toStringAsFixed(2)}',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF23312B),
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 13,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Edit & Delete Actions
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.push('/farmer-add-product', extra: product);
+                                        },
+                                        child: Container(
+                                          width: 28,
+                                          height: 28,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(0xFFF1F8F4),
+                                          ),
+                                          child: const Icon(Icons.edit_outlined, color: Color(0xFF2E7D32), size: 14),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      GestureDetector(
+                                        onTap: () => _confirmDelete(product),
+                                        child: Container(
+                                          width: 28,
+                                          height: 28,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(0xFFFFF0F3),
+                                          ),
+                                          child: const Icon(Icons.delete_outline, color: Color(0xFFFF4D6D), size: 14),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             );
                           },

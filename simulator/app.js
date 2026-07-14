@@ -456,7 +456,7 @@ window.saveStateToStorage = function() {
             merchants: STATE.merchants,
             rider: STATE.rider,
             farmerPayouts: STATE.farmerPayouts || [],
-            customerLocation: select ? select.value : (STATE.customerLocation || 'New York, US')
+            customerLocation: select ? select.value : (STATE.customerLocation || 'Bengaluru, India')
         }));
     } catch (e) {
         console.error("Failed to save FarmFresh state", e);
@@ -464,7 +464,7 @@ window.saveStateToStorage = function() {
 };
 
 // Currency State System
-let currentCurrencySymbol = '$';
+let currentCurrencySymbol = '₹';
 let currentCurrencyRate = 1.0;
 
 function formatPrice(usdAmount) {
@@ -1499,60 +1499,171 @@ function updateFarmerStats() {
 }
 
 function renderFarmerOrders() {
-    const pending = STATE.orders.filter(o => o.status === 'placed' || o.status === 'accepted');
+    const orders = STATE.orders;
+    
+    const newOrders = orders.filter(o => o.status === 'placed');
+    const acceptedOrders = orders.filter(o => o.status === 'accepted');
+
     const badge = document.getElementById('farmer-orders-badge');
-    if (badge) badge.innerText = `${pending.length} Pending`;
+    if (badge) badge.innerText = `${newOrders.length + acceptedOrders.length} Pending`;
+    
+    const countNew = document.getElementById('count-new-orders');
+    if (countNew) countNew.innerText = newOrders.length;
+    
+    const countAccepted = document.getElementById('count-accepted-orders');
+    if (countAccepted) countAccepted.innerText = acceptedOrders.length;
 
-    const htmlContent = pending.length === 0 
-        ? '<div style="font-size:11px; text-align:center; padding: 20px; color:var(--text-muted);">No active pending orders.</div>'
-        : pending.map(o => {
-            const itemsListHtml = o.items.map(i => {
-                const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
-                const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
-                    ? `<img src="${prod.image}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0;">` 
-                    : `<span style="font-size:12px; width:20px; height:20px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:4px; flex-shrink:0;">${prod.image || '📦'}</span>`;
-                
-                return `
-                    <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; gap:6px; text-align:left;">
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            ${imageHtml}
-                            <span style="font-weight:700; color:var(--text-main);">${i.quantity}x</span>
-                            <span style="color:#555; max-width:120px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.name}</span>
-                        </div>
-                        <span style="font-weight:700; color:var(--text-main);">${formatPrice(i.price * i.quantity)}</span>
-                    </div>
-                `;
-            }).join('');
+    const getItemsHtml = (o) => {
+        return o.items.map(i => {
+            const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
+            const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
+                ? `<img src="${prod.image}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0;">` 
+                : `<span style="font-size:12px; width:20px; height:20px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:4px; flex-shrink:0;">${prod.image || '📦'}</span>`;
             
-            let actionBtn = '';
-            if (o.status === 'placed') {
-                actionBtn = `<button class="btn-action-small" onclick="farmerAcceptOrder('${o.id}')">Accept Order</button>`;
-            } else if (o.status === 'accepted') {
-                actionBtn = `<button class="btn-action-small" style="background:var(--primary-gradient); color:white;" onclick="farmerPrepareOrder('${o.id}')">Mark Prepared</button>`;
-            }
-
             return `
-                <div class="order-card-merchant">
-                    <div class="order-card-header">
-                        <span style="font-weight:700;">#${o.id}</span>
-                        <span style="color:var(--primary);text-transform:uppercase;font-size:9px;">${o.status}</span>
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; gap:6px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        ${imageHtml}
+                        <span style="font-weight:700; color:var(--text-main);">${i.quantity}x</span>
+                        <span style="color:#555; max-width:120px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.name}</span>
                     </div>
-                    <div class="order-card-items-list" style="display:flex; flex-direction:column; gap:2px; margin:6px 0; border-bottom:1px dashed #EEE; padding-bottom:6px;">
-                        ${itemsListHtml}
+                    <span style="font-weight:700; color:var(--text-main);">${formatPrice(i.price * i.quantity)}</span>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const getTotalQty = (o) => {
+        return o.items.reduce((sum, i) => sum + i.quantity, 0);
+    };
+
+    const newOrdersHtml = newOrders.length === 0
+        ? '<div style="font-size:11px; text-align:center; padding: 15px; color:var(--text-muted); background:var(--white); border-radius:12px; border:1px solid #EAEAEA;">No new incoming orders.</div>'
+        : newOrders.map(o => {
+            const cName = o.customerName || 'Ritih';
+            const cPhone = o.customerPhone || '+91 98765 43210';
+            const payStatus = o.paymentStatus || 'Paid';
+            const oDateTime = o.orderDateTime || ('Today, ' + o.timestamp);
+            
+            return `
+                <div class="order-card-merchant" style="border-left: 4px solid var(--primary); margin-bottom: 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #EEE; padding-bottom:6px; margin-bottom:8px;">
+                        <span style="font-weight:900; color:var(--text-main); font-size:12px;">#${o.id}</span>
+                        <span style="font-size:10px; background:#FFF3CD; color:#856404; padding:2px 6px; border-radius:6px; font-weight:700;">New Order</span>
                     </div>
-                    <div class="order-card-footer" style="margin-top:4px;">
-                        <span class="order-card-price">${formatPrice(o.total)}</span>
-                        ${actionBtn}
+                    
+                    <div style="display:flex; flex-direction:column; gap:4px; font-size:10px; color:#555; margin-bottom:8px; border-bottom:1px dashed #EEE; padding-bottom:8px;">
+                        <div><strong>Customer:</strong> ${cName}</div>
+                        <div><strong>Phone:</strong> ${cPhone}</div>
+                        <div><strong>Address:</strong> ${o.address}</div>
+                        <div><strong>Date & Time:</strong> ${oDateTime}</div>
+                        <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                            <span><strong>Method:</strong> ${o.paymentMethod.toUpperCase()}</span>
+                            <span><strong>Status:</strong> <span style="color:#2E7D32; font-weight:700;">${payStatus}</span></span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 10px; font-weight: 800; margin-bottom: 6px;">Ordered Items (${getTotalQty(o)} pcs):</div>
+                    <div class="order-card-items-list" style="margin-bottom: 8px;">
+                        ${getItemsHtml(o)}
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #EEE; padding-top:8px; margin-top:6px;">
+                        <div>
+                            <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase;">Order Total</div>
+                            <div style="font-size:14px; font-weight:900; color:var(--green-dark);">${formatPrice(o.total)}</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-action-small" style="background:#fee2e2; color:#ef4444; border:none;" onclick="farmerRejectOrder('${o.id}')">Reject</button>
+                            <button class="btn-action-small" onclick="farmerAcceptOrder('${o.id}')">Accept</button>
+                        </div>
                     </div>
                 </div>
             `;
         }).join('');
 
-    const container1 = document.getElementById('farmer-orders-list');
-    if (container1) container1.innerHTML = htmlContent;
+    const acceptedOrdersHtml = acceptedOrders.length === 0
+        ? '<div style="font-size:11px; text-align:center; padding: 15px; color:var(--text-muted); background:var(--white); border-radius:12px; border:1px solid #EAEAEA;">No accepted orders.</div>'
+        : acceptedOrders.map(o => {
+            const cName = o.customerName || 'Ritih';
+            const cPhone = o.customerPhone || '+91 98765 43210';
+            const payStatus = o.paymentStatus || 'Paid';
+            const estPickup = o.estimatedPickup || 'Within 30 mins';
+            
+            return `
+                <div class="order-card-merchant" style="border-left: 4px solid #D68C45; margin-bottom: 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #EEE; padding-bottom:6px; margin-bottom:8px;">
+                        <span style="font-weight:900; color:var(--text-main); font-size:12px;">#${o.id}</span>
+                        <span style="font-size:10px; background:#D1E7DD; color:#0F5132; padding:2px 6px; border-radius:6px; font-weight:700;">Accepted</span>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:4px; font-size:10px; color:#555; margin-bottom:8px; border-bottom:1px dashed #EEE; padding-bottom:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span><strong>Customer:</strong> ${cName}</span>
+                            <button onclick="startCallSimulation('${cName}', '${cPhone}')" style="background:#EAF6EC; color:#2E7D32; border:none; padding:2px 6px; border-radius:6px; font-weight:700; font-size:9px; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                                <i class="fa-solid fa-phone"></i> Call
+                            </button>
+                        </div>
+                        <div><strong>Phone:</strong> ${cPhone}</div>
+                        <div><strong>Address:</strong> ${o.address}</div>
+                        <div style="color:#d97706; font-weight:700;"><strong>Est. Pickup Time:</strong> ${estPickup}</div>
+                        <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                            <span><strong>Method:</strong> ${o.paymentMethod.toUpperCase()}</span>
+                            <span><strong>Status:</strong> <span style="color:#2E7D32; font-weight:700;">${payStatus}</span></span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 10px; font-weight: 800; margin-bottom: 6px;">Ordered Items (${getTotalQty(o)} pcs):</div>
+                    <div class="order-card-items-list" style="margin-bottom: 8px;">
+                        ${getItemsHtml(o)}
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #EEE; padding-top:8px; margin-top:6px;">
+                        <div>
+                            <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase;">Order Total</div>
+                            <div style="font-size:14px; font-weight:900; color:var(--green-dark);">${formatPrice(o.total)}</div>
+                        </div>
+                        <button class="btn-action-small" style="background:var(--primary-gradient); color:white;" onclick="farmerPrepareOrder('${o.id}')">Ready for Packing</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-    const container2 = document.getElementById('farmer-orders-list-dedicated');
-    if (container2) container2.innerHTML = htmlContent;
+    const containerNew = document.getElementById('farmer-new-orders-list');
+    if (containerNew) containerNew.innerHTML = newOrdersHtml;
+
+    const containerAccepted = document.getElementById('farmer-accepted-orders-list');
+    if (containerAccepted) containerAccepted.innerHTML = acceptedOrdersHtml;
+
+    const dashboardContainer = document.getElementById('farmer-orders-list');
+    if (dashboardContainer) {
+        if (newOrders.length === 0 && acceptedOrders.length === 0) {
+            dashboardContainer.innerHTML = '<div style="font-size:11px; text-align:center; padding: 20px; color:var(--text-muted);">No active pending orders.</div>';
+        } else {
+            dashboardContainer.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    ${newOrders.map(o => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--white); border:1px solid #EAEAEA; padding:8px 12px; border-radius:12px; font-size:11px;">
+                            <div>
+                                <span style="font-weight:700;">#${o.id}</span>
+                                <span style="font-size:9px; color:var(--text-muted); margin-left:6px;">New order from ${o.customerName || 'Ritih'}</span>
+                            </div>
+                            <button class="btn-action-small" onclick="switchFarmerTab('screen-farmer-orders')">Manage</button>
+                        </div>
+                    `).join('')}
+                    ${acceptedOrders.map(o => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--white); border:1px solid #EAEAEA; padding:8px 12px; border-radius:12px; font-size:11px;">
+                            <div>
+                                <span style="font-weight:700;">#${o.id}</span>
+                                <span style="font-size:9px; color:#d97706; margin-left:6px;">Accepted - packing pending</span>
+                            </div>
+                            <button class="btn-action-small" onclick="switchFarmerTab('screen-farmer-orders')">Pack</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    }
 }
 
 window.renderFarmerWallet = function() {
@@ -2230,15 +2341,9 @@ document.getElementById('btn-clear-logs').addEventListener('click', () => Logger
 // Location Picker Currency updates
 document.getElementById('user-location-selector').addEventListener('change', (e) => {
     const val = e.target.value;
-    if (val.toLowerCase().includes('india')) {
-        currentCurrencySymbol = 'Rs. ';
-        currentCurrencyRate = 83.0; // Exchange rate: 1 USD = 83 INR
-        Logger.log('Location switched to India. Currency updated to Rupees (Rs.)', 'customer');
-    } else {
-        currentCurrencySymbol = '$';
-        currentCurrencyRate = 1.0;
-        Logger.log(`Location switched to ${val}. Currency updated to US Dollars ($)`, 'customer');
-    }
+    currentCurrencySymbol = '₹';
+    currentCurrencyRate = 1.0;
+    Logger.log(`Location switched to ${val}. Currency set to Rupees (₹)`, 'customer');
     
     // Re-render all components to reflect new currency symbols
     renderProducts();
@@ -2972,3 +3077,43 @@ switchRole(STATE.currentRole || 'customer');
 updateCartStats();
 Logger.log('Interactive Multi-Vendor FarmFresh Simulator re-initialized.', 'system');
 Logger.log('Ready to test. Switch roles above to inspect screens.', 'system');
+
+// SIMULATED CUSTOMER CALLING MODULE
+window.startCallSimulation = function(name, phone) {
+    const modal = document.getElementById('calling-modal');
+    const nameEl = document.getElementById('calling-customer-name');
+    const phoneEl = document.getElementById('calling-customer-phone');
+    if (modal && nameEl && phoneEl) {
+        nameEl.innerText = name;
+        phoneEl.innerText = phone;
+        modal.style.display = 'flex';
+    }
+};
+
+window.closeCallSimulation = function() {
+    const modal = document.getElementById('calling-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.farmerRejectOrder = function(orderId) {
+    const order = STATE.orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    order.status = 'rejected';
+    Logger.log(`Farmer rejected order #${orderId}. Payment will be refunded to customer.`, 'farmer');
+    
+    const farmer = STATE.merchants[0];
+    if (farmer.activeOrders > 0) farmer.activeOrders -= 1;
+    
+    updateFarmerStats();
+    renderFarmerOrders();
+    saveStateToStorage();
+    
+    Notification.show('Order Rejected', `Farmer Organico Farm declined order #${orderId}. Refund initiated.`);
+    syncTrackingUI();
+};
+
+window.switchFarmerTab = function(screenId) {
+    switchScreen(screenId);
+    updateActiveBottomTab(screenId);
+};

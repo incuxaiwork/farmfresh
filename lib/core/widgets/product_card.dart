@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/product_model.dart';
+import '../../providers/wishlist_provider.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerStatefulWidget {
   final ProductModel product;
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
@@ -15,18 +18,31 @@ class ProductCard extends StatelessWidget {
   });
 
   @override
+  ConsumerState<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends ConsumerState<ProductCard> {
+  @override
   Widget build(BuildContext context) {
-    final hasDiscount = product.originalPrice > product.price;
-    final isOrganic = product.organic;
-    final isOutOfStock = product.stock <= 0;
+    final wishlist = ref.watch(wishlistProvider);
+    final isWishlisted = wishlist.contains(widget.product.id);
+    final hasDiscount = widget.product.originalPrice > widget.product.price;
+    final isOrganic = widget.product.organic;
+    final isOutOfStock = widget.product.stock <= 0;
 
     return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+      onTap: widget.onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F2E5C45),
+              offset: Offset(0, 10),
+              blurRadius: 30,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -36,85 +52,113 @@ class ProductCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: CachedNetworkImage(
-                      imageUrl: product.image,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.green[50],
-                        child: const Icon(Icons.spa, color: Colors.green, size: 40),
-                      ),
-                    ),
-                  ),
-                  // Organic Leaf Badge
-                  if (isOrganic)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.green[800],
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.eco, color: Colors.white, size: 10),
-                            SizedBox(width: 2),
-                            Text(
-                              'ORGANIC',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  // Discount Badge
-                  if (hasDiscount && product.discount != null)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          product.discount!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: widget.product.image,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => Container(
+                            color: const Color(0xFFF1F8F4),
+                            child: const Icon(Icons.spa, color: Color(0xFF2E7D32), size: 30),
                           ),
                         ),
                       ),
                     ),
+                  ),
+                  // Organic Leaf / Discount Tag
+                  if (isOrganic)
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'ORGANIC',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF2E7D32),
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (hasDiscount && widget.product.discount != null)
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFE5D9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          widget.product.discount!,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFFD04A02),
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Wishlist heart icon
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          ref.read(wishlistProvider.notifier).toggleWishlist(widget.product.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(!isWishlisted
+                                  ? 'Saved ${widget.product.name} to wishlist!'
+                                  : 'Removed ${widget.product.name} from wishlist.'),
+                              duration: const Duration(milliseconds: 500),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(50),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            isWishlisted ? Icons.favorite : Icons.favorite_border,
+                            color: isWishlisted ? const Color(0xFFE63946) : const Color(0xFF647C72),
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   // Out of Stock Overlay
                   if (isOutOfStock)
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black.withOpacity(0.4),
-                        child: const Center(
-                          child: Card(
-                            color: Colors.red,
-                            margin: EdgeInsets.zero,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              child: Text(
-                                'OUT OF STOCK',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE63946),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Text(
+                              'OUT OF STOCK',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
@@ -126,49 +170,30 @@ class ProductCard extends StatelessWidget {
             ),
             // Product Details Block
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    widget.product.name,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                      color: const Color(0xFF23312B),
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(Icons.agriculture, size: 12, color: Colors.grey),
-                      const SizedBox(width: 3),
-                      Expanded(
-                        child: Text(
-                          product.farmName,
-                          style: const TextStyle(fontSize: 11, color: Colors.grey),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 12, color: Colors.amber),
-                      const SizedBox(width: 2),
-                      Text(
-                        product.rating > 0 ? '${product.rating}' : 'New',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'Stock: ${product.stock.toStringAsFixed(0)} ${product.weight.split(" ").last}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: isOutOfStock ? Colors.red : Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                  Text(
+                    widget.product.farmName,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 9,
+                      color: const Color(0xFF647C72),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -179,31 +204,44 @@ class ProductCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '₹${product.price.toStringAsFixed(2)} / ${product.weight}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                                fontSize: 13,
+                              '₹${widget.product.price.toStringAsFixed(2)} / ${widget.product.weight}',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF23312B),
+                                fontSize: 12,
                               ),
                             ),
                             if (hasDiscount)
                               Text(
-                                '₹${product.originalPrice.toStringAsFixed(2)}',
-                                style: const TextStyle(
+                                '₹${widget.product.originalPrice.toStringAsFixed(2)}',
+                                style: GoogleFonts.outfit(
                                   fontSize: 10,
-                                  color: Colors.grey,
+                                  color: const Color(0xFF647C72),
+                                  fontWeight: FontWeight.w500,
                                   decoration: TextDecoration.lineThrough,
                                 ),
                               ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.add_shopping_cart, size: 20),
-                        color: Colors.green,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: isOutOfStock ? null : onAddToCart,
+                      GestureDetector(
+                        onTap: isOutOfStock ? null : widget.onAddToCart,
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFFECECEC)),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.add,
+                              size: 12,
+                              color: Color(0xFF23312B),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),

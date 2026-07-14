@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/widgets/product_card.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
@@ -283,95 +284,119 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     final productState = ref.watch(productProvider);
     final categories = productState.categories;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Produce'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
-            onPressed: () {
-              setState(() {
-                _isGridView = !_isGridView;
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.sort),
-            onPressed: _openSortSheet,
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_alt),
-            onPressed: _openFilterDrawer,
-          ),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
       ),
-      body: Column(
-        children: [
-          // Search & Filter chips Header
-          Container(
-            color: Colors.green[50],
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  onChanged: (val) {
-                    setState(() {
-                      _searchQuery = val;
-                    });
-                    _fetchInitialData();
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search organic apples, spinach...',
-                    prefixIcon: const Icon(Icons.search, color: Colors.green),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Horizontal category chips scroll
-                SizedBox(
-                  height: 38,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final isSelected = _selectedCategory == cat;
-                      return Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(
-                            cat,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: Colors.green,
-                          onSelected: (val) {
-                            if (val) {
-                              setState(() {
-                                _selectedCategory = cat;
-                              });
-                              _fetchInitialData();
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'All Produce',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
           ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view, color: const Color(0xFF23312B)),
+              onPressed: () {
+                setState(() {
+                  _isGridView = !_isGridView;
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.sort, color: Color(0xFF23312B)),
+              onPressed: _openSortSheet,
+            ),
+            IconButton(
+              icon: const Icon(Icons.filter_alt, color: Color(0xFF23312B)),
+              onPressed: _openFilterDrawer,
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            // Search & Filter chips Header
+            Container(
+              color: Colors.transparent,
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (val) {
+                      setState(() {
+                        _searchQuery = val;
+                      });
+                      _fetchInitialData();
+                    },
+                    style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Search organic produce...',
+                      hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 12),
+                      prefixIcon: const Icon(Icons.search, color: Color(0xFF647C72)),
+                      fillColor: const Color(0xFFE5EDE7),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Horizontal category chips scroll
+                  SizedBox(
+                    height: 38,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final cat = categories[index];
+                        final isSelected = _selectedCategory == cat;
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(cat),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFF2E7D32),
+                            disabledColor: Colors.white,
+                            backgroundColor: Colors.white,
+                            checkmarkColor: Colors.white,
+                            labelStyle: GoogleFonts.plusJakartaSans(
+                              color: isSelected ? Colors.white : const Color(0xFF23312B),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setState(() {
+                                  _selectedCategory = cat;
+                                });
+                                _fetchInitialData();
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
           // Main Body
           Expanded(
             child: productState.errorMessage != null
@@ -398,7 +423,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.search_off, size: 64, color: Colors.grey),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                                 Text('No crops match your filters.', style: TextStyle(color: Colors.grey)),
                               ],
                             ),
@@ -453,8 +478,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildListProductCard(ProductModel prod) {
     return Card(

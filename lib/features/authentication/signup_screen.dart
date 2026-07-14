@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -15,18 +16,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  // Farmer specific controllers
-  final _farmNameController = TextEditingController();
-  final _farmAddressController = TextEditingController();
-  final _governmentIdController = TextEditingController();
-  final _bankAccountController = TextEditingController();
-
-  // Delivery specific controllers
-  final _licenseController = TextEditingController();
-  final _vehicleTypeController = TextEditingController(text: 'Two-Wheeler');
-  final _vehicleNumberController = TextEditingController();
-
   String _selectedRole = 'Customer';
   final _formKey = GlobalKey<FormState>();
 
@@ -36,13 +25,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
-    _farmNameController.dispose();
-    _farmAddressController.dispose();
-    _governmentIdController.dispose();
-    _bankAccountController.dispose();
-    _licenseController.dispose();
-    _vehicleTypeController.dispose();
-    _vehicleNumberController.dispose();
     super.dispose();
   }
 
@@ -55,22 +37,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       _passwordController.text,
       _selectedRole,
       _phoneController.text.trim(),
-      farmName: _selectedRole == 'Farmer' ? _farmNameController.text.trim() : null,
-      farmAddress: _selectedRole == 'Farmer' ? _farmAddressController.text.trim() : null,
-      governmentId: _selectedRole == 'Farmer' ? _governmentIdController.text.trim() : null,
-      bankAccountDetails: _selectedRole == 'Farmer' ? _bankAccountController.text.trim() : null,
-      drivingLicenseNumber: _selectedRole == 'Delivery Partner' ? _licenseController.text.trim() : null,
-      vehicleType: _selectedRole == 'Delivery Partner' ? _vehicleTypeController.text.trim() : null,
-      vehicleNumber: _selectedRole == 'Delivery Partner' ? _vehicleNumberController.text.trim() : null,
     );
 
     if (success) {
       if (!mounted) return;
-      final role = _selectedRole.toLowerCase();
-      if (role == 'farmer') {
+      if (_selectedRole == 'Farmer') {
         context.go('/farmer-main');
-      } else if (role == 'delivery partner') {
-        context.go('/delivery-main');
       } else {
         context.go('/customer-main');
       }
@@ -78,7 +50,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       if (!mounted) return;
       final error = ref.read(authProvider).errorMessage ?? 'Signup failed';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
+        SnackBar(content: Text(error), backgroundColor: const Color(0xFFFF4D6D)),
       );
     }
   }
@@ -87,280 +59,337 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.black,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Join FarmFresh Today',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Register to shop fresh, sell crops, or deliver orders',
-                  style: TextStyle(color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                
-                // Role Selector Dropdown
-                DropdownButtonFormField<String>(
-                  value: _selectedRole,
-                  decoration: const InputDecoration(
-                    labelText: 'Register As',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
-                    DropdownMenuItem(value: 'Farmer', child: Text('Farmer Partner')),
-                    DropdownMenuItem(value: 'Delivery Partner', child: Text('Delivery Partner')),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            'Create Account',
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: const Color(0xFF23312B),
+            ),
+          ),
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Form(
+              key: _formKey,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A2E5C45),
+                      offset: Offset(0, 10),
+                      blurRadius: 30,
+                    ),
                   ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _selectedRole = val;
-                      });
-                    }
-                  },
                 ),
-                const SizedBox(height: 16),
-                
-                // Name Field
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.badge_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Phone Field
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your phone number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Join FarmFresh Today',
+                      style: GoogleFonts.outfit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF23312B),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Register to shop fresh or sell your organic produce',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF647C72),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Role Selector Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _selectedRole,
+                      dropdownColor: Colors.white,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Register As',
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                        ),
+                        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF647C72)),
+                        fillColor: const Color(0xFFFAFBF9),
+                        filled: true,
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
+                        DropdownMenuItem(value: 'Farmer', child: Text('Farmer Partner')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedRole = val;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Name Field
+                    TextFormField(
+                      controller: _nameController,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Full Name',
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                        ),
+                        prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFF647C72)),
+                        fillColor: const Color(0xFFFAFBF9),
+                        filled: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Phone Field
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                        ),
+                        prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFF647C72)),
+                        fillColor: const Color(0xFFFAFBF9),
+                        filled: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                // Email Field
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
+                    // Email Field
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Email Address',
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                        ),
+                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF647C72)),
+                        fillColor: const Color(0xFFFAFBF9),
+                        filled: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Password Field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                        ),
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF647C72)),
+                        fillColor: const Color(0xFFFAFBF9),
+                        filled: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Sign Up button
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1FE28C43),
+                            offset: Offset(0, 8),
+                            blurRadius: 16,
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: authState.isLoading ? null : _handleSignup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: authState.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                'Register as $_selectedRole',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock_outline),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 8) {
-                      return 'Password must be at least 8 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Farmer Specific Fields
-                if (_selectedRole == 'Farmer') ...[
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Farm Details', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                  ),
-                  TextFormField(
-                    controller: _farmNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Farm Name',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.agriculture_outlined),
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
-                        return 'Farm name is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _farmAddressController,
-                    decoration: const InputDecoration(
-                      labelText: 'Farm Address',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.location_on_outlined),
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
-                        return 'Farm address is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _governmentIdController,
-                    decoration: const InputDecoration(
-                      labelText: 'Government Tax ID / License',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.receipt_long_outlined),
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
-                        return 'Government ID is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _bankAccountController,
-                    decoration: const InputDecoration(
-                      labelText: 'Bank Account Number',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.account_balance_outlined),
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == 'Farmer' && (value == null || value.trim().isEmpty)) {
-                        return 'Bank account details are required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // Delivery Specific Fields
-                if (_selectedRole == 'Delivery Partner') ...[
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Vehicle & License Details', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                  ),
-                  TextFormField(
-                    controller: _licenseController,
-                    decoration: const InputDecoration(
-                      labelText: 'Driving License Number',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.card_membership_outlined),
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == 'Delivery Partner' && (value == null || value.trim().isEmpty)) {
-                        return 'Driving License is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _vehicleTypeController.text,
-                    decoration: const InputDecoration(
-                      labelText: 'Vehicle Type',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.pedal_bike_outlined),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'Two-Wheeler', child: Text('Two-Wheeler (Motorcycle/Scooter)')),
-                      DropdownMenuItem(value: 'Three-Wheeler', child: Text('Three-Wheeler (Auto)')),
-                      DropdownMenuItem(value: 'Four-Wheeler', child: Text('Four-Wheeler (Mini Truck)')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _vehicleTypeController.text = val;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _vehicleNumberController,
-                    decoration: const InputDecoration(
-                      labelText: 'Vehicle Number Plate',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.numbers_outlined),
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == 'Delivery Partner' && (value == null || value.trim().isEmpty)) {
-                        return 'Vehicle number is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                const SizedBox(height: 24),
-                
-                // Sign Up button
-                ElevatedButton(
-                  onPressed: authState.isLoading ? null : _handleSignup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : Text('Register as $_selectedRole', style: const TextStyle(fontSize: 16)),
-                ),
-              ],
+              ),
             ),
           ),
         ),

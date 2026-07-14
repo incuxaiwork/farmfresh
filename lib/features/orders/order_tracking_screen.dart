@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
@@ -44,8 +45,8 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   }
 
   Future<void> _connectSocket() async {
-    const secureStorage = FlutterSecureStorage();
-    final token = await secureStorage.read(key: 'access_token');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
     if (token == null) return;
 
     _socket = IO.io(
@@ -97,30 +98,60 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     final orderState = ref.watch(orderProvider);
     final order = orderState.selectedOrder;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Track Order'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          if (_driverName != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: Text(
-                  _driverName!,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF2F8F4),
+            Color(0xFFE6F2EA),
+          ],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Track Order',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          actions: [
+            if (_driverName != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _driverName!.toUpperCase(),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF2E7D32),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
+        body: orderState.isLoading && order == null
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
+            : order == null
+                ? _buildErrorState(orderState.errorMessage ?? 'Order not found')
+                : _buildTrackingContent(order),
       ),
-      body: orderState.isLoading && order == null
-          ? const Center(child: CircularProgressIndicator())
-          : order == null
-              ? _buildErrorState(orderState.errorMessage ?? 'Order not found')
-              : _buildTrackingContent(order),
     );
   }
 
@@ -134,7 +165,8 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         _buildProgressHeader(displayStatus, progress),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               children: [
                 _buildLiveMapPlaceholder(order),
@@ -143,7 +175,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                 const SizedBox(height: 16),
                 _buildOrderSummary(order),
                 if (order.address != null && order.address!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   _buildDeliveryInfo(order),
                 ],
                 const SizedBox(height: 16),
@@ -158,28 +190,46 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   Widget _buildProgressHeader(String displayStatus, double progress) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      color: Colors.green[50],
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          Text(displayStatus,
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green)),
+          Text(
+            displayStatus.toUpperCase(),
+            style: GoogleFonts.outfit(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF2E7D32),
+            ),
+          ),
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.green[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-              minHeight: 10,
+              backgroundColor: const Color(0xFFFAFBF9),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+              minHeight: 8,
             ),
           ),
           const SizedBox(height: 8),
-          Text('${(progress * 100).toInt()}% complete',
-              style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+          Text(
+            '${(progress * 100).toInt()}% Complete',
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF647C72), fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -211,48 +261,75 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   }
 
   Widget _buildLiveMapPlaceholder(OrderModel order) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        height: 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [Colors.green[100]!, Colors.green[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Container(
+      width: double.infinity,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
           ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
           children: [
-            const Icon(Icons.map, size: 48, color: Colors.green),
-            const SizedBox(height: 8),
-            Text(
-              _driverLatitude != null
-                  ? 'Driver is on the way'
-                  : 'Live tracking will appear here',
-              style: TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green[700]),
-            ),
-            if (_driverLatitude != null)
-              StreamBuilder<Map<String, dynamic>>(
-                stream: _locationController.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'Location updated ${DateFormat('HH:mm:ss').format(DateTime.now())}',
-                        style:
-                            TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                    );
-                  }
-                  return const SizedBox();
-                },
+            Container(
+              color: const Color(0xFFFAFBF9),
+              child: Center(
+                child: Opacity(
+                  opacity: 0.05,
+                  child: Icon(Icons.map_outlined, size: 180, color: const Color(0xFF2E7D32)),
+                ),
               ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F5E9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.navigation_outlined, size: 30, color: Color(0xFF2E7D32)),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _driverLatitude != null
+                        ? 'Rider is on route with crops'
+                        : 'GPS Tracking Initialized',
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF23312B),
+                    ),
+                  ),
+                  if (_driverLatitude != null)
+                    StreamBuilder<Map<String, dynamic>>(
+                      stream: _locationController.stream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              'Location ping ${DateFormat('hh:mm:ss a').format(DateTime.now())}',
+                              style: GoogleFonts.plusJakartaSans(fontSize: 10, color: const Color(0xFF647C72), fontWeight: FontWeight.w500),
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -262,84 +339,90 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   Widget _buildStatusSteps(OrderModel order) {
     final steps = _getTrackingSteps(order.status);
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Live Status',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            ...steps.asMap().entries.map((entry) {
-              final index = entry.key;
-              final step = entry.value;
-              final isLast = index == steps.length - 1;
-              final isCompleted = step['isCompleted'] as bool;
-              final isActive = step['isActive'] as bool;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Live Status tracking', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF23312B))),
+          const Divider(height: 24, color: Color(0xFFF3F3F3)),
+          ...steps.asMap().entries.map((entry) {
+            final index = entry.key;
+            final step = entry.value;
+            final isLast = index == steps.length - 1;
+            final isCompleted = step['isCompleted'] as bool;
+            final isActive = step['isActive'] as bool;
 
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: isCompleted
-                              ? Colors.green
-                              : isActive
-                                  ? Colors.orange
-                                  : Colors.grey[300],
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: isCompleted
-                              ? const Icon(Icons.check,
-                                  size: 14, color: Colors.white)
-                              : isActive
-                                  ? const SizedBox(
-                                      width: 10,
-                                      height: 10,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : null,
-                        ),
+            final circleColor = isCompleted
+                ? const Color(0xFF2E7D32)
+                : isActive
+                    ? const Color(0xFFE28C43)
+                    : const Color(0xFFECECEC);
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: circleColor,
+                        shape: BoxShape.circle,
                       ),
-                      if (!isLast)
-                        Container(
-                          width: 2,
-                          height: 30,
-                          color: isCompleted ? Colors.green : Colors.grey[300],
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        step['title'] as String,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight:
-                              isCompleted || isActive ? FontWeight.bold : FontWeight.normal,
-                          color:
-                              isCompleted || isActive ? Colors.black87 : Colors.grey,
-                        ),
+                      child: Center(
+                        child: isCompleted
+                            ? const Icon(Icons.check, size: 12, color: Colors.white)
+                            : isActive
+                                ? const SizedBox(
+                                    width: 10,
+                                    height: 10,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : null,
+                      ),
+                    ),
+                    if (!isLast)
+                      Container(
+                        width: 2,
+                        height: 26,
+                        color: isCompleted ? const Color(0xFF2E7D32) : const Color(0xFFECECEC),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      step['title'] as String,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: isCompleted || isActive ? FontWeight.bold : FontWeight.w600,
+                        color: isCompleted || isActive ? const Color(0xFF23312B) : const Color(0xFF8D99AE),
                       ),
                     ),
                   ),
-                ],
-              );
-            }),
-          ],
-        ),
+                ),
+              ],
+            );
+          }),
+        ],
       ),
     );
   }
@@ -381,53 +464,68 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     final orderDisplay =
         order.orderNumber.isNotEmpty ? order.orderNumber : order.id.substring(0, 8);
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Order Details',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _infoRow('Order ID', orderDisplay),
-            _infoRow('Status', displayStatus),
-            _infoRow('Items', '${order.items.length} items'),
-            _infoRow('Total', '₹${order.total.toStringAsFixed(2)}'),
-            _infoRow(
-                'Ordered', DateFormat('dd/MM/yyyy HH:mm').format(order.date)),
-            if (order.notes != null && order.notes!.isNotEmpty)
-              _infoRow('Notes', order.notes!),
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Order Summary info', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF23312B))),
+          const Divider(height: 24, color: Color(0xFFF3F3F3)),
+          _infoRow('Order ID', orderDisplay),
+          _infoRow('Status', displayStatus),
+          _infoRow('Items Count', '${order.items.length} items'),
+          _infoRow('Total Price', '₹${order.total.toStringAsFixed(2)}'),
+          _infoRow(
+              'Ordered date', DateFormat('MMM dd • hh:mm a').format(order.date)),
+          if (order.notes != null && order.notes!.isNotEmpty)
+            _infoRow('Order Notes', order.notes!),
+        ],
       ),
     );
   }
 
   Widget _buildDeliveryInfo(OrderModel order) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            const Icon(Icons.location_on, color: Colors.green, size: 24),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Delivering to',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text(order.address!,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                ],
-              ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on_outlined, color: Color(0xFF2E7D32), size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Delivering crops to',
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12, color: const Color(0xFF23312B))),
+                const SizedBox(height: 2),
+                Text(order.address!,
+                    style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11, fontWeight: FontWeight.w500)),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -438,13 +536,13 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF647C72), fontWeight: FontWeight.w600)),
           Flexible(
-            child: Text(value,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600),
-                textAlign: TextAlign.end),
+            child: Text(
+              value,
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),
@@ -458,9 +556,9 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.error_outline, size: 64, color: Color(0xFFFF4D6D)),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
+            Text(message, textAlign: TextAlign.center, style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D))),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => ref
@@ -469,7 +567,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: const Color(0xFF2E7D32),
                 foregroundColor: Colors.white,
               ),
             ),
