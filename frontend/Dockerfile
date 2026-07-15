@@ -1,5 +1,5 @@
 # Stage 1: Build the Flutter Web application
-FROM instrumentisto/flutter:3.19.0 AS builder
+FROM instrumentisto/flutter:3.22.0 AS builder
 
 WORKDIR /app
 
