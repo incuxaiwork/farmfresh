@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
+import 'dart:html' as html;
 import '../../providers/delivery_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/delivery_profile_model.dart';
+import '../../providers/profile_image_provider.dart';
+import '../../core/widgets/profile_image_picker_dialog.dart';
 
 class DeliveryProfileScreen extends ConsumerStatefulWidget {
   const DeliveryProfileScreen({super.key});
@@ -59,6 +63,9 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(deliveryProfileProvider);
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final profileImage = user != null ? ref.watch(profileImageProvider(user.id)) : null;
 
     ref.listen<DeliveryProfileState>(deliveryProfileProvider, (previous, next) {
       if (next.actionMessage != null) {
@@ -98,7 +105,7 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDriverHeader(state.profile),
+                    _buildDriverHeader(state.profile, profileImage, user?.id),
                     const SizedBox(height: 24),
                     _buildSectionHeader('Personal Contact Details'),
                     const SizedBox(height: 12),
@@ -174,14 +181,80 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
     );
   }
 
-  Widget _buildDriverHeader(DeliveryProfile profile) {
+  Widget _buildDriverHeader(DeliveryProfile profile, ProfileImageState? profileImage, String? userId) {
     return Center(
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.green.shade50,
-            child: const Icon(Icons.person, size: 48, color: Colors.green),
+          GestureDetector(
+            onTap: userId == null
+                ? null
+                : () {
+                    ProfileImagePickerDialog.show(
+                      context,
+                      userId: userId,
+                      onImageSelected: (base64Image, scale, dx, dy) {
+                        ref.read(profileImageProvider(userId).notifier).updateProfileImage(
+                              base64Image,
+                              scale: scale,
+                              dx: dx,
+                              dy: dy,
+                            );
+                      },
+                    );
+                  },
+            child: Stack(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.green.shade100, width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0F2E5C45),
+                        offset: Offset(0, 4),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: profileImage != null && profileImage.image.startsWith('data:image')
+                        ? Transform.translate(
+                            offset: Offset(profileImage.dx, profileImage.dy),
+                            child: Transform.scale(
+                              scale: profileImage.scale,
+                              child: Image.memory(
+                                base64Decode(profileImage.image.split(',')[1]),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: Colors.green.shade50,
+                            child: const Icon(Icons.person, size: 48, color: Colors.green),
+                          ),
+                  ),
+                ),
+                if (userId != null)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           Text(profile.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),

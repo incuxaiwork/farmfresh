@@ -7,6 +7,7 @@ import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../core/widgets/product_card.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
@@ -335,26 +336,38 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 children: [
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val;
-                      });
-                      _fetchInitialData();
-                    },
-                    style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13),
-                    decoration: InputDecoration(
-                      hintText: 'Search organic produce...',
-                      hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 12),
-                      prefixIcon: const Icon(Icons.search, color: Color(0xFF647C72)),
-                      fillColor: const Color(0xFFE5EDE7),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE5EDE7),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Color(0xFF647C72), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (val) {
+                              setState(() {
+                                _searchQuery = val;
+                              });
+                              _fetchInitialData();
+                            },
+                            style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13),
+                            decoration: InputDecoration(
+                              hintText: 'Search organic produce...',
+                              hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 12),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                              isDense: true,
+                              filled: false,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -455,8 +468,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                         },
                                         onAddToCart: () {
                                           ref.read(cartProvider.notifier).addItem(prod);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Added ${prod.name} to Cart')),
+                                          showAppSnackBar(
+                                            context,
+                                            'Added ${prod.name} to Cart',
+                                            type: SnackBarType.success,
                                           );
                                         },
                                       );
@@ -527,7 +542,11 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                           icon: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.green),
                           onPressed: prod.stock <= 0 ? null : () {
                             ref.read(cartProvider.notifier).addItem(prod);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added ${prod.name} to Cart')));
+                            showAppSnackBar(
+                              context,
+                              'Added ${prod.name} to Cart',
+                              type: SnackBarType.success,
+                            );
                           },
                         ),
                       ],

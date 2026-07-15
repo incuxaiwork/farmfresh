@@ -20,6 +20,7 @@ class CartScreen extends ConsumerStatefulWidget {
 class _CartScreenState extends ConsumerState<CartScreen> {
   final _couponController = TextEditingController();
   AddressModel? _selectedAddress;
+  bool _isApplyHovered = false;
 
   @override
   void initState() {
@@ -391,51 +392,58 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     border: InputBorder.none,
                                     contentPadding: EdgeInsets.zero,
                                     isDense: true,
+                                    filled: false,
                                   ),
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: cartState.couponCode != null
-                                ? () {
-                                    ref.read(cartProvider.notifier).removeCoupon();
-                                    _couponController.clear();
-                                  }
-                                : _applyCoupon,
-                            child: Container(
-                              height: 44,
-                              decoration: BoxDecoration(
-                                gradient: cartState.couponCode != null
-                                    ? null
-                                    : const LinearGradient(
-                                        colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-                                      ),
-                                color: cartState.couponCode != null
-                                    ? const Color(0xFFFFF0F3)
-                                    : null,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: cartState.couponCode != null
-                                    ? null
-                                    : [
-                                        BoxShadow(
-                                          color: const Color(0xFFE28C43).withOpacity(0.2),
-                                          offset: const Offset(0, 4),
-                                          blurRadius: 8,
+                          MouseRegion(
+                            onEnter: (_) => setState(() => _isApplyHovered = true),
+                            onExit: (_) => setState(() => _isApplyHovered = false),
+                            child: GestureDetector(
+                              onTap: cartState.couponCode != null
+                                  ? () {
+                                      ref.read(cartProvider.notifier).removeCoupon();
+                                      _couponController.clear();
+                                    }
+                                  : _applyCoupon,
+                              child: Container(
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  gradient: cartState.couponCode != null
+                                      ? null
+                                      : LinearGradient(
+                                          colors: _isApplyHovered
+                                              ? [const Color(0xFFC87028), const Color(0xFFE28C43)]
+                                              : [const Color(0xFFE28C43), const Color(0xFFF3A05B)],
                                         ),
-                                      ],
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              alignment: Alignment.center,
-                              child: Text(
-                                cartState.couponCode != null ? 'Remove' : 'Apply',
-                                style: GoogleFonts.plusJakartaSans(
                                   color: cartState.couponCode != null
-                                      ? const Color(0xFFFF4D6D)
-                                      : Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                      ? (_isApplyHovered ? const Color(0xFFFFCCD5) : const Color(0xFFFFF0F3))
+                                      : null,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: cartState.couponCode != null
+                                      ? null
+                                      : [
+                                          BoxShadow(
+                                            color: const Color(0xFFE28C43).withOpacity(0.2),
+                                            offset: const Offset(0, 4),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  cartState.couponCode != null ? 'Remove' : 'Apply',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: cartState.couponCode != null
+                                        ? const Color(0xFFFF4D6D)
+                                        : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ),

@@ -6,6 +6,10 @@ import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../core/widgets/product_card.dart';
 import '../../providers/address_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/profile_image_provider.dart';
+import '../../core/utils/app_snackbar.dart';
+import 'dart:convert';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -18,10 +22,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _selectedCategory = 'All';
   String _searchQuery = '';
 
+  void _showCategoryBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select Category',
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF23312B),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Text('🌱'),
+                ),
+                title: Text('All Products', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/products?category=All');
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFFAD2E1),
+                  child: Text('🍎'),
+                ),
+                title: Text('Fruits', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/products?category=Fruits');
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFEAF6EC),
+                  child: Text('🥕'),
+                ),
+                title: Text('Vegetables', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/products?category=Vegetables');
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFFFE5D9),
+                  child: Text('🌾'),
+                ),
+                title: Text('Grains & Millets', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/products?category=Grains & Millets');
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFFFF1E6),
+                  child: Text('🥛'),
+                ),
+                title: Text('Dairy', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/products?category=Dairy');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final productState = ref.watch(productProvider);
     final addressState = ref.watch(addressProvider);
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final profileImage = user != null ? ref.watch(profileImageProvider(user.id)) : null;
     final cartState = ref.watch(cartProvider);
     final cartItemCount = cartState.itemCount;
     final defaultAddr = addressState.defaultAddress;
@@ -190,10 +281,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         ],
                                       ),
                                       child: ClipOval(
-                                        child: Image.network(
-                                          'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky',
-                                          fit: BoxFit.cover,
-                                        ),
+                                        child: profileImage != null && profileImage.image.startsWith('data:image')
+                                            ? Transform.translate(
+                                                offset: Offset(profileImage.dx, profileImage.dy),
+                                                child: Transform.scale(
+                                                  scale: profileImage.scale,
+                                                  child: Image.memory(
+                                                    base64Decode(profileImage.image.split(',')[1]),
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              )
+                                            : Image.network(
+                                                'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky',
+                                                fit: BoxFit.cover,
+                                              ),
                                       ),
                                     ),
                                   ),
@@ -245,6 +347,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       filled: false,
                                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                       isDense: true,
+                                      filled: false,
                                     ),
                                     style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF1B2E25),
@@ -253,17 +356,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  height: 36,
-                                  width: 36,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF1F8F4),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.tune, color: Color(0xFF2E7D32), size: 18),
-                                  ),
+                                GestureDetector(
+                                  onTap: _showCategoryBottomSheet,
+                                  child: const Icon(Icons.category_outlined, color: Color(0xFF647C72), size: 20),
                                 ),
                               ],
                             ),
@@ -393,17 +488,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       },
                                       onAddToCart: () {
                                         ref.read(cartProvider.notifier).addItem(prod);
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Added ${prod.name} to Cart'),
-                                            duration: const Duration(seconds: 1),
-                                            action: SnackBarAction(
-                                              label: 'Cart',
-                                              onPressed: () {
-                                                context.push('/cart');
-                                              },
-                                            ),
-                                          ),
+                                        showAppSnackBar(
+                                          context,
+                                          'Added ${prod.name} to Cart',
+                                          type: SnackBarType.success,
+                                          actionLabel: 'Cart',
+                                          onAction: () {
+                                            context.push('/cart');
+                                          },
                                         );
                                       },
                                     );

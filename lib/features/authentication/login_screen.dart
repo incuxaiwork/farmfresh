@@ -57,268 +57,280 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppTheme.getBackgroundGradient(context),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Form(
-              key: _formKey,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0A2E5C45),
-                      offset: Offset(0, 10),
-                      blurRadius: 30,
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 12),
-                    const Icon(Icons.spa, size: 64, color: Color(0xFF2E7D32)),
-                    const SizedBox(height: 12),
-                    Text(
-                      'FarmFresh Portal',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF23312B),
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.network(
+              '/login_background.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Dark Overlay for Contrast / Text Visibility
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.35),
+            ),
+          ),
+          // Form Content
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Form(
+                key: _formKey,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.96), // Solid/neat background for clear text readability
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        offset: const Offset(0, 10),
+                        blurRadius: 30,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Connecting local farms directly with you',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF647C72),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(28.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 12),
+                      const Icon(Icons.spa, size: 64, color: Color(0xFF2E7D32)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'FarmFresh Portal',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF23312B),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Role Selector Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      dropdownColor: Colors.white,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF23312B),
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Select Portal Role',
-                        labelStyle: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF647C72),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
-                        ),
-                        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF647C72)),
-                        fillColor: const Color(0xFFFAFBF9),
-                        filled: true,
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
-                        DropdownMenuItem(value: 'Farmer', child: Text('Farmer Dashboard')),
-                        DropdownMenuItem(value: 'Delivery Partner', child: Text('Delivery Partner Portal')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedRole = val;
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Email Field
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF23312B),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Email Address',
-                        labelStyle: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF647C72),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
-                        ),
-                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF647C72)),
-                        fillColor: const Color(0xFFFAFBF9),
-                        filled: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Password Field
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF23312B),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        labelStyle: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF647C72),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
-                        ),
-                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF647C72)),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                            color: const Color(0xFF647C72),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                        fillColor: const Color(0xFFFAFBF9),
-                        filled: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Login button
-                    Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x1FE28C43),
-                            offset: Offset(0, 8),
-                            blurRadius: 16,
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: authState.isLoading ? null : _handleLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: authState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : Text(
-                                'Login to $_selectedRole',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Switch to Sign Up
-                    TextButton(
-                      onPressed: () {
-                        context.push('/signup');
-                      },
-                      child: Text(
-                        'Don\'t have an account? Sign Up',
+                      const SizedBox(height: 6),
+                      Text(
+                        'Connecting local farms directly with you',
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF2E7D32),
-                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Role Selector Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _selectedRole,
+                        dropdownColor: Colors.white,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF23312B),
+                          fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
+                        decoration: InputDecoration(
+                          labelText: 'Select Portal Role',
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF647C72),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                          ),
+                          prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF647C72)),
+                          fillColor: const Color(0xFFFAFBF9),
+                          filled: true,
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
+                          DropdownMenuItem(value: 'Farmer', child: Text('Farmer Dashboard')),
+                          DropdownMenuItem(value: 'Delivery Partner', child: Text('Delivery Partner Portal')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              _selectedRole = val;
+                            });
+                          }
+                        },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      
+                      // Email Field
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF23312B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Email Address',
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF647C72),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                          ),
+                          prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF647C72)),
+                          fillColor: const Color(0xFFFAFBF9),
+                          filled: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Password Field
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF23312B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF647C72),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                          ),
+                          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF647C72)),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              color: const Color(0xFF647C72),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          fillColor: const Color(0xFFFAFBF9),
+                          filled: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Login button
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x1FE28C43),
+                              offset: Offset(0, 8),
+                              blurRadius: 16,
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: authState.isLoading ? null : _handleLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: authState.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  'Login to $_selectedRole',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Switch to Sign Up
+                      TextButton(
+                        onPressed: () {
+                          context.push('/signup');
+                        },
+                        child: Text(
+                          'Don\'t have an account? Sign Up',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF2E7D32),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
-    );
   }
 }

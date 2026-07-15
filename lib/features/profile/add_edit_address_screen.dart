@@ -95,6 +95,26 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
             icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
             onPressed: () => context.pop(),
           ),
+          actions: [
+            TextButton(
+              onPressed: _isSaving ? null : _saveAddress,
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(color: Color(0xFF2E7D32), strokeWidth: 2),
+                    )
+                  : Text(
+                      'Save',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF2E7D32),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
         body: Center(
           child: SingleChildScrollView(

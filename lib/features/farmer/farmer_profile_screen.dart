@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
+import 'dart:html' as html;
 import '../../providers/auth_provider.dart';
+import '../../providers/profile_image_provider.dart';
+import '../../core/widgets/profile_image_picker_dialog.dart';
 
 class FarmerProfileScreen extends ConsumerWidget {
   const FarmerProfileScreen({super.key});
@@ -11,6 +15,7 @@ class FarmerProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
+    final profileImage = user != null ? ref.watch(profileImageProvider(user.id)) : null;
 
     if (user == null) {
       return Scaffold(
@@ -55,25 +60,72 @@ class FarmerProfileScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x0F2E5C45),
-                          offset: Offset(0, 4),
-                          blurRadius: 10,
+                  GestureDetector(
+                    onTap: () {
+                      ProfileImagePickerDialog.show(
+                        context,
+                        userId: user.id,
+                        onImageSelected: (base64Image, scale, dx, dy) {
+                          ref.read(profileImageProvider(user.id).notifier).updateProfileImage(
+                                base64Image,
+                                scale: scale,
+                                dx: dx,
+                                dy: dy,
+                              );
+                        },
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0F2E5C45),
+                                offset: Offset(0, 4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: profileImage != null && profileImage.image.startsWith('data:image')
+                                ? Transform.translate(
+                                    offset: Offset(profileImage.dx, profileImage.dy),
+                                    child: Transform.scale(
+                                      scale: profileImage.scale,
+                                      child: Image.memory(
+                                        base64Decode(profileImage.image.split(',')[1]),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    'https://api.dicebear.com/7.x/adventurer/svg?seed=FarmerJoe',
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF2E7D32),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    child: ClipOval(
-                      child: Image.network(
-                        'https://api.dicebear.com/7.x/adventurer/svg?seed=FarmerJoe',
-                        fit: BoxFit.cover,
-                      ),
                     ),
                   ),
                   const SizedBox(height: 12),

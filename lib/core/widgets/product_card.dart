@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/product_model.dart';
 import '../../providers/wishlist_provider.dart';
+import '../utils/app_snackbar.dart';
 
 class ProductCard extends ConsumerStatefulWidget {
   final ProductModel product;
@@ -20,7 +21,25 @@ class ProductCard extends ConsumerStatefulWidget {
   ConsumerState<ProductCard> createState() => _ProductCardState();
 }
 
-class _ProductCardState extends ConsumerState<ProductCard> {
+class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProviderStateMixin {
+  bool _showHeartPopup = false;
+  late AnimationController _scaleController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final wishlist = ref.watch(wishlistProvider);
@@ -116,30 +135,78 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          ref.read(wishlistProvider.notifier).toggleWishlist(widget.product.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(!isWishlisted
-                                  ? 'Saved ${widget.product.name} to wishlist!'
-                                  : 'Removed ${widget.product.name} from wishlist.'),
-                              duration: const Duration(milliseconds: 500),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.none,
+                      children: [
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              final newWish = !isWishlisted;
+                              ref.read(wishlistProvider.notifier).toggleWishlist(widget.product.id);
+                              if (newWish) {
+                                _scaleController.forward(from: 0.0);
+                                setState(() {
+                                  _showHeartPopup = true;
+                                });
+                                Future.delayed(const Duration(milliseconds: 600), () {
+                                  if (mounted) {
+                                    setState(() {
+                                      _showHeartPopup = false;
+                                    });
+                                  }
+                                });
+                              }
+                              showAppSnackBar(
+                                context,
+                                newWish
+                                    ? 'Saved ${widget.product.name} to wishlist!'
+                                    : 'Removed ${widget.product.name} from wishlist.',
+                                type: SnackBarType.success,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(50),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: ScaleTransition(
+                                scale: Tween<double>(begin: 1.0, end: 1.3)
+                                    .animate(CurvedAnimation(
+                                  parent: _scaleController,
+                                  curve: Curves.elasticOut,
+                                )),
+                                child: Icon(
+                                  isWishlisted ? Icons.favorite : Icons.favorite_border,
+                                  color: isWishlisted ? const Color(0xFFE63946) : const Color(0xFF647C72),
+                                  size: 16,
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(50),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            isWishlisted ? Icons.favorite : Icons.favorite_border,
-                            color: isWishlisted ? const Color(0xFFE63946) : const Color(0xFF647C72),
-                            size: 16,
                           ),
                         ),
-                      ),
+                        if (_showHeartPopup)
+                          ...List.generate(3, (index) {
+                            final double angle = (index - 1) * 0.4;
+                            return TweenAnimationBuilder<double>(
+                              tween: Tween<double>(begin: 0.0, end: 1.0),
+                              duration: const Duration(milliseconds: 500),
+                              builder: (context, value, child) {
+                                return Positioned(
+                                  top: -20 * value,
+                                  left: angle * 25 * value,
+                                  child: Opacity(
+                                    opacity: 1.0 - value,
+                                    child: const Icon(
+                                      Icons.favorite,
+                                      color: Color(0xFFE63946),
+                                      size: 10,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          }),
+                      ],
                     ),
                   ),
                   // Out of Stock Overlay

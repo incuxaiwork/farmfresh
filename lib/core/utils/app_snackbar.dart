@@ -7,28 +7,24 @@ void showAppSnackBar(
   BuildContext context,
   String message, {
   SnackBarType type = SnackBarType.success,
-  Duration duration = const Duration(seconds: 2),
+  Duration duration = const Duration(seconds: 1),
   String? actionLabel,
   VoidCallback? onAction,
 }) {
-  final Color bgColor;
+  final Color bgColor = const Color(0xFF2E7D32);
   final IconData icon;
 
   switch (type) {
     case SnackBarType.success:
-      bgColor = const Color(0xFF2E7D32);
       icon = Icons.check_circle_outline_rounded;
       break;
     case SnackBarType.error:
-      bgColor = const Color(0xFFE63946);
       icon = Icons.error_outline_rounded;
       break;
     case SnackBarType.warning:
-      bgColor = const Color(0xFFE28C43);
       icon = Icons.warning_amber_rounded;
       break;
     case SnackBarType.info:
-      bgColor = const Color(0xFF219EBC);
       icon = Icons.info_outline_rounded;
       break;
   }

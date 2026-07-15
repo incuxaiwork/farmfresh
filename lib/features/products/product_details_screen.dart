@@ -8,6 +8,7 @@ import '../../models/cart_item_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../core/widgets/product_card.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class ProductDetailsScreen extends ConsumerWidget {
   final ProductModel? product;
@@ -94,8 +95,10 @@ class ProductDetailsScreen extends ConsumerWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Share Link copied to Clipboard!')),
+                          showAppSnackBar(
+                            context,
+                            'Share Link copied to Clipboard!',
+                            type: SnackBarType.success,
                           );
                         },
                         child: Container(
@@ -404,8 +407,10 @@ class ProductDetailsScreen extends ConsumerWidget {
                                   },
                                   onAddToCart: () {
                                     ref.read(cartProvider.notifier).addItem(prod);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Added ${prod.name} to Cart')),
+                                    showAppSnackBar(
+                                      context,
+                                      'Added ${prod.name} to Cart',
+                                      type: SnackBarType.success,
                                     );
                                   },
                                 ),
@@ -487,11 +492,10 @@ class ProductDetailsScreen extends ConsumerWidget {
                                     ? null
                                     : () {
                                         ref.read(cartProvider.notifier).addItem(product!);
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Added ${product!.name} to Cart!'),
-                                            duration: const Duration(seconds: 1),
-                                          ),
+                                        showAppSnackBar(
+                                          context,
+                                          'Added ${product!.name} to Cart!',
+                                          type: SnackBarType.success,
                                         );
                                       },
                                 style: ElevatedButton.styleFrom(
