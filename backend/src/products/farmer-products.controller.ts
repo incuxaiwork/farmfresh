@@ -6,6 +6,7 @@ import { CurrentUser, CurrentUserPayload } from '../common/decorators/current-us
 import { ProductsService } from './products.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../database/prisma.service';
+import { SuccessResponseDto } from '../common/dto/api-response.dto';
 
 @ApiTags('Products')
 @Controller('farmer/products')
@@ -39,6 +40,6 @@ export class FarmerProductsController {
       role: 'FARMER',
     });
 
-    return { success: true, data };
+    return new SuccessResponseDto('Farmer products retrieved successfully', data);
   }
 }

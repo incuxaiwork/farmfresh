@@ -815,12 +815,12 @@ window.toggleWishlist = function(e, prodId) {
     }
 };
 
-// UPDATE WISHLIST BADGE
+// UPDATE WISHLIST BADGE (Now displays Cart Count in Header)
 function updateWishlistBadge() {
     const badge = document.getElementById('wishlist-badge-count');
     if (!badge) return;
     
-    const count = STATE.wishlist.length;
+    const count = STATE.cart.reduce((sum, item) => sum + item.quantity, 0);
     if (count > 0) {
         badge.innerText = count;
         badge.style.display = 'flex';
@@ -1013,6 +1013,7 @@ function updateCartStats() {
     syncCartAddress();
     renderCart();
     renderFarmerInventory();
+    updateWishlistBadge(); // Keep the header cart badge updated
     saveStateToStorage();
 }
 

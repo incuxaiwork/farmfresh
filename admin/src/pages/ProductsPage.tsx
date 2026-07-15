@@ -10,6 +10,7 @@ import PageHeader from '../components/PageHeader';
 import {
   Box, Typography, IconButton, Tooltip, Dialog, DialogTitle, DialogContent,
   DialogActions, Button, TextField, Grid, FormControl, InputLabel, Select, MenuItem,
+  Snackbar, Alert
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -32,9 +33,12 @@ interface EditForm {
   price: number;
   stock: number;
   status: string;
+  categoryId?: string;
+  farmerId?: string;
+  unit?: string;
 }
 
-const emptyForm: EditForm = { name: '', description: '', price: 0, stock: 0, status: 'DRAFT' };
+const emptyForm: EditForm = { name: '', description: '', price: 0, stock: 0, status: 'DRAFT', categoryId: '', farmerId: '', unit: '1 kg' };
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
@@ -54,6 +58,8 @@ export default function ProductsPage() {
   const [confirmTitle, setConfirmTitle] = useState('');
   const [confirmMessage, setConfirmMessage] = useState('');
 
+  const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(timer);
@@ -71,18 +77,40 @@ export default function ProductsPage() {
 
   const categories = categoriesData?.items ?? [];
 
+  const { data: farmersData } = useQuery({
+    queryKey: ['farmers-list'],
+    queryFn: () => adminService.getFarmers({ limit: 100 }),
+  });
+
+  const farmers = farmersData?.items ?? [];
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['products'] });
+
+  const createMutation = useMutation({
+    mutationFn: (formData: any) => adminService.createProduct(formData),
+    onSuccess: () => {
+      invalidate();
+      setSnack({ open: true, message: 'Product created successfully', severity: 'success' });
+      setEditOpen(false);
+    },
+  });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data: formData }: { id: string; data: Partial<EditForm> }) =>
       adminService.updateProduct(id, { ...formData, status: formData.status as Product['status'] }),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      setSnack({ open: true, message: 'Product updated successfully', severity: 'success' });
+    },
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       adminService.updateProductStatus(id, status),
-    onSuccess: invalidate,
+    onSuccess: (_, variables) => {
+      invalidate();
+      setSnack({ open: true, message: `Product ${variables.status.toLowerCase()} successfully`, severity: 'success' });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -97,6 +125,12 @@ export default function ProductsPage() {
     setConfirmOpen(true);
   };
 
+  const openAdd = () => {
+    setEditId(null);
+    setEditForm(emptyForm);
+    setEditOpen(true);
+  };
+
   const handleEdit = (product: any) => {
     setEditId(product.id);
     setEditForm({
@@ -105,15 +139,26 @@ export default function ProductsPage() {
       price: product.price || 0,
       stock: product.stock || 0,
       status: product.status || 'DRAFT',
+      categoryId: product.categoryId || '',
+      farmerId: product.farmerId || '',
+      unit: product.unit || '1 kg',
     });
     setEditOpen(true);
   };
 
   const handleEditSave = () => {
-    if (!editId) return;
-    updateMutation.mutate({ id: editId, data: editForm });
-    setEditOpen(false);
-    setEditId(null);
+    if (editId) {
+      const { status, ...productData } = editForm;
+      updateMutation.mutate({ id: editId, data: productData }, {
+        onSuccess: () => {
+          updateStatusMutation.mutate({ id: editId, status: status as string });
+        }
+      });
+      setEditOpen(false);
+      setEditId(null);
+    } else {
+      createMutation.mutate(editForm);
+    }
   };
 
   const handleToggleVisibility = (product: any) => {
@@ -238,7 +283,7 @@ export default function ProductsPage() {
     <Box>
       <PageHeader
         title="Product Management"
-        action={{ label: 'Add Product', onClick: () => {}, icon: <AddIcon /> }}
+        action={{ label: 'Add Product', onClick: openAdd, icon: <AddIcon /> }}
       />
       <SearchFilter
         searchValue={search}
@@ -259,9 +304,41 @@ export default function ProductsPage() {
         emptyMessage="No products found"
       />
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={600}>Edit Product</DialogTitle>
+        <DialogTitle fontWeight={600}>{editId ? 'Edit Product' : 'Add Product'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            {!editId && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Farmer</InputLabel>
+                    <Select
+                      value={editForm.farmerId}
+                      label="Farmer"
+                      onChange={(e) => setEditForm({ ...editForm, farmerId: e.target.value })}
+                    >
+                      {farmers.map((f: any) => (
+                        <MenuItem key={f.id} value={f.id}>{f.user?.name || 'Unknown Farmer'}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                      value={editForm.categoryId}
+                      label="Category"
+                      onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value })}
+                    >
+                      {categories.map((c: any) => (
+                        <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </>
+            )}
             <Grid item xs={12}>
               <TextField
                 label="Product Name"
@@ -334,6 +411,11 @@ export default function ProductsPage() {
         onCancel={() => setConfirmOpen(false)}
         loading={updateStatusMutation.isPending || deleteMutation.isPending}
       />
+      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack({ ...snack, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={() => setSnack({ ...snack, open: false })} severity={snack.severity} sx={{ width: '100%' }}>
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

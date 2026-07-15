@@ -44,7 +44,7 @@ export class CategoriesService {
     const duplicate = await this.prisma.category.findFirst({
       where: {
         OR: [
-          { name: { equals: dto.name, mode: 'insensitive' } },
+          { name: { equals: dto.name } },
           { slug },
         ],
       },
@@ -95,8 +95,8 @@ export class CategoriesService {
     }
     if (filters.search) {
       where.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
-        { description: { contains: filters.search, mode: 'insensitive' } },
+        { name: { contains: filters.search } },
+        { description: { contains: filters.search } },
       ];
     }
 
@@ -175,7 +175,7 @@ export class CategoriesService {
         where: {
           id: { not: id },
           OR: [
-            updateData.name ? { name: { equals: updateData.name, mode: 'insensitive' as const } } : {},
+            updateData.name ? { name: { equals: updateData.name } } : {},
             updateData.slug ? { slug: updateData.slug } : {},
           ].filter(o => Object.keys(o).length > 0) as any,
         },

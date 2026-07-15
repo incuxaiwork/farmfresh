@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Ht
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { SuccessResponseDto } from '../common/dto/api-response.dto';
+import { AdminCreateProductDto } from './dto/admin-create-product.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -329,6 +330,13 @@ export class AdminController {
   async processPayout(@Param('id') id: string) {
     const data = await this.adminService.processPayout(id);
     return new SuccessResponseDto('Payout processed', data);
+  }
+
+  @Post('products')
+  @ApiOperation({ summary: 'Create a product on behalf of a farmer' })
+  async createProduct(@Body() dto: AdminCreateProductDto) {
+    const data = await this.adminService.createProduct(dto);
+    return new SuccessResponseDto('Product created successfully', data);
   }
 
   @Get('products')

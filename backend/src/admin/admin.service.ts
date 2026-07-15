@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { AdminCreateProductDto } from './dto/admin-create-product.dto';
 
 @Injectable()
 export class AdminService {
@@ -40,12 +41,12 @@ export class AdminService {
       }),
       this.prisma.$queryRaw<any[]>`
         SELECT 
-          TO_CHAR("created_at", 'YYYY-MM') as month,
-          COALESCE(SUM("total")::float, 0) as "revenue"
+          strftime('%Y-%m', "created_at" / 1000, 'unixepoch') as month,
+          COALESCE(SUM("total"), 0) as "revenue"
         FROM "orders"
-        WHERE "created_at" >= NOW() - INTERVAL '12 months'
+        WHERE "created_at" >= (strftime('%s', 'now', '-12 months') * 1000)
           AND "status" IN ('COMPLETED', 'DELIVERED')
-        GROUP BY TO_CHAR("created_at", 'YYYY-MM')
+        GROUP BY strftime('%Y-%m', "created_at" / 1000, 'unixepoch')
         ORDER BY month ASC
       `,
     ]);
@@ -145,17 +146,23 @@ export class AdminService {
 
     const revenueByMonth = await this.prisma.$queryRaw`
       SELECT 
-        TO_CHAR("created_at", 'YYYY-MM') as month,
-        COUNT(*)::int as "orderCount",
-        COALESCE(SUM("total")::float, 0) as "revenue"
+        strftime('%Y-%m', "created_at" / 1000, 'unixepoch') as month,
+        COUNT(*) as "orderCount",
+        COALESCE(SUM("total"), 0) as "revenue"
       FROM "orders"
-      WHERE "created_at" >= NOW() - INTERVAL '12 months'
+      WHERE "created_at" >= (strftime('%s', 'now', '-12 months') * 1000)
         AND "status" IN ('COMPLETED', 'DELIVERED')
-      GROUP BY TO_CHAR("created_at", 'YYYY-MM')
+      GROUP BY strftime('%Y-%m', "created_at" / 1000, 'unixepoch')
       ORDER BY month ASC
     `;
 
-    return { ordersByStatus, revenueByMonth };
+    return {
+      ordersByStatus,
+      revenueByMonth: (revenueByMonth as any[]).map(r => ({
+        ...r,
+        orderCount: Number(r.orderCount)
+      }))
+    };
   }
 
   async getCustomers(filters: { search?: string; status?: string; page?: number; limit?: number }) {
@@ -166,9 +173,9 @@ export class AdminService {
     const where: any = { role: 'CUSTOMER', deletedAt: null };
     if (filters.search) {
       where.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
-        { email: { contains: filters.search, mode: 'insensitive' } },
-        { phone: { contains: filters.search, mode: 'insensitive' } },
+        { name: { contains: filters.search } },
+        { email: { contains: filters.search } },
+        { phone: { contains: filters.search } },
       ];
     }
 
@@ -217,8 +224,8 @@ export class AdminService {
     const where: any = { role: 'FARMER' };
     if (filters.search) {
       where.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
-        { email: { contains: filters.search, mode: 'insensitive' } },
+        { name: { contains: filters.search } },
+        { email: { contains: filters.search } },
       ];
     }
 
@@ -360,9 +367,9 @@ export class AdminService {
     const where: any = { role: 'DELIVERY_PARTNER' };
     if (filters.search) {
       where.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
-        { email: { contains: filters.search, mode: 'insensitive' } },
-        { phone: { contains: filters.search, mode: 'insensitive' } },
+        { name: { contains: filters.search } },
+        { email: { contains: filters.search } },
+        { phone: { contains: filters.search } },
       ];
     }
 
@@ -479,9 +486,9 @@ export class AdminService {
     if (filters.status) where.status = filters.status as any;
     if (filters.search) {
       where.OR = [
-        { orderNumber: { contains: filters.search, mode: 'insensitive' } },
-        { address: { contains: filters.search, mode: 'insensitive' } },
-        { customer: { name: { contains: filters.search, mode: 'insensitive' } } },
+        { orderNumber: { contains: filters.search } },
+        { address: { contains: filters.search } },
+        { customer: { name: { contains: filters.search } } },
       ];
     }
 
@@ -556,7 +563,7 @@ export class AdminService {
 
     const where: any = {};
     if (filters.search) {
-      where.code = { contains: filters.search, mode: 'insensitive' };
+      where.code = { contains: filters.search };
     }
 
     const [coupons, total] = await Promise.all([
@@ -630,6 +637,79 @@ export class AdminService {
     return { success: true };
   }
 
+  async createProduct(dto: AdminCreateProductDto) {
+    // Check if farmer exists
+    const farmerProfile = await this.prisma.farmerProfile.findUnique({
+      where: { id: dto.farmerId },
+    });
+    if (!farmerProfile) {
+      throw new NotFoundException('Farmer profile not found');
+    }
+
+    if (dto.discountPrice !== undefined && dto.discountPrice >= dto.price) {
+      throw new BadRequestException('Discount price must be strictly less than base price');
+    }
+
+    const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    if (dto.subCategoryId) {
+      const sub = await this.prisma.category.findUnique({ where: { id: dto.subCategoryId } });
+      if (!sub) {
+        throw new NotFoundException('Sub category not found');
+      }
+    }
+
+    if (dto.harvestDate && dto.expiryDate) {
+      const harvest = new Date(dto.harvestDate);
+      const expiry = new Date(dto.expiryDate);
+      if (expiry <= harvest) {
+        throw new BadRequestException('Expiry date must be set after harvest date');
+      }
+    }
+
+    const slug = dto.slug ? dto.slug.toLowerCase().trim() : dto.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+    const duplicate = await this.prisma.product.findUnique({ where: { slug } });
+    if (duplicate) {
+      throw new ConflictException('Product slug already exists');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const product = await tx.product.create({
+        data: {
+          farmerId: dto.farmerId,
+          categoryId: dto.categoryId,
+          subCategoryId: dto.subCategoryId,
+          name: dto.name,
+          slug,
+          description: dto.description,
+          shortDescription: dto.shortDescription,
+          price: dto.price,
+          discountPrice: dto.discountPrice,
+          unit: dto.unit,
+          minOrderQty: dto.minOrderQty ?? 1,
+          maxOrderQty: dto.maxOrderQty ?? 10,
+          organic: dto.organic ?? false,
+          featured: dto.featured ?? false,
+          seasonal: dto.seasonal ?? false,
+          status: 'APPROVED',
+          harvestDate: dto.harvestDate ? new Date(dto.harvestDate) : null,
+          expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
+          inventory: {
+            create: {
+              currentStock: dto.stock,
+              farmerId: dto.farmerId,
+            },
+          },
+        },
+      });
+
+      return product;
+    });
+  }
+
   async getProducts(filters: { search?: string; status?: string; page?: number; limit?: number }) {
     const page = filters.page || 1;
     const limit = filters.limit || 20;
@@ -639,7 +719,7 @@ export class AdminService {
     if (filters.status) where.status = filters.status as any;
     if (filters.search) {
       where.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
+        { name: { contains: filters.search } },
       ];
     }
 
@@ -693,8 +773,8 @@ export class AdminService {
     const where: any = {};
     if (filters.search) {
       where.OR = [
-        { product: { name: { contains: filters.search, mode: 'insensitive' } } },
-        { farmer: { farmName: { contains: filters.search, mode: 'insensitive' } } },
+        { product: { name: { contains: filters.search } } },
+        { farmer: { farmName: { contains: filters.search } } },
       ];
     }
 
@@ -871,8 +951,8 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    if (filters.action) where.action = { contains: filters.action, mode: 'insensitive' };
-    if (filters.entity) where.action = { contains: filters.entity, mode: 'insensitive' };
+    if (filters.action) where.action = { contains: filters.action };
+    if (filters.entity) where.action = { contains: filters.entity };
 
     const [logs, total] = await Promise.all([
       this.prisma.auditLog.findMany({
@@ -1023,7 +1103,7 @@ export class AdminService {
     if (filters.status) where.status = filters.status as any;
     if (filters.search) {
       where.order = {
-        orderNumber: { contains: filters.search, mode: 'insensitive' },
+        orderNumber: { contains: filters.search },
       };
     }
 

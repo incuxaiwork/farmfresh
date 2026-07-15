@@ -179,8 +179,8 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <button class="btn-wishlist-toggle" id="btn-open-wishlist" onclick="switchScreen('screen-customer-wishlist')" style="width: 36px; height: 36px; border-radius: 50%; background: #F1F8F4; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--green-dark); font-size: 16px; position: relative;">
-                                    <i class="fa-solid fa-basket-shopping"></i>
+                                <button class="btn-wishlist-toggle" id="btn-open-wishlist" onclick="switchScreen('screen-customer-cart')" style="width: 36px; height: 36px; border-radius: 50%; background: #F1F8F4; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--green-dark); font-size: 16px; position: relative;">
+                                    <i class="fa-solid fa-shopping-cart"></i>
                                     <span class="wishlist-badge" id="wishlist-badge-count" style="display:none; position: absolute; top: -2px; right: -2px; background: #e63946; color: white; border-radius: 50%; width: 14px; height: 14px; font-size: 8px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid white;">0</span>
                                 </button>
                                 <div class="profile-avatar" onclick="switchScreen('screen-customer-profile')" style="cursor:pointer;">
@@ -190,9 +190,12 @@
                         </header>
 
                         <!-- Search Bar -->
-                        <div class="search-bar-container">
-                            <input class="search-input" type="text" id="product-search-input" placeholder="Search products...">
-                            <i class="fa-solid fa-sliders search-filter-icon"></i>
+                        <div class="search-bar-container" style="margin-top: 24px; display: flex; align-items: center; background: #ffffff; border: 1.5px solid rgba(46, 125, 50, 0.12); border-radius: 28px; padding: 0 16px; height: 52px; box-shadow: 0 4px 16px rgba(46, 125, 50, 0.06); position: relative;">
+                            <i class="fa-solid fa-search" style="color: var(--primary); font-size: 16px; margin-right: 10px;"></i>
+                            <input class="search-input" type="text" id="product-search-input" placeholder="Search fresh products..." style="flex: 1; border: none; background: transparent; height: 100%; outline: none; font-size: 14px; color: var(--text-main); font-family: 'Montserrat', sans-serif; font-weight: 600; padding: 0;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #F1F8F4; display: flex; align-items: center; justify-content: center; color: var(--primary); cursor: pointer; margin-left: 8px;">
+                                <i class="fa-solid fa-sliders" style="font-size: 14px;"></i>
+                            </div>
                         </div>
 
                         <!-- Categories -->

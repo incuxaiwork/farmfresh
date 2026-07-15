@@ -22,6 +22,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final productState = ref.watch(productProvider);
     final addressState = ref.watch(addressProvider);
+    final cartState = ref.watch(cartProvider);
+    final cartItemCount = cartState.itemCount;
     final defaultAddr = addressState.defaultAddress;
     final locationLabel = defaultAddr != null
         ? '${defaultAddr.city ?? defaultAddr.street}, ${defaultAddr.state ?? defaultAddr.country ?? 'India'}'
@@ -68,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: SafeArea(
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -120,21 +122,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               Row(
                                 children: [
-                                  // Wishlist/basket button with badge counter
+                                  // Shopping Cart button with badge counter
                                   GestureDetector(
                                     onTap: () {
-                                      context.push('/wishlist');
+                                      context.push('/cart');
                                     },
-                                    child: Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xFFF1F8F4),
-                                      ),
-                                      child: const Center(
-                                        child: Icon(Icons.favorite, color: Color(0xFF2E7D32), size: 18),
-                                      ),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Container(
+                                          width: 36,
+                                          height: 36,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(0xFFF1F8F4),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(Icons.shopping_cart_outlined, color: Color(0xFF2E7D32), size: 18),
+                                          ),
+                                        ),
+                                        if (cartItemCount > 0)
+                                          Positioned(
+                                            top: -2,
+                                            right: -2,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(3),
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFFE63946),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 14,
+                                                minHeight: 14,
+                                              ),
+                                              child: Text(
+                                                '$cartItemCount',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -169,21 +201,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
                           // Search Bar
                           Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE5EDE7),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: const Color(0x0D2E7D32)),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF2E7D32).withOpacity(0.06),
+                                  offset: const Offset(0, 4),
+                                  blurRadius: 16,
+                                ),
+                              ],
+                              border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.12), width: 1),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            height: 48,
+                            height: 52,
                             child: Row(
                               children: [
-                                const Icon(Icons.search, color: Color(0xFF647C72), size: 20),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.search, color: Color(0xFF2E7D32), size: 22),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: TextField(
                                     onChanged: (val) {
@@ -192,22 +231,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       });
                                     },
                                     decoration: InputDecoration(
-                                      hintText: 'Search products...',
+                                      hintText: 'Search fresh products...',
                                       hintStyle: GoogleFonts.plusJakartaSans(
                                         color: const Color(0xFF647C72),
                                         fontSize: 14,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       border: InputBorder.none,
-                                      contentPadding: EdgeInsets.zero,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      errorBorder: InputBorder.none,
+                                      disabledBorder: InputBorder.none,
+                                      filled: false,
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                       isDense: true,
                                     ),
                                     style: GoogleFonts.plusJakartaSans(
-                                      color: const Color(0xFF23312B),
+                                      color: const Color(0xFF1B2E25),
                                       fontSize: 14,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
-                                const Icon(Icons.tune, color: Color(0xFF647C72), size: 20),
+                                const SizedBox(width: 8),
+                                Container(
+                                  height: 36,
+                                  width: 36,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFF1F8F4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.tune, color: Color(0xFF2E7D32), size: 18),
+                                  ),
+                                ),
                               ],
                             ),
                           ),

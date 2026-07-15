@@ -1,27 +1,11 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { adminService } from '../services/admin.service';
+import type { Product } from '../types';
 import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Stack,
-  Snackbar,
-  Alert,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
+  Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Snackbar, Alert,
+  Card, CardContent, Chip, Divider,
 } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -29,110 +13,49 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ImageIcon from '@mui/icons-material/Image';
 
-interface PendingProduct {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  farmer: string;
-  submittedDate: string;
-  description: string;
-}
-
-const initialProducts: PendingProduct[] = [
-  {
-    id: 'P101',
-    name: 'Organic Spinach (500g)',
-    category: 'Vegetables',
-    price: 40,
-    stock: 200,
-    farmer: 'Ramesh Kumar',
-    submittedDate: '2026-07-08',
-    description: 'Freshly harvested organic spinach grown without pesticides. Rich in iron and vitamins. Available in 500g bundles.',
-  },
-  {
-    id: 'P102',
-    name: 'Wild Forest Honey (500ml)',
-    category: 'Honey & Preserves',
-    price: 520,
-    stock: 50,
-    farmer: 'Lakshmi Devi',
-    submittedDate: '2026-07-07',
-    description: 'Raw, unfiltered wild honey sourced from forests of Western Ghats. No added sugar or artificial flavoring.',
-  },
-  {
-    id: 'P103',
-    name: 'Brown Eggs (Pack of 12)',
-    category: 'Dairy & Eggs',
-    price: 110,
-    stock: 150,
-    farmer: 'Sunil Reddy',
-    submittedDate: '2026-07-06',
-    description: 'Free-range brown eggs from country chickens. High in omega-3 fatty acids. Farm fresh with natural diet.',
-  },
-  {
-    id: 'P104',
-    name: 'Cold-Pressed Coconut Oil (1L)',
-    category: 'Oils',
-    price: 340,
-    stock: 75,
-    farmer: 'Anita Desai',
-    submittedDate: '2026-07-05',
-    description: 'Virgin cold-pressed coconut oil extracted from fresh copra. Ideal for cooking, hair care, and skin care. No chemicals used.',
-  },
-  {
-    id: 'P105',
-    name: 'Organic Turmeric Powder (200g)',
-    category: 'Spices',
-    price: 95,
-    stock: 300,
-    farmer: 'Meera Patel',
-    submittedDate: '2026-07-04',
-    description: 'Premium Lakadong turmeric powder with 7-9% curcumin content. Sun-dried and stone-ground. No artificial colours.',
-  },
-  {
-    id: 'P106',
-    name: 'Fresh Strawberries (250g)',
-    category: 'Fruits',
-    price: 180,
-    stock: 60,
-    farmer: 'Harish Joshi',
-    submittedDate: '2026-07-03',
-    description: 'Himalayan strawberries grown in Mahabaleshwar. Sweet and juicy, hand-picked for quality. Packed in eco-friendly containers.',
-  },
-];
-
 export default function ProductApprovalPage() {
-  const [products, setProducts] = useState<PendingProduct[]>(initialProducts);
-  const [detailProduct, setDetailProduct] = useState<PendingProduct | null>(null);
+  const queryClient = useQueryClient();
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [rejectTarget, setRejectTarget] = useState<PendingProduct | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Product | null>(null);
   const [confirmApproveOpen, setConfirmApproveOpen] = useState(false);
-  const [approveTarget, setApproveTarget] = useState<PendingProduct | null>(null);
+  const [approveTarget, setApproveTarget] = useState<Product | null>(null);
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
+    open: false, message: '', severity: 'success'
+  });
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['products-pending-approval'],
+    queryFn: () => adminService.getProducts({ status: 'PENDING_APPROVAL', limit: 100 }),
+  });
+  const products = data?.items ?? [];
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['products-pending-approval'] });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => adminService.updateProductStatus(id, status),
+    onSuccess: (_, variables) => {
+      invalidate();
+      setSnack({ open: true, message: `Product ${variables.status.toLowerCase()} successfully`, severity: 'success' });
+    }
   });
 
   /* ── Handlers ── */
-  const handleViewDetails = (product: PendingProduct) => {
+  const handleViewDetails = (product: Product) => {
     setDetailProduct(product);
     setDetailOpen(true);
   };
 
-  const handleApproveClick = (product: PendingProduct) => {
+  const handleApproveClick = (product: Product) => {
     setApproveTarget(product);
     setConfirmApproveOpen(true);
   };
 
   const handleApproveConfirm = () => {
     if (approveTarget) {
-      setProducts((prev) => prev.filter((p) => p.id !== approveTarget.id));
-      setSnack({ open: true, message: 'Product approved (demo only)', severity: 'success' });
+      updateStatusMutation.mutate({ id: approveTarget.id, status: 'APPROVED' });
     }
     setConfirmApproveOpen(false);
     setApproveTarget(null);
@@ -140,7 +63,7 @@ export default function ProductApprovalPage() {
     setDetailProduct(null);
   };
 
-  const handleRejectClick = (product: PendingProduct) => {
+  const handleRejectClick = (product: Product) => {
     setRejectTarget(product);
     setRejectReason('');
     setRejectOpen(true);
@@ -148,8 +71,7 @@ export default function ProductApprovalPage() {
 
   const handleRejectConfirm = () => {
     if (rejectTarget) {
-      setProducts((prev) => prev.filter((p) => p.id !== rejectTarget.id));
-      setSnack({ open: true, message: 'Product rejected (demo only)', severity: 'error' });
+      updateStatusMutation.mutate({ id: rejectTarget.id, status: 'REJECTED' });
     }
     setRejectOpen(false);
     setRejectTarget(null);
@@ -242,8 +164,8 @@ export default function ProductApprovalPage() {
                   </TableCell>
                   <TableCell align="right">{p.price}</TableCell>
                   <TableCell align="right">{p.stock}</TableCell>
-                  <TableCell>{p.farmer}</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>{p.submittedDate}</TableCell>
+                  <TableCell>{p.farmerName}</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>{new Date(p.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell align="center">
                     <Stack direction="row" spacing={0.5} justifyContent="center">
                       <Button
@@ -405,7 +327,7 @@ export default function ProductApprovalPage() {
         <DialogContent>
           <Typography variant="body1">
             Are you sure you want to approve <strong>{approveTarget?.name}</strong> by{' '}
-            <strong>{approveTarget?.farmer}</strong>?
+            <strong>{approveTarget?.farmerName}</strong>?
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>

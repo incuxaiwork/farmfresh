@@ -34,6 +34,8 @@ export const adminService = {
 
   getProducts: (params?: Record<string, any>) =>
     api.get('/admin/products', { params }).then(r => extract<PaginatedResponse<Product>>(r)),
+  createProduct: (data: Partial<Product> & { farmerId: string }) =>
+    api.post('/admin/products', data).then(r => extract<Product>(r)),
   updateProduct: (id: string, data: Partial<Product>) =>
     api.patch(`/products/${id}`, data).then(r => extract<Product>(r)),
   updateProductStatus: (id: string, status: string) =>

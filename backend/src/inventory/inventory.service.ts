@@ -75,7 +75,7 @@ export class InventoryService {
 
     if (filters.search) {
       where.product = {
-        name: { contains: filters.search, mode: 'insensitive' },
+        name: { contains: filters.search },
       };
     }
 
