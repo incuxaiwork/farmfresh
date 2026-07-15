@@ -21,11 +21,9 @@ sample_*.json
 .flutter-plugins-dependencies
 .metadata
 *.iml
-pubspec.lock
 android/
 ios/
 linux/
 macos/
-web/
 windows/
 
