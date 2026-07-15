@@ -25,7 +25,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /usr/src/app/node_modules/@prisma/client ./node_modules/@prisma/client
 
-RUN apk add --no-cache openssl1.1
+RUN apk add --no-cache openssl1.1-compat
 
 EXPOSE 3000
 
