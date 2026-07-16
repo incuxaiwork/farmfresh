@@ -97,7 +97,7 @@ export default function ProductsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data: formData }: { id: string; data: Partial<EditForm> }) =>
-      adminService.updateProduct(id, { ...formData, status: formData.status as Product['status'] }),
+      adminService.updateProduct(id, formData),
     onSuccess: () => {
       invalidate();
       setSnack({ open: true, message: 'Product updated successfully', severity: 'success' });
@@ -148,7 +148,7 @@ export default function ProductsPage() {
 
   const handleEditSave = () => {
     if (editId) {
-      const { status, ...productData } = editForm;
+      const { status, farmerId, ...productData } = editForm;
       updateMutation.mutate({ id: editId, data: productData }, {
         onSuccess: () => {
           updateStatusMutation.mutate({ id: editId, status: status as string });
@@ -162,7 +162,8 @@ export default function ProductsPage() {
   };
 
   const handleToggleVisibility = (product: any) => {
-    updateMutation.mutate({ id: product.id, data: { isActive: !product.isActive } as any });
+    const newStatus = product.isActive ? 'ARCHIVED' : 'APPROVED';
+    updateStatusMutation.mutate({ id: product.id, status: newStatus });
   };
 
   const handleApprove = (id: string) => {

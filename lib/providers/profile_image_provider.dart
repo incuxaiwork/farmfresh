@@ -56,7 +56,6 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
           return;
         } catch (_) {}
       }
-      // Fallback to legacy string stored in localStorage if any
       final legacyImage = html.window.localStorage['profile_image_$userId'];
       if (legacyImage != null) {
         state = ProfileImageState(image: legacyImage);

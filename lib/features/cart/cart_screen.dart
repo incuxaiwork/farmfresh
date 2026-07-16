@@ -390,6 +390,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       fontSize: 12,
                                     ),
                                     border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    errorBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
                                     contentPadding: EdgeInsets.zero,
                                     isDense: true,
                                     filled: false,
@@ -409,40 +413,67 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       _couponController.clear();
                                     }
                                   : _applyCoupon,
-                              child: Container(
-                                height: 44,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeInOut,
+                                padding: EdgeInsets.all(_isApplyHovered ? 3.0 : 0.0),
                                 decoration: BoxDecoration(
-                                  gradient: cartState.couponCode != null
-                                      ? null
-                                      : LinearGradient(
-                                          colors: _isApplyHovered
-                                              ? [const Color(0xFFC87028), const Color(0xFFE28C43)]
-                                              : [const Color(0xFFE28C43), const Color(0xFFF3A05B)],
-                                        ),
-                                  color: cartState.couponCode != null
-                                      ? (_isApplyHovered ? const Color(0xFFFFCCD5) : const Color(0xFFFFF0F3))
-                                      : null,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: cartState.couponCode != null
-                                      ? null
-                                      : [
-                                          BoxShadow(
-                                            color: const Color(0xFFE28C43).withOpacity(0.2),
-                                            offset: const Offset(0, 4),
-                                            blurRadius: 8,
-                                          ),
-                                        ],
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: _isApplyHovered
+                                        ? (cartState.couponCode != null ? const Color(0xFFFF4D6D).withOpacity(0.3) : const Color(0xFF2E7D32).withOpacity(0.3))
+                                        : Colors.transparent,
+                                    width: 1.5,
+                                  ),
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  cartState.couponCode != null ? 'Remove' : 'Apply',
-                                  style: GoogleFonts.plusJakartaSans(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  curve: Curves.easeInOut,
+                                  transform: Matrix4.identity()..scale(_isApplyHovered ? 1.03 : 1.0),
+                                  transformAlignment: Alignment.center,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    gradient: cartState.couponCode != null
+                                        ? null
+                                        : LinearGradient(
+                                            colors: _isApplyHovered
+                                                ? [const Color(0xFF2E7D32), const Color(0xFF1B4332)]
+                                                : [const Color(0xFFE28C43), const Color(0xFFF3A05B)],
+                                          ),
                                     color: cartState.couponCode != null
-                                        ? const Color(0xFFFF4D6D)
-                                        : Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
+                                        ? (_isApplyHovered ? const Color(0xFFFFCCD5) : const Color(0xFFFFF0F3))
+                                        : null,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: cartState.couponCode != null
+                                            ? const Color(0xFFFF4D6D).withOpacity(_isApplyHovered ? 0.2 : 0.05)
+                                            : (_isApplyHovered
+                                                ? const Color(0xFF2E7D32).withOpacity(0.35)
+                                                : const Color(0xFFE28C43).withOpacity(0.2)),
+                                        offset: const Offset(0, 4),
+                                        blurRadius: _isApplyHovered ? 12 : 8,
+                                        spreadRadius: _isApplyHovered ? 2 : 0,
+                                      ),
+                                    ],
+                                    border: Border.all(
+                                      color: _isApplyHovered
+                                          ? (cartState.couponCode != null ? const Color(0xFFFF4D6D) : const Color(0xFF2E7D32))
+                                          : Colors.transparent,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    cartState.couponCode != null ? 'Remove' : 'Apply',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: cartState.couponCode != null
+                                          ? const Color(0xFFFF4D6D)
+                                          : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ),
                               ),

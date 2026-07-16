@@ -1,3 +1,5 @@
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +27,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
   late final TextEditingController _stockController;
   late final TextEditingController _weightController;
   late final TextEditingController _originController;
+  late final TextEditingController _imageController;
   late String _selectedCategory;
   bool _isOrganic = false;
   bool _isFeatured = false;
@@ -43,6 +46,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     _stockController = TextEditingController(text: p != null ? p.stock.toStringAsFixed(0) : '');
     _weightController = TextEditingController(text: p?.weight ?? '');
     _originController = TextEditingController(text: p?.origin ?? '');
+    _imageController = TextEditingController(text: p?.image ?? '');
     _selectedCategory = p?.category ?? 'Vegetables';
     _isOrganic = p?.organic ?? false;
     _isFeatured = p?.featured ?? false;
@@ -57,7 +61,47 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     _stockController.dispose();
     _weightController.dispose();
     _originController.dispose();
+    _imageController.dispose();
     super.dispose();
+  }
+
+  void _pickProductImage() {
+    if (kIsWeb) {
+      final input = html.FileUploadInputElement()..accept = 'image/*';
+      input.click();
+      input.onChange.listen((event) {
+        final files = input.files;
+        if (files != null && files.isNotEmpty) {
+          final file = files[0];
+          final reader = html.FileReader();
+          reader.readAsDataUrl(file);
+          reader.onLoadEnd.listen((event) {
+            final base64Image = reader.result as String;
+            setState(() {
+              _imageController.text = base64Image;
+            });
+          });
+        }
+      });
+    }
+  }
+
+  String _getDefaultCategoryImageUrl(String category) {
+    switch (category.toLowerCase()) {
+      case 'fruits':
+        return 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&w=400&q=80';
+      case 'vegetables':
+        return 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&w=400&q=80';
+      case 'meat':
+        return 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=400&q=80';
+      case 'dairy':
+        return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&q=80';
+      case 'grains':
+      case 'grains & millets':
+        return 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=400&q=80';
+      default:
+        return 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80';
+    }
   }
 
   Future<void> _saveProduct() async {
@@ -85,7 +129,9 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
       organic: _isOrganic,
       featured: _isFeatured,
       seasonal: _isSeasonal,
-      image: widget.product?.image ?? '',
+      image: _imageController.text.trim().isNotEmpty
+          ? _imageController.text.trim()
+          : _getDefaultCategoryImageUrl(_selectedCategory),
       farmName: widget.product?.farmName ?? 'Green Valley Organic Farms',
       farmerId: widget.product?.farmerId,
       slug: widget.product?.slug ?? '',
@@ -308,6 +354,24 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                     ),
                     decoration: _inputDecoration('Origin Location', Icons.location_on_outlined).copyWith(
                       hintText: 'e.g. Local Farm, Valley Region',
+                      hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF8D99AE), fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _imageController,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: const Color(0xFF23312B),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: _inputDecoration('Product Image URL (Optional)', Icons.image_outlined).copyWith(
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.add_a_photo_outlined, color: Color(0xFF2E7D32)),
+                        tooltip: 'Upload Product Photo',
+                        onPressed: _pickProductImage,
+                      ),
+                      hintText: 'Paste URL or tap camera to upload',
                       hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF8D99AE), fontSize: 12),
                     ),
                   ),

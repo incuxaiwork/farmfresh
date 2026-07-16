@@ -41,12 +41,12 @@ export class AdminService {
       }),
       this.prisma.$queryRaw<any[]>`
         SELECT 
-          strftime('%Y-%m', "created_at" / 1000, 'unixepoch') as month,
+          to_char("created_at", 'YYYY-MM') as month,
           COALESCE(SUM("total"), 0) as "revenue"
         FROM "orders"
-        WHERE "created_at" >= (strftime('%s', 'now', '-12 months') * 1000)
+        WHERE "created_at" >= NOW() - INTERVAL '12 months'
           AND "status" IN ('COMPLETED', 'DELIVERED')
-        GROUP BY strftime('%Y-%m', "created_at" / 1000, 'unixepoch')
+        GROUP BY to_char("created_at", 'YYYY-MM')
         ORDER BY month ASC
       `,
     ]);
@@ -146,13 +146,13 @@ export class AdminService {
 
     const revenueByMonth = await this.prisma.$queryRaw`
       SELECT 
-        strftime('%Y-%m', "created_at" / 1000, 'unixepoch') as month,
+        to_char("created_at", 'YYYY-MM') as month,
         COUNT(*) as "orderCount",
         COALESCE(SUM("total"), 0) as "revenue"
       FROM "orders"
-      WHERE "created_at" >= (strftime('%s', 'now', '-12 months') * 1000)
+      WHERE "created_at" >= NOW() - INTERVAL '12 months'
         AND "status" IN ('COMPLETED', 'DELIVERED')
-      GROUP BY strftime('%Y-%m', "created_at" / 1000, 'unixepoch')
+      GROUP BY to_char("created_at", 'YYYY-MM')
       ORDER BY month ASC
     `;
 

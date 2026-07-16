@@ -215,6 +215,103 @@ async function main() {
   });
 
   console.log('✅ Created catalog products: Tomato, Onion, Mango, Basmati Rice');
+
+  // 5. Create Mock Orders
+  const order1 = await prisma.order.create({
+    data: {
+      orderNumber: 'ORD-2026-0001',
+      customerId: customer.id,
+      status: 'CONFIRMED',
+      paymentStatus: 'COMPLETED',
+      subtotal: 210.00,
+      deliveryFee: 40.00,
+      total: 250.00,
+      otpCode: '123456',
+      address: 'Apt 4B, Green Glen Layout, Bangalore, Karnataka',
+      items: {
+        createMany: {
+          data: [
+            {
+              productId: tomato.id,
+              farmerId: farmerProfile.id,
+              quantity: 2,
+              price: 30.00,
+              total: 60.00,
+              status: 'CONFIRMED',
+            },
+            {
+              productId: mango.id,
+              farmerId: farmerProfile.id,
+              quantity: 1,
+              price: 150.00,
+              total: 150.00,
+              status: 'CONFIRMED',
+            }
+          ]
+        }
+      },
+      payment: {
+        create: {
+          status: 'COMPLETED',
+          method: 'UPI',
+          transactionId: 'TXN1122334455',
+        }
+      }
+    }
+  });
+
+  const order2 = await prisma.order.create({
+    data: {
+      orderNumber: 'ORD-2026-0002',
+      customerId: customer.id,
+      status: 'PENDING',
+      paymentStatus: 'PENDING',
+      subtotal: 170.00,
+      deliveryFee: 40.00,
+      total: 210.00,
+      otpCode: '654321',
+      address: 'Flat 102, Shanti Niketan, Guntur, Andhra Pradesh',
+      items: {
+        createMany: {
+          data: [
+            {
+              productId: onion.id,
+              farmerId: farmerProfile.id,
+              quantity: 2,
+              price: 40.00,
+              total: 80.00,
+              status: 'PENDING',
+            },
+            {
+              productId: rice.id,
+              farmerId: farmerProfile.id,
+              quantity: 1,
+              price: 90.00,
+              total: 90.00,
+              status: 'PENDING',
+            }
+          ]
+        }
+      },
+      payment: {
+        create: {
+          status: 'PENDING',
+          method: 'CASH_ON_DELIVERY',
+        }
+      }
+    }
+  });
+
+  await prisma.deliveryAssignment.create({
+    data: {
+      orderId: order1.id,
+      driverId: deliveryUser.id,
+      status: 'HEADING_TO_PICKUP',
+      deliveryCharge: 25.00,
+    }
+  });
+
+  console.log('✅ Created mock orders and delivery assignments');
   console.log('🌱 Seeding Completed successfully!');
 }
 

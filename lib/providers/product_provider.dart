@@ -14,7 +14,7 @@ class ProductState {
     this.products = const [],
     this.featuredProducts = const [],
     this.popularProducts = const [],
-    this.categories = const ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains'],
+    this.categories = const ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains', 'Meat'],
     this.isLoading = false,
     this.errorMessage,
   });

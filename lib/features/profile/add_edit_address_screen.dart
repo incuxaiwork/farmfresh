@@ -319,13 +319,13 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
                       height: 48,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                          colors: [Color(0xFF2E7D32), Color(0xFF1B4332)],
                         ),
                         borderRadius: BorderRadius.circular(14),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
-                            color: Color(0x1FE28C43),
-                            offset: Offset(0, 8),
+                            color: const Color(0xFF2E7D32).withOpacity(0.2),
+                            offset: const Offset(0, 8),
                             blurRadius: 16,
                           ),
                         ],
@@ -345,8 +345,8 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
                                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                               )
                             : Text(
-                                _isEditing ? 'Save Address Details' : 'Add New Address',
-                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                                'Save Address',
+                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14),
                               ),
                       ),
                     ),

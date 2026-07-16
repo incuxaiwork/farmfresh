@@ -65,7 +65,7 @@ class PostgresProductRepository implements ProductRepository {
     } catch (e) {
       // Error handled silently
     }
-    return ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains'];
+    return ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains', 'Meat'];
   }
 
   @override
