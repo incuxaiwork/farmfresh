@@ -41,14 +41,8 @@ class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4EAE0)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,14 +107,8 @@ class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4EAE0)),
       ),
       padding: const EdgeInsets.all(12),
       child: Row(

@@ -29,7 +29,7 @@ abstract class FarmerRepository {
   Future<void> markAllNotificationsRead();
 
   Future<UserModel> getProfile();
-  Future<UserModel> updateProfile({String? name, String? phone, String? farmName, String? farmAddress});
+  Future<UserModel> updateProfile({String? name, String? phone, String? farmName, String? farmAddress, String? avatar});
 }
 
 class PostgresFarmerRepository implements FarmerRepository {
@@ -40,7 +40,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<FarmerDashboardModel> getDashboard() async {
     try {
-      final res = await _apiClient.dio.get('/admin/dashboard');
+      final res = await _apiClient.dio.get('/farmer/dashboard');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return FarmerDashboardModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -51,7 +51,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<FarmerStatisticsModel> getStatistics() async {
     try {
-      final res = await _apiClient.dio.get('/admin/statistics');
+      final res = await _apiClient.dio.get('/farmer/statistics');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return FarmerStatisticsModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -216,15 +216,16 @@ class PostgresFarmerRepository implements FarmerRepository {
   }
 
   @override
-  Future<UserModel> updateProfile({String? name, String? phone, String? farmName, String? farmAddress}) async {
+  Future<UserModel> updateProfile({String? name, String? phone, String? farmName, String? farmAddress, String? avatar}) async {
     try {
       final data = <String, dynamic>{};
       if (name != null) data['name'] = name;
       if (phone != null) data['phone'] = phone;
       if (farmName != null) data['farmName'] = farmName;
       if (farmAddress != null) data['farmAddress'] = farmAddress;
+      if (avatar != null) data['avatar'] = avatar;
 
-      final res = await _apiClient.dio.patch('/users/profile', data: data);
+      final res = await _apiClient.dio.patch('/auth/profile', data: data);
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return UserModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }

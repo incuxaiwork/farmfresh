@@ -6,7 +6,6 @@ datasource db {
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
-  engineType    = "binary"
 }
 
 enum UserRole {
@@ -114,6 +113,7 @@ model User {
   name          String        @db.VarChar(100)
   email         String        @unique @db.VarChar(150)
   phone         String?       @db.VarChar(20)
+  avatar        String?       @db.VarChar(500)
   passwordHash  String        @map("password_hash") @db.VarChar(255)
   role          UserRole      @default(CUSTOMER)
   createdAt     DateTime      @default(now()) @map("created_at")

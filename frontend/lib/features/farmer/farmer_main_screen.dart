@@ -16,7 +16,6 @@ class FarmerMainScreen extends ConsumerStatefulWidget {
 }
 
 class _FarmerMainScreenState extends ConsumerState<FarmerMainScreen> {
-  int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
     FarmerDashboardScreen(),
@@ -28,24 +27,19 @@ class _FarmerMainScreenState extends ConsumerState<FarmerMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(farmerTabIndexProvider);
+    debugPrint('FarmerMainScreen rebuilding! Selected index is now $selectedIndex');
     final notifState = ref.watch(farmerNotificationProvider);
     final unreadCount = notifState.unreadCount;
 
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFF2F8F4),
-            Color(0xFFE6F2EA),
-          ],
-        ),
+        color: Color(0xFFF4F7F2),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: IndexedStack(
-          index: _selectedIndex,
+          index: selectedIndex,
           children: _screens,
         ),
         bottomNavigationBar: Container(
@@ -69,16 +63,15 @@ class _FarmerMainScreenState extends ConsumerState<FarmerMainScreen> {
               topRight: Radius.circular(24),
             ),
             child: BottomNavigationBar(
-              currentIndex: _selectedIndex,
+              currentIndex: selectedIndex,
               onTap: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
+                ref.read(farmerTabIndexProvider.notifier).state = index;
               },
               type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.white,
               selectedItemColor: const Color(0xFF2E7D32),
               unselectedItemColor: const Color(0xFF647C72),
+              iconSize: 20,
               selectedLabelStyle: GoogleFonts.plusJakartaSans(
                 fontWeight: FontWeight.w800,
                 fontSize: 10,

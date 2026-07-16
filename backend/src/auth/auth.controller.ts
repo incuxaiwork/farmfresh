@@ -151,8 +151,11 @@ export class AuthController {
     @CurrentUser() user: CurrentUserPayload,
     @Body('name') name?: string,
     @Body('phone') phone?: string,
+    @Body('farmName') farmName?: string,
+    @Body('farmAddress') farmAddress?: string,
+    @Body('avatar') avatar?: string,
   ) {
-    const data = await this.authService.updateProfile(user.id, name, phone);
+    const data = await this.authService.updateProfile(user.id, name, phone, farmName, farmAddress, avatar);
     return new SuccessResponseDto('Profile updated successfully', data);
   }
 

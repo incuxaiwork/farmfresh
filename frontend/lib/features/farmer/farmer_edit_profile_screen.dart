@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_providers.dart';
+import '../../core/widgets/farmer_avatar.dart';
 
 class FarmerEditProfileScreen extends ConsumerStatefulWidget {
   const FarmerEditProfileScreen({super.key});
@@ -22,11 +23,13 @@ class _FarmerEditProfileScreenState
   late TextEditingController _farmNameController;
   late TextEditingController _farmAddressController;
   bool _isSaving = false;
+  String? _selectedAvatar;
 
   @override
   void initState() {
     super.initState();
     final user = ref.read(authProvider).user;
+    _selectedAvatar = user?.avatar;
     _nameController = TextEditingController(text: user?.name ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
@@ -70,11 +73,13 @@ class _FarmerEditProfileScreenState
         phone: _phoneController.text.trim(),
         farmName: _farmNameController.text.trim(),
         farmAddress: _farmAddressController.text.trim(),
+        avatar: _selectedAvatar,
       );
 
       await ref.read(authProvider.notifier).updateProfile(
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
+            avatar: _selectedAvatar,
           );
 
       if (!mounted) return;
@@ -157,25 +162,41 @@ class _FarmerEditProfileScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Center(
-                      child: Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x0F2E5C45),
-                              offset: Offset(0, 4),
-                              blurRadius: 10,
+                      child: GestureDetector(
+                        onTap: _showAvatarPicker,
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0F2E5C45),
+                                    offset: Offset(0, 4),
+                                    blurRadius: 10,
+                                  ),
+                                ],
+                              ),
+                              child: FarmerAvatar(
+                                avatarUrl: _selectedAvatar,
+                                radius: 45,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF2E7D32),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ],
-                        ),
-                        child: ClipOval(
-                          child: Image.network(
-                            'https://api.dicebear.com/7.x/adventurer/svg?seed=FarmerJoe',
-                            fit: BoxFit.cover,
-                          ),
                         ),
                       ),
                     ),
@@ -295,6 +316,112 @@ class _FarmerEditProfileScreenState
           ),
         ),
       ),
+    );
+  }
+
+  void _showAvatarPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Choose an Avatar',
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF23312B),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final preset in FarmerAvatarPresets.presets)
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedAvatar = preset.id;
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _selectedAvatar == preset.id
+                                ? const Color(0xFF2E7D32)
+                                : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: FarmerAvatar(
+                          avatarUrl: preset.id,
+                          radius: 30,
+                        ),
+                      ),
+                    ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Custom photo upload coming soon!'),
+                          backgroundColor: Color(0xFF2E7D32),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF647C72),
+                          width: 2,
+                          style: BorderStyle.none,
+                        ),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFBCCEC4),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.upload_rounded,
+                            color: Color(0xFF647C72),
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 

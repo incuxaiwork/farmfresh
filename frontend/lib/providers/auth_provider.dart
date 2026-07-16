@@ -135,13 +135,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> updateProfile({String? name, String? phone}) async {
+  Future<bool> updateProfile({String? name, String? phone, String? avatar}) async {
     if (!_mounted) return false;
     state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
     try {
       final updated = await _ref
           .read(authRepositoryProvider)
-          .updateProfile(name: name, phone: phone);
+          .updateProfile(name: name, phone: phone, avatar: avatar);
       if (_mounted) {
         state = AuthState(user: updated, successMessage: 'Profile updated successfully');
       }

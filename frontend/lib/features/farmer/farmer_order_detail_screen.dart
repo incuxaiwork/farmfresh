@@ -616,7 +616,7 @@ class _FarmerOrderDetailScreenState
             const SizedBox(width: 12),
             Expanded(
               child: GestureDetector(
-                onTap: () => _handleStatusUpdate(order.id, 'REJECTED'),
+                onTap: () => _handleStatusUpdate(order.id, 'CANCELLED'),
                 child: Container(
                   height: 44,
                   decoration: BoxDecoration(
@@ -625,7 +625,7 @@ class _FarmerOrderDetailScreenState
                   ),
                   child: Center(
                     child: Text(
-                      'Reject Order',
+                      'Cancel Order',
                       style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D), fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ),
@@ -633,57 +633,6 @@ class _FarmerOrderDetailScreenState
               ),
             ),
           ],
-        );
-      case 'ACCEPTED':
-        return GestureDetector(
-          onTap: () => _handleStatusUpdate(order.id, 'PREPARING'),
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF6EC),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                'Start Preparing',
-                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ),
-        );
-      case 'PREPARING':
-        return GestureDetector(
-          onTap: () => _handleStatusUpdate(order.id, 'READY_FOR_PICKUP'),
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFE28C43), Color(0xFFF3A05B)]),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                'Ready for Pickup',
-                style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ),
-        );
-      case 'READY_FOR_PICKUP':
-        return GestureDetector(
-          onTap: () => _handleStatusUpdate(order.id, 'OUT_FOR_DELIVERY'),
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F8F4),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                'Mark Picked Up',
-                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ),
         );
       default:
         return const SizedBox.shrink();

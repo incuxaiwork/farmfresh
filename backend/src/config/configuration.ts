@@ -29,5 +29,8 @@ export default () => {
       origins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080'],
     },
     nodeEnv: process.env.NODE_ENV || 'development',
+    orders: {
+      transitionDelayMs: parseInt(process.env.ORDER_TRANSITION_DELAY_MS || '120000', 10),
+    },
   };
 };

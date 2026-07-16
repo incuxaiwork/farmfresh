@@ -335,12 +335,29 @@ export class AuthService {
     return user;
   }
 
-  async updateProfile(userId: string, name?: string, phone?: string) {
+
+  async updateProfile(
+    userId: string,
+    name?: string,
+    phone?: string,
+    farmName?: string,
+    farmAddress?: string,
+    avatar?: string,
+  ) {
     const data: any = {};
     if (name !== undefined) data.name = name;
     if (phone !== undefined) data.phone = phone;
+    if (avatar !== undefined) data.avatar = avatar;
 
-    const user = await this.prisma.user.update({
+    // Support updating the nested FarmerProfile record
+    if (farmName !== undefined || farmAddress !== undefined) {
+      const profileData: any = {};
+      if (farmName !== undefined) profileData.farmName = farmName;
+      if (farmAddress !== undefined) profileData.farmAddress = farmAddress;
+      data.farmerProfile = { update: profileData };
+    }
+
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data,
       select: {
@@ -349,10 +366,12 @@ export class AuthService {
         email: true,
         role: true,
         phone: true,
+        avatar: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
-    return user;
+    return updatedUser;
   }
 
   async changePassword(userId: string, currentPass: string, newPass: string) {

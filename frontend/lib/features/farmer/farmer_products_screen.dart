@@ -139,7 +139,14 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        actions: const [],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: Color(0xFF23312B)),
+            onPressed: () {
+              context.push('/farmer-add-product');
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -284,17 +291,11 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                             final statusColor = _getStatusColor(product.status);
 
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
+                              margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x0A2E5C45),
-                                    offset: Offset(0, 4),
-                                    blurRadius: 10,
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFE4EAE0)),
                               ),
                               padding: const EdgeInsets.all(12),
                               child: Row(
@@ -310,7 +311,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                                               product.image,
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, __, ___) => Container(
-                                                color: const Color(0xFFF1F8F4),
+                                                color: const Color(0xFFEAF3E4),
                                                 child: Icon(
                                                   _getCategoryIcon(product.category),
                                                   color: const Color(0xFF2E7D32),
@@ -319,7 +320,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                                               ),
                                             )
                                           : Container(
-                                              color: const Color(0xFFF1F8F4),
+                                              color: const Color(0xFFEAF3E4),
                                               child: Icon(
                                                 _getCategoryIcon(product.category),
                                                 color: const Color(0xFF2E7D32),
@@ -403,7 +404,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                                           height: 28,
                                           decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: Color(0xFFF1F8F4),
+                                            color: Color(0xFFEAF3E4),
                                           ),
                                           child: const Icon(Icons.edit_outlined, color: Color(0xFF2E7D32), size: 14),
                                         ),
@@ -431,45 +432,6 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                       ),
           ),
         ],
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 20.0),
-        child: Container(
-          height: 50,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2E7D32), Color(0xFF1B4332)],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2E7D32).withOpacity(0.2),
-                offset: const Offset(0, 8),
-                blurRadius: 16,
-              ),
-            ],
-          ),
-          child: ElevatedButton.icon(
-            onPressed: () {
-              context.push('/farmer-add-product');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            icon: const Icon(Icons.add_circle_outline, size: 20),
-            label: Text(
-              'Add New Crop / Product',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

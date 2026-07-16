@@ -8,6 +8,10 @@ import '../models/notification_model.dart';
 import '../models/order_model.dart';
 import 'app_providers.dart';
 
+/// Shared tab index for FarmerMainScreen bottom navigation.
+/// 0=Dashboard, 1=Products, 2=Orders, 3=Earnings, 4=Profile
+final farmerTabIndexProvider = StateProvider<int>((ref) => 0);
+
 // ── Dashboard ──────────────────────────────────────────────
 
 class FarmerDashboardState {

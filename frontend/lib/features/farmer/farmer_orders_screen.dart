@@ -22,7 +22,7 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -94,16 +94,18 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          tabAlignment: TabAlignment.center,
           labelColor: const Color(0xFF2E7D32),
           unselectedLabelColor: const Color(0xFF647C72),
           indicatorColor: const Color(0xFF2E7D32),
           labelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 12),
           unselectedLabelStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          dividerHeight: 0,
           tabs: const [
             Tab(text: 'Pending'),
             Tab(text: 'Accepted'),
-            Tab(text: 'Preparing'),
-            Tab(text: 'Ready'),
             Tab(text: 'Delivered'),
             Tab(text: 'Cancelled'),
           ],
@@ -143,9 +145,11 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
                   controller: _tabController,
                   children: [
                     _buildOrderTab(state.pendingOrders, 'PENDING'),
-                    _buildOrderTab(state.acceptedOrders, 'ACCEPTED'),
-                    _buildOrderTab(state.preparingOrders, 'PREPARING'),
-                    _buildOrderTab(state.readyOrders, 'READY_FOR_PICKUP'),
+                    _buildOrderTab([
+                      ...state.acceptedOrders,
+                      ...state.preparingOrders,
+                      ...state.readyOrders
+                    ], 'ACCEPTED'),
                     _buildOrderTab(state.deliveredOrders, 'DELIVERED'),
                     _buildOrderTab(state.cancelledOrders, 'CANCELLED'),
                   ],
@@ -221,82 +225,88 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
     final displayStatus = OrderStatus.fromApiValue(order.status).displayName;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4EAE0)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           onTap: () => context.push('/farmer-order-detail', extra: order.id),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Order #${order.orderNumber.isNotEmpty ? order.orderNumber : order.id.substring(0, 8)}',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF23312B)),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF3E4),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF2E7D32), size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        order.items.isNotEmpty ? order.items.first.product.name : 'Unknown Product',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E241D),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Order #${order.orderNumber.isNotEmpty ? order.orderNumber : order.id.substring(0, 8)} • ${order.items.length} items',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          color: const Color(0xFF6B756A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                if (order.status.toUpperCase() == 'PENDING')
+                  GestureDetector(
+                    onTap: () => _handleStatusUpdate(order.id, 'ACCEPTED'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: const Color(0xFF2E7D32),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        displayStatus.toUpperCase(),
-                        style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w800, fontSize: 8),
+                        'Accept',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF647C72)),
-                    const SizedBox(width: 4),
-                    Text(
-                      dateStr,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 10, color: const Color(0xFF647C72), fontWeight: FontWeight.w500),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                ),
-                const Divider(height: 24, color: Color(0xFFF3F3F3)),
-                ...order.items.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        '${item.quantity}x ${item.product.name}',
-                        style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                    )),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total: ₹${order.total.toStringAsFixed(2)}',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        color: const Color(0xFF2E7D32),
-                      ),
+                    child: Text(
+                      displayStatus.toUpperCase(),
+                      style: GoogleFonts.plusJakartaSans(color: color, fontWeight: FontWeight.w800, fontSize: 10),
                     ),
-                    _buildActionButton(order),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
@@ -305,110 +315,5 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
     );
   }
 
-  Widget _buildActionButton(OrderModel order) {
-    switch (order.status.toUpperCase()) {
-      case 'PENDING':
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: () => _handleStatusUpdate(order.id, 'ACCEPTED'),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Text(
-                  'Accept',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFF2E7D32),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () => _handleStatusUpdate(order.id, 'REJECTED'),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0F3),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Text(
-                  'Reject',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFFFF4D6D),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      case 'ACCEPTED':
-        return GestureDetector(
-          onTap: () => _handleStatusUpdate(order.id, 'PREPARING'),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF6EC),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            child: Text(
-              'Start Preparing',
-              style: GoogleFonts.plusJakartaSans(
-                color: const Color(0xFF2E7D32),
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        );
-      case 'PREPARING':
-        return GestureDetector(
-          onTap: () => _handleStatusUpdate(order.id, 'READY_FOR_PICKUP'),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFE28C43), Color(0xFFF3A05B)]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            child: Text(
-              'Ready for Pickup',
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        );
-      case 'READY_FOR_PICKUP':
-        return GestureDetector(
-          onTap: () => _handleStatusUpdate(order.id, 'OUT_FOR_DELIVERY'),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F8F4),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            child: Text(
-              'Mark Picked Up',
-              style: GoogleFonts.plusJakartaSans(
-                color: const Color(0xFF2E7D32),
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
-  }
+  // _buildActionButton is no longer used for list view
 }

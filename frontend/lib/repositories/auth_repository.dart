@@ -20,7 +20,7 @@ abstract class AuthRepository {
     String? vehicleType,
     String? vehicleNumber,
   });
-  Future<UserModel> updateProfile({String? name, String? phone});
+  Future<UserModel> updateProfile({String? name, String? phone, String? avatar});
   Future<void> changePassword({required String currentPassword, required String newPassword});
   Future<void> logout();
   Future<void> refreshToken();
@@ -157,11 +157,12 @@ class PostgresAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<UserModel> updateProfile({String? name, String? phone}) async {
+  Future<UserModel> updateProfile({String? name, String? phone, String? avatar}) async {
     try {
       final res = await _apiClient.dio.patch('/auth/profile', data: {
         if (name != null) 'name': name,
         if (phone != null) 'phone': phone,
+        if (avatar != null) 'avatar': avatar,
       });
 
       if (res.statusCode == 200 && res.data['success'] == true) {

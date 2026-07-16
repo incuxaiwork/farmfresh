@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../database/prisma.service';
 import { OrderPricingService } from './pricing.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private prisma: PrismaService,
     private pricingService: OrderPricingService,
+    private configService: ConfigService,
   ) {}
 
   private _generateOrderNumber(): string {
@@ -266,8 +270,8 @@ export class OrdersService {
           data: { status: status as any },
         });
 
-        // If status is REJECTED, release reserved stock immediately for these items
-        if (status === 'REJECTED') {
+        // If status is REJECTED or CANCELLED, release reserved stock immediately for these items
+        if (status === 'REJECTED' || status === 'CANCELLED') {
           const rejectedItems = order.items.filter(i => i.farmerId === farmer.id);
           for (const item of rejectedItems) {
             await tx.inventory.update({
@@ -284,9 +288,12 @@ export class OrdersService {
         const allAccepted = allItems.every(i => i.status === ('ACCEPTED' as any));
         const allPreparing = allItems.every(i => i.status === ('PREPARING' as any) || i.status === ('READY_FOR_PICKUP' as any));
         const allReady = allItems.every(i => i.status === ('READY_FOR_PICKUP' as any));
+        const anyCancelled = allItems.some(i => i.status === ('CANCELLED' as any) || i.status === ('REJECTED' as any));
 
         let nextMainStatus: string | null = null;
-        if (allReady) {
+        if (anyCancelled) {
+          nextMainStatus = 'CANCELLED';
+        } else if (allReady) {
           nextMainStatus = 'READY_FOR_PICKUP';
         } else if (allPreparing) {
           nextMainStatus = 'PREPARING';
@@ -299,6 +306,11 @@ export class OrdersService {
             where: { id },
             data: { status: nextMainStatus as any },
           });
+        }
+
+        // Trigger automatic progression if the order is now ACCEPTED and fully handled
+        if (nextMainStatus === 'ACCEPTED') {
+          this._autoProgressOrder(id).catch(err => this.logger.error(`Auto progress failed for order ${id}`, err));
         }
 
         return tx.order.findUnique({
@@ -346,5 +358,37 @@ export class OrdersService {
 
       return updated;
     });
+  }
+
+  private async _autoProgressOrder(orderId: string) {
+    const delayMs = this.configService.get<number>('orders.transitionDelayMs') || 120000;
+    const stages = ['PREPARING', 'READY_FOR_PICKUP', 'DELIVERED'];
+
+    this.logger.log(`Starting auto-progression for order ${orderId} (delay: ${delayMs}ms)`);
+
+    for (const stage of stages) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+
+      // Check if order was cancelled in the meantime
+      const currentOrder = await this.prisma.order.findUnique({ where: { id: orderId } });
+      if (!currentOrder || currentOrder.status === 'CANCELLED' || currentOrder.status === 'REJECTED') {
+        this.logger.log(`Auto-progression halted for order ${orderId} as it was cancelled/rejected.`);
+        return;
+      }
+
+      await this.prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: orderId },
+          data: { status: stage as any },
+        });
+
+        await tx.orderItem.updateMany({
+          where: { orderId: orderId },
+          data: { status: stage as any },
+        });
+      });
+
+      this.logger.log(`Order ${orderId} automatically transitioned to ${stage}`);
+    }
   }
 }
