@@ -11,6 +11,7 @@ import '../../providers/address_provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../models/address_model.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../models/product_model.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -23,6 +24,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   final _couponController = TextEditingController();
   AddressModel? _selectedAddress;
   bool _isApplyHovered = false;
+  bool _showPromoField = false;
 
   @override
   void initState() {
@@ -122,8 +124,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Column(
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
               // Custom AppBar Header
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -202,11 +205,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ),
 
               // Body Content
-              Expanded(
-                child: cartState.isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
-                    : cartState.errorMessage != null
-                        ? Center(
+              cartState.isLoading
+                  ? const SizedBox(
+                      height: 200,
+                      child: Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32))),
+                    )
+                  : cartState.errorMessage != null
+                      ? SizedBox(
+                          height: 200,
+                          child: Center(
                             child: Padding(
                               padding: const EdgeInsets.all(24.0),
                               child: Column(
@@ -226,9 +233,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ],
                               ),
                             ),
-                          )
-                        : cartState.items.isEmpty
-                            ? Center(
+                          ),
+                        )
+                      : cartState.items.isEmpty
+                          ? SizedBox(
+                              height: 350,
+                              child: Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(24.0),
                                   child: Column(
@@ -276,11 +286,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     ],
                                   ),
                                 ),
-                              )
-                            : RefreshIndicator(
+                              ),
+                            )
+                          : ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxHeight: 312.0,
+                              ),
+                              child: RefreshIndicator(
                                 color: const Color(0xFF2E7D32),
                                 onRefresh: () => ref.read(cartProvider.notifier).reload(),
                                 child: ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const AlwaysScrollableScrollPhysics(),
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                   itemCount: cartState.items.length,
                                   itemBuilder: (context, index) {
@@ -288,12 +305,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   },
                                 ),
                               ),
-              ),
+                            ),
 
               // Coupon Promo block
               if (cartState.items.isNotEmpty) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
@@ -303,176 +319,205 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.local_offer_outlined, color: Color(0xFFE28C43), size: 16),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Promo / Coupon Code',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: const Color(0xFF23312B),
-                            ),
-                          ),
-                          if (cartState.couponCode != null) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.2)),
-                              ),
-                              child: Text(
-                                '${cartState.couponCode} Applied!',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: const Color(0xFF2E7D32),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF7FAF8),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: cartState.couponCode != null
-                                      ? const Color(0xFF2E7D32).withOpacity(0.3)
-                                      : const Color(0xFFECECEC),
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Center(
-                                child: TextField(
-                                  controller: _couponController,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13,
-                                    color: const Color(0xFF23312B),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: cartState.couponCode != null
-                                        ? 'Active Code: ${cartState.couponCode}'
-                                        : 'Enter code (e.g. SAVE50)',
-                                    hintStyle: GoogleFonts.plusJakartaSans(
-                                      color: const Color(0xFF8D99AE),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _showPromoField = !_showPromoField;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                          color: Colors.transparent,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.local_offer_outlined, color: Color(0xFFE28C43), size: 16),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Have a Promo Code?',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.bold,
                                       fontSize: 12,
+                                      color: const Color(0xFF2E7D32),
                                     ),
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    errorBorder: InputBorder.none,
-                                    disabledBorder: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                    isDense: true,
-                                    filled: false,
                                   ),
-                                ),
+                                  if (cartState.couponCode != null) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE8F5E9),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.2)),
+                                      ),
+                                      child: Text(
+                                        'Applied!',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: const Color(0xFF2E7D32),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ),
+                              Icon(
+                                _showPromoField ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                color: const Color(0xFF2E7D32),
+                                size: 18,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          MouseRegion(
-                            onEnter: (_) => setState(() => _isApplyHovered = true),
-                            onExit: (_) => setState(() => _isApplyHovered = false),
-                            child: GestureDetector(
-                              onTap: cartState.couponCode != null
-                                  ? () {
-                                      ref.read(cartProvider.notifier).removeCoupon();
-                                      _couponController.clear();
-                                    }
-                                  : _applyCoupon,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeInOut,
-                                padding: EdgeInsets.all(_isApplyHovered ? 3.0 : 0.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(
-                                    color: _isApplyHovered
-                                        ? (cartState.couponCode != null ? const Color(0xFFFF4D6D).withOpacity(0.3) : const Color(0xFF2E7D32).withOpacity(0.3))
-                                        : Colors.transparent,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 250),
-                                  curve: Curves.easeInOut,
-                                  transform: Matrix4.identity()..scale(_isApplyHovered ? 1.03 : 1.0),
-                                  transformAlignment: Alignment.center,
+                        ),
+                      ),
+                      if (_showPromoField)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
                                   height: 44,
                                   decoration: BoxDecoration(
-                                    gradient: cartState.couponCode != null
-                                        ? null
-                                        : LinearGradient(
-                                            colors: _isApplyHovered
-                                                ? [const Color(0xFF2E7D32), const Color(0xFF1B4332)]
-                                                : [const Color(0xFFE28C43), const Color(0xFFF3A05B)],
-                                          ),
-                                    color: cartState.couponCode != null
-                                        ? (_isApplyHovered ? const Color(0xFFFFCCD5) : const Color(0xFFFFF0F3))
-                                        : null,
+                                    color: const Color(0xFFF7FAF8),
                                     borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: cartState.couponCode != null
-                                            ? const Color(0xFFFF4D6D).withOpacity(_isApplyHovered ? 0.2 : 0.05)
-                                            : (_isApplyHovered
-                                                ? const Color(0xFF2E7D32).withOpacity(0.35)
-                                                : const Color(0xFFE28C43).withOpacity(0.2)),
-                                        offset: const Offset(0, 4),
-                                        blurRadius: _isApplyHovered ? 12 : 8,
-                                        spreadRadius: _isApplyHovered ? 2 : 0,
-                                      ),
-                                    ],
                                     border: Border.all(
-                                      color: _isApplyHovered
-                                          ? (cartState.couponCode != null ? const Color(0xFFFF4D6D) : const Color(0xFF2E7D32))
-                                          : Colors.transparent,
-                                      width: 1.5,
+                                      color: cartState.couponCode != null
+                                          ? const Color(0xFF2E7D32).withOpacity(0.3)
+                                          : const Color(0xFFECECEC),
                                     ),
                                   ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    cartState.couponCode != null ? 'Remove' : 'Apply',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: cartState.couponCode != null
-                                          ? const Color(0xFFFF4D6D)
-                                          : Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: Center(
+                                    child: TextField(
+                                      controller: _couponController,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 13,
+                                        color: const Color(0xFF23312B),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: cartState.couponCode != null
+                                            ? 'Active Code: ${cartState.couponCode}'
+                                            : 'Enter code (e.g. SAVE50)',
+                                        hintStyle: GoogleFonts.plusJakartaSans(
+                                          color: const Color(0xFF8D99AE),
+                                          fontSize: 12,
+                                        ),
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        errorBorder: InputBorder.none,
+                                        disabledBorder: InputBorder.none,
+                                        contentPadding: EdgeInsets.zero,
+                                        isDense: true,
+                                        filled: false,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 12),
+                              MouseRegion(
+                                onEnter: (_) => setState(() => _isApplyHovered = true),
+                                onExit: (_) => setState(() => _isApplyHovered = false),
+                                child: GestureDetector(
+                                  onTap: cartState.couponCode != null
+                                      ? () {
+                                          ref.read(cartProvider.notifier).removeCoupon();
+                                          _couponController.clear();
+                                        }
+                                      : _applyCoupon,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.easeInOut,
+                                    padding: EdgeInsets.all(_isApplyHovered ? 3.0 : 0.0),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                        color: _isApplyHovered
+                                            ? (cartState.couponCode != null ? const Color(0xFFFF4D6D).withOpacity(0.3) : const Color(0xFF2E7D32).withOpacity(0.3))
+                                            : Colors.transparent,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 250),
+                                      curve: Curves.easeInOut,
+                                      transform: Matrix4.identity()..scale(_isApplyHovered ? 1.03 : 1.0),
+                                      transformAlignment: Alignment.center,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        gradient: cartState.couponCode != null
+                                            ? null
+                                            : LinearGradient(
+                                                colors: _isApplyHovered
+                                                    ? [const Color(0xFF2E7D32), const Color(0xFF1B4332)]
+                                                    : [const Color(0xFFE28C43), const Color(0xFFF3A05B)],
+                                              ),
+                                        color: cartState.couponCode != null
+                                            ? (_isApplyHovered ? const Color(0xFFFFCCD5) : const Color(0xFFFFF0F3))
+                                            : null,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: cartState.couponCode != null
+                                                ? const Color(0xFFFF4D6D).withOpacity(_isApplyHovered ? 0.2 : 0.05)
+                                                : (_isApplyHovered
+                                                    ? const Color(0xFF2E7D32).withOpacity(0.35)
+                                                    : const Color(0xFFE28C43).withOpacity(0.2)),
+                                            offset: const Offset(0, 4),
+                                            blurRadius: _isApplyHovered ? 12 : 8,
+                                            spreadRadius: _isApplyHovered ? 2 : 0,
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: _isApplyHovered
+                                              ? (cartState.couponCode != null ? const Color(0xFFFF4D6D) : const Color(0xFF2E7D32))
+                                              : Colors.transparent,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        cartState.couponCode != null ? 'Remove' : 'Apply',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: cartState.couponCode != null
+                                              ? const Color(0xFFFF4D6D)
+                                              : Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
                     ],
                   ),
                 ),
-
-                // Price summary & checkout matching Demo App
-                _buildPriceSummary(cartState, addressState),
               ],
+
+              // Price summary & checkout matching Demo App
+              _buildPriceSummary(cartState, addressState),
+
+              // You May Also Like Section
+              if (cartState.items.isNotEmpty)
+                _buildRecommendations(context, ref),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildCartItemCard(CartItemModel item) {
     return Container(
@@ -839,6 +884,184 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRecommendations(BuildContext context, WidgetRef ref) {
+    final recommendations = [
+      ProductModel(
+        id: 'rec_honey',
+        name: 'Fresh Organic Honey',
+        price: 240.00,
+        originalPrice: 280.00,
+        origin: 'Himalayas',
+        category: 'Grains & Millets',
+        image: '',
+        description: 'Pure, organic forest honey harvested raw.',
+        weight: '250g',
+        stock: 10,
+        farmName: 'Sweet Nectar Farms',
+        organic: true,
+      ),
+      ProductModel(
+        id: 'rec_strawberries',
+        name: 'Fresh Strawberries',
+        price: 180.00,
+        originalPrice: 200.00,
+        origin: 'Mahabaleshwar',
+        category: 'Fruits',
+        image: '',
+        description: 'Sweet, red strawberries picked fresh.',
+        weight: '200g',
+        stock: 15,
+        farmName: 'Strawberry Fields',
+        organic: true,
+      ),
+      ProductModel(
+        id: 'rec_avocados',
+        name: 'Organic Avocados',
+        price: 320.00,
+        originalPrice: 350.00,
+        origin: 'Ooty',
+        category: 'Vegetables',
+        image: '',
+        description: 'Rich, creamy Hass avocados grown organically.',
+        weight: '2 units',
+        stock: 8,
+        farmName: 'Green Valley Farms',
+        organic: true,
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                const Icon(Icons.recommend_outlined, color: Color(0xFF2E7D32), size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'You May Also Like',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: const Color(0xFF23312B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 145,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: recommendations.length,
+              itemBuilder: (context, index) {
+                final item = recommendations[index];
+                return Container(
+                  width: 150,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x06000000),
+                        offset: Offset(0, 4),
+                        blurRadius: 8,
+                      ),
+                    ],
+                    border: Border.all(color: const Color(0xFFECECEC)),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFF1F8F4),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              item.id == 'rec_honey'
+                                  ? '🍯'
+                                  : item.id == 'rec_strawberries'
+                                      ? '🍓'
+                                      : '🥑',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(cartProvider.notifier).addItem(item);
+                              showAppSnackBar(
+                                context,
+                                'Added ${item.name} to Basket!',
+                                type: SnackBarType.success,
+                              );
+                            },
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFFE8F5E9),
+                              ),
+                              child: const Icon(Icons.add, size: 12, color: Color(0xFF2E7D32)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        item.name,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          color: const Color(0xFF23312B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        item.farmName,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₹${item.price.toStringAsFixed(2)} / ${item.weight}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF2E7D32),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
