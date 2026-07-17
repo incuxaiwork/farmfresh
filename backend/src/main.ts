@@ -95,7 +95,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // Boot server
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   logger.log(`Server successfully started, listening on http://localhost:${port}/api/v1/`);
   logger.log(`OpenAPI Documentation ready at http://localhost:${port}/api/docs/`);
 }
