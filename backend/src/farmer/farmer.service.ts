@@ -52,7 +52,19 @@ export class FarmerService {
         totalRevenue += amt;
         if (new Date(item.order.createdAt) >= today) {
           todaySales += amt;
-        }
+  async updateLocation(userId: string, latitude: number, longitude: number) {
+    const farmer = await this.prisma.farmerProfile.findUnique({ where: { userId } });
+    if (!farmer) throw new NotFoundException('Farmer profile not found');
+
+    return this.prisma.farmerProfile.update({
+      where: { userId },
+      data: {
+        farmLatitude: latitude,
+        farmLongitude: longitude,
+      },
+    });
+  }
+}
       }
     }
 

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, MaxLength, IsNumber, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateOrderDto {
@@ -7,6 +7,20 @@ export class CreateOrderDto {
   @IsString()
   @MaxLength(255)
   address?: string;
+
+  @ApiProperty({ example: 16.5062, description: 'Customer delivery latitude', required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  customerLatitude?: number;
+
+  @ApiProperty({ example: 80.6480, description: 'Customer delivery longitude', required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  customerLongitude?: number;
 
   @ApiProperty({ example: 'Please leave package near the garage entrance door', description: 'Additional instructions for delivery driver', required: false })
   @IsOptional()

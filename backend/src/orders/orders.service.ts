@@ -82,6 +82,8 @@ export class OrdersService {
           total: totals.total,
           otpCode,
           address: dto.address || 'Delivery address not provided',
+          customerLatitude: dto.customerLatitude ?? null,
+          customerLongitude: dto.customerLongitude ?? null,
           notes: dto.notes || null,
           status: 'PENDING' as any,
           paymentStatus: 'PENDING' as any,
@@ -132,6 +134,24 @@ export class OrdersService {
           grandTotal: 0.00,
         },
       });
+
+      // Snapshot farmer coordinates from the first farmer in the order
+      const firstFarmerId = cart.items[0]?.farmerId;
+      if (firstFarmerId) {
+        const farmerProfile = await tx.farmerProfile.findUnique({
+          where: { id: firstFarmerId },
+          select: { farmLatitude: true, farmLongitude: true },
+        });
+        if (farmerProfile?.farmLatitude && farmerProfile?.farmLongitude) {
+          await tx.order.update({
+            where: { id: order.id },
+            data: {
+              farmerLatitude: farmerProfile.farmLatitude,
+              farmerLongitude: farmerProfile.farmLongitude,
+            },
+          });
+        }
+      }
 
       return order;
     }, { timeout: 30000 });

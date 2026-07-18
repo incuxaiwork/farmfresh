@@ -1,5 +1,3 @@
-import 'dart:html' as html;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,24 +64,11 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
   }
 
   void _pickProductImage() {
-    if (kIsWeb) {
-      final input = html.FileUploadInputElement()..accept = 'image/*';
-      input.click();
-      input.onChange.listen((event) {
-        final files = input.files;
-        if (files != null && files.isNotEmpty) {
-          final file = files[0];
-          final reader = html.FileReader();
-          reader.readAsDataUrl(file);
-          reader.onLoadEnd.listen((event) {
-            final base64Image = reader.result as String;
-            setState(() {
-              _imageController.text = base64Image;
-            });
-          });
-        }
-      });
-    }
+    showAppSnackBar(
+      context,
+      'Paste an image URL in the field above',
+      type: SnackBarType.info,
+    );
   }
 
   String _getDefaultCategoryImageUrl(String category) {

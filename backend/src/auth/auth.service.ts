@@ -76,6 +76,7 @@ export class AuthService {
       data: {
         name: `${dto.firstName} ${dto.lastName}`,
         email: dto.email.toLowerCase(),
+        phone: dto.phone,
         passwordHash,
         role: 'CUSTOMER' as any,
       },
@@ -104,6 +105,7 @@ export class AuthService {
       data: {
         name: dto.name,
         email: dto.email.toLowerCase(),
+        phone: dto.phone,
         passwordHash,
         role: 'FARMER' as any,
         farmerProfile: {
@@ -147,6 +149,7 @@ export class AuthService {
       data: {
         name: `${dto.firstName} ${dto.lastName}`,
         email: dto.email.toLowerCase(),
+        phone: dto.phone,
         passwordHash,
         role: 'DELIVERY_PARTNER' as any,
       },
@@ -328,6 +331,7 @@ export class AuthService {
         email: true,
         role: true,
         phone: true,
+        avatar: true,
         createdAt: true,
       },
     });
@@ -342,6 +346,7 @@ export class AuthService {
     phone?: string,
     farmName?: string,
     farmAddress?: string,
+    avatar?: string,
   ) {
     const data: any = {};
     if (name !== undefined) data.name = name;

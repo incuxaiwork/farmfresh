@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:html' as html;
 
 class ProfileImageState {
   final String image;
@@ -46,27 +44,7 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
     _loadProfileImage();
   }
 
-  void _loadProfileImage() {
-    if (kIsWeb) {
-      final localData = html.window.localStorage['profile_image_state_$userId'];
-      if (localData != null) {
-        try {
-          final decoded = jsonDecode(localData) as Map<String, dynamic>;
-          state = ProfileImageState.fromJson(decoded);
-          return;
-        } catch (_) {}
-      }
-      final legacyImage = html.window.localStorage['profile_image_$userId'];
-      if (legacyImage != null) {
-        state = ProfileImageState(image: legacyImage);
-        return;
-      }
-    } else {
-      _loadMobile();
-    }
-  }
-
-  Future<void> _loadMobile() async {
+  Future<void> _loadProfileImage() async {
     try {
       final stored = await _secureStorage.read(key: 'profile_image_state_$userId');
       if (stored != null) {
@@ -75,7 +53,7 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
         return;
       }
     } catch (_) {}
-    
+
     try {
       final legacy = await _secureStorage.read(key: 'profile_image_$userId');
       if (legacy != null) {
@@ -89,25 +67,16 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
     final newState = ProfileImageState(image: base64Image, scale: scale, dx: dx, dy: dy);
     state = newState;
     final jsonStr = jsonEncode(newState.toJson());
-    if (kIsWeb) {
-      html.window.localStorage['profile_image_state_$userId'] = jsonStr;
-    } else {
-      try {
-        await _secureStorage.write(key: 'profile_image_state_$userId', value: jsonStr);
-      } catch (_) {}
-    }
+    try {
+      await _secureStorage.write(key: 'profile_image_state_$userId', value: jsonStr);
+    } catch (_) {}
   }
 
   Future<void> deleteProfileImage() async {
     state = null;
-    if (kIsWeb) {
-      html.window.localStorage.remove('profile_image_state_$userId');
-      html.window.localStorage.remove('profile_image_$userId');
-    } else {
-      try {
-        await _secureStorage.delete(key: 'profile_image_state_$userId');
-        await _secureStorage.delete(key: 'profile_image_$userId');
-      } catch (_) {}
-    }
+    try {
+      await _secureStorage.delete(key: 'profile_image_state_$userId');
+      await _secureStorage.delete(key: 'profile_image_$userId');
+    } catch (_) {}
   }
 }

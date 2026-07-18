@@ -21,6 +21,11 @@ export default () => {
       refreshSecret: jwtRefreshSecret,
       refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d',
     },
+    cloud: {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.CLOUDINARY_API_KEY,
+      apiSecret: process.env.CLOUDINARY_API_SECRET,
+    },
     rateLimit: {
       ttl: parseInt(process.env.THROTTLE_TTL || '60', 10),
       limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10),
@@ -33,4 +38,4 @@ export default () => {
       transitionDelayMs: parseInt(process.env.ORDER_TRANSITION_DELAY_MS || '120000', 10),
     },
   };
-};
+}

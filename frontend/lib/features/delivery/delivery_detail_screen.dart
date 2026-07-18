@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../providers/delivery_provider.dart';
 import '../../models/delivery_model.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../core/constants/app_constants.dart';
+import '../../core/services/delivery_tracking_service.dart';
 
 class DeliveryDetailScreen extends ConsumerStatefulWidget {
   final String deliveryId;
@@ -20,7 +24,23 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(deliveryOrdersProvider.notifier).loadDelivery(widget.deliveryId));
+    Future.microtask(() async {
+      await ref.read(deliveryOrdersProvider.notifier).loadDelivery(widget.deliveryId);
+      _autoStartTracking();
+    });
+  }
+
+  void _autoStartTracking() {
+    final delivery = ref.read(deliveryOrdersProvider).selectedDelivery;
+    if (delivery == null) return;
+
+    final isTrackingStatus =
+        delivery.status == DeliveryOrderStatus.headingToPickup ||
+        delivery.status == DeliveryOrderStatus.outForDelivery;
+
+    if (isTrackingStatus) {
+      ref.read(deliveryTrackingServiceProvider).startTracking(delivery.id);
+    }
   }
 
   @override
@@ -84,29 +104,74 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   }
 
   Widget _buildRouteMapCard(DeliveryOrder delivery) {
+    // Determine map center
+    final hasFarmer = delivery.farmerLatitude != null && delivery.farmerLongitude != null;
+    final hasCustomer = delivery.customerLatitude != null && delivery.customerLongitude != null;
+
+    LatLng? center;
+    if (hasFarmer) center = LatLng(delivery.farmerLatitude!, delivery.farmerLongitude!);
+    else if (hasCustomer) center = LatLng(delivery.customerLatitude!, delivery.customerLongitude!);
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: [
           Container(
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+            height: 140,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.map, size: 40, color: Colors.green),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Route Navigation Overview',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade800),
-                  ),
-                ],
-              ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              child: center != null
+                  ? FlutterMap(
+                      options: MapOptions(
+                        initialCenter: center,
+                        initialZoom: 13,
+                        interactionOptions: const InteractionOptions(
+                          flags: InteractiveFlag.none,
+                        ),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: AppConstants.mapTileUrl,
+                          userAgentPackageName: 'com.farmfresh.app',
+                        ),
+                        MarkerLayer(markers: [
+                          if (hasFarmer)
+                            Marker(
+                              point: LatLng(delivery.farmerLatitude!, delivery.farmerLongitude!),
+                              width: 30,
+                              height: 30,
+                              child: const Icon(Icons.agriculture, color: Colors.blue, size: 24),
+                            ),
+                          if (hasCustomer)
+                            Marker(
+                              point: LatLng(delivery.customerLatitude!, delivery.customerLongitude!),
+                              width: 30,
+                              height: 30,
+                              child: const Icon(Icons.home, color: Colors.green, size: 24),
+                            ),
+                        ]),
+                      ],
+                    )
+                  : Container(
+                      color: Colors.green.shade50,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.map, size: 40, color: Colors.green),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Route Navigation Overview',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade800),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
             ),
           ),
           Padding(
@@ -404,6 +469,7 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   void _markPickedUp(String id) async {
     final ok = await ref.read(deliveryOrdersProvider.notifier).markPickedUp(id);
     if (mounted && ok) {
+      ref.read(deliveryTrackingServiceProvider).startTracking(id);
       showAppSnackBar(
         context,
         'Route to farm started!',
@@ -426,6 +492,7 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   void _startTransit(String id) async {
     final ok = await ref.read(deliveryOrdersProvider.notifier).startDelivery(id);
     if (mounted && ok) {
+      ref.read(deliveryTrackingServiceProvider).startTracking(id);
       showAppSnackBar(
         context,
         'Transit started. Heading to customer drop-off.',
@@ -465,7 +532,7 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () async {
+              onPressed: () async {
               final otp = _otpController.text.trim();
               if (otp.length != 6) {
                 showAppSnackBar(
@@ -479,6 +546,7 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
               final ok = await ref.read(deliveryOrdersProvider.notifier).verifyOtp(id, otp);
               if (mounted) {
                 if (ok) {
+                  ref.read(deliveryTrackingServiceProvider).stopTracking();
                   showAppSnackBar(
                     context,
                     'Order verified and delivered!',

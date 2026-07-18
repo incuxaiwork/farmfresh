@@ -47,6 +47,10 @@ class DeliveryOrder {
   final DeliveryOrderSummary? orderSummary;
   final double? rating;
   final String? feedback;
+  final double? farmerLatitude;
+  final double? farmerLongitude;
+  final double? customerLatitude;
+  final double? customerLongitude;
 
   DeliveryOrder({
     required this.id,
@@ -74,6 +78,10 @@ class DeliveryOrder {
     this.orderSummary,
     this.rating,
     this.feedback,
+    this.farmerLatitude,
+    this.farmerLongitude,
+    this.customerLatitude,
+    this.customerLongitude,
   });
 
   factory DeliveryOrder.fromJson(Map<String, dynamic> json) {
@@ -116,6 +124,10 @@ class DeliveryOrder {
           : null,
       rating: _parseDouble(json['rating']),
       feedback: json['feedback'],
+      farmerLatitude: _parseDouble(json['farmerLatitude'] ?? json['farmer_latitude']),
+      farmerLongitude: _parseDouble(json['farmerLongitude'] ?? json['farmer_longitude']),
+      customerLatitude: _parseDouble(json['customerLatitude'] ?? json['customer_latitude']),
+      customerLongitude: _parseDouble(json['customerLongitude'] ?? json['customer_longitude']),
     );
   }
 
@@ -127,6 +139,10 @@ class DeliveryOrder {
     String? deliveredAt,
     double? rating,
     String? feedback,
+    double? farmerLatitude,
+    double? farmerLongitude,
+    double? customerLatitude,
+    double? customerLongitude,
   }) {
     return DeliveryOrder(
       id: id,
@@ -152,6 +168,10 @@ class DeliveryOrder {
       orderSummary: orderSummary,
       rating: rating ?? this.rating,
       feedback: feedback ?? this.feedback,
+      farmerLatitude: farmerLatitude ?? this.farmerLatitude,
+      farmerLongitude: farmerLongitude ?? this.farmerLongitude,
+      customerLatitude: customerLatitude ?? this.customerLatitude,
+      customerLongitude: customerLongitude ?? this.customerLongitude,
     );
   }
 }

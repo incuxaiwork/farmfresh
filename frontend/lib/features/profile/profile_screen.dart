@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:crop_image/crop_image.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:html' as html;
-import 'dart:ui';
-import '../../providers/auth_provider.dart';
-import '../../providers/profile_image_provider.dart';
-import '../../core/widgets/profile_image_picker_dialog.dart';
-import '../../core/widgets/custom_button.dart';
+import '../providers/auth_provider.dart';
+import '../providers/profile_image_provider.dart';
+import '../core/widgets/profile_image_picker_dialog.dart';
+import '../core/widgets/custom_button.dart';
+import '../core/services/cloudinary_upload_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -31,13 +33,13 @@ class ProfileScreen extends ConsumerWidget {
     }
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFF2F8F4),
-            Color(0xFFE6F2EA),
+            const Color(0xFFF2F8F4),
+            const Color(0xFFE6F2EA),
           ],
         ),
       ),
@@ -48,46 +50,6 @@ class ProfileScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
             child: Column(
               children: [
-                // Custom Header
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          context.pop();
-                        },
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0x0F2E5C45),
-                                offset: Offset(0, 4),
-                                blurRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
-                        ),
-                      ),
-                      Text(
-                        'My Profile',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF23312B),
-                        ),
-                      ),
-                      const SizedBox(width: 36),
-                    ],
-                  ),
-                ),
-
                 _buildProfileHeader(context, user, ref),
                 const SizedBox(height: 20),
                 _buildProfileMenu(context),
@@ -101,7 +63,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, dynamic user, WidgetRef ref) {
+  static Widget _buildProfileHeader(BuildContext context, dynamic user, WidgetRef ref) {
     final profileImage = ref.watch(profileImageProvider(user.id));
 
     return ClipRRect(
@@ -126,128 +88,134 @@ class ProfileScreen extends ConsumerWidget {
           ),
           padding: const EdgeInsets.all(20),
           child: Column(
-        children: [
-          GestureDetector(
-            onTap: () {
-              ProfileImagePickerDialog.show(
-                context,
-                userId: user.id,
-                onImageSelected: (base64Image, scale, dx, dy) {
-                  ref.read(profileImageProvider(user.id).notifier).updateProfileImage(
-                        base64Image,
-                        scale: scale,
-                        dx: dx,
-                        dy: dy,
-                      );
+            children: [
+              GestureDetector(
+                onTap: () {
+                  ProfileImagePickerDialog.show(
+                    context,
+                    userId: user.id,
+                    onImageSelected: (base64Image, scale, dx, dy) {
+                      ref.read(profileImageProvider(user.id).notifier).updateProfileImage(
+                            base64Image,
+                            scale: scale,
+                            dx: dx,
+                            dy: dy,
+                          );
+                      _uploadProfilePicture(context, ref, user.id, base64Image);
+                    },
+                  );
                 },
-              );
-            },
-            child: Stack(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x0F2E5C45),
-                        offset: Offset(0, 4),
-                        blurRadius: 10,
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: profileImage != null && profileImage.image.startsWith('data:image')
-                        ? Transform.translate(
-                            offset: Offset(profileImage.dx, profileImage.dy),
-                            child: Transform.scale(
-                              scale: profileImage.scale,
-                              child: Image.memory(
-                                base64Decode(profileImage.image.split(',')[1]),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          )
-                        : Image.network(
-                            'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky',
-                            fit: BoxFit.cover,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0F2E5C45),
+                            offset: Offset(0, 4),
+                            blurRadius: 10,
                           ),
-                  ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: profileImage != null && profileImage.image.startsWith('data:image')
+                            ? Transform.translate(
+                                offset: Offset(profileImage.dx, profileImage.dy),
+                                child: Transform.scale(
+                                  scale: profileImage.scale,
+                                  child: Image.memory(
+                                    base64Decode(profileImage.image.split(',')[1]),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )
+                            : (user.avatar != null && user.avatar!.isNotEmpty && !user.avatar!.contains('dicebear'))
+                                ? Image.network(
+                                    user.avatar!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.network(
+                                    'https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}',
+                                    fit: BoxFit.cover,
+                                  ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2E7D32),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2E7D32),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 14,
-                    ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                user.name,
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF23312B),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                user.email,
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xFF647C72),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (user.phone != null && user.phone!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  user.phone!,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF647C72),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            user.name,
-            style: GoogleFonts.outfit(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF23312B),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            user.email,
-            style: GoogleFonts.plusJakartaSans(
-              color: const Color(0xFF647C72),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          if (user.phone != null && user.phone!.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              user.phone!,
-              style: GoogleFonts.plusJakartaSans(
-                color: const Color(0xFF647C72),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  user.role.toUpperCase(),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF2E7D32),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 10,
+                  ),
+                ),
               ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              user.role.toUpperCase(),
-              style: GoogleFonts.plusJakartaSans(
-                color: const Color(0xFF2E7D32),
-                fontWeight: FontWeight.w800,
-                fontSize: 10,
-              ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
+        ),
       ),
     );
   }
 
-  Widget _buildProfileMenu(BuildContext context) {
+  static Widget _buildProfileMenu(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -269,60 +237,60 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
           child: Column(
-        children: [
-          _menuTile(
-            context,
-            icon: Icons.person_outline,
-            title: 'Edit Profile',
-            subtitle: 'Update your name, phone number',
-            onTap: () => context.push('/edit-profile'),
+            children: [
+              _menuTile(
+                context,
+                icon: Icons.person_outline,
+                title: 'Edit Profile',
+                subtitle: 'Update your name, phone number',
+                onTap: () => context.push('/edit-profile'),
+              ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.lock_outline,
+                title: 'Change Password',
+                subtitle: 'Update your password',
+                onTap: () => context.push('/change-password'),
+              ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.location_on_outlined,
+                title: 'Delivery Addresses',
+                subtitle: 'Manage your addresses',
+                onTap: () => context.push('/addresses'),
+              ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.info_outlined,
+                title: 'About FarmFresh',
+                subtitle: 'Version 1.0.0',
+                onTap: () => _showAboutDialog(context),
+              ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.description_outlined,
+                title: 'Terms & Conditions',
+                onTap: () => _showPlaceholderPage(context, 'Terms & Conditions'),
+              ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                onTap: () => _showPlaceholderPage(context, 'Privacy Policy'),
+              ),
+            ],
           ),
-          const Divider(height: 1, color: Color(0xFFF3F3F3)),
-          _menuTile(
-            context,
-            icon: Icons.lock_outline,
-            title: 'Change Password',
-            subtitle: 'Update your password',
-            onTap: () => context.push('/change-password'),
-          ),
-          const Divider(height: 1, color: Color(0xFFF3F3F3)),
-          _menuTile(
-            context,
-            icon: Icons.location_on_outlined,
-            title: 'Delivery Addresses',
-            subtitle: 'Manage your addresses',
-            onTap: () => context.push('/addresses'),
-          ),
-          const Divider(height: 1, color: Color(0xFFF3F3F3)),
-          _menuTile(
-            context,
-            icon: Icons.info_outlined,
-            title: 'About FarmFresh',
-            subtitle: 'Version 1.0.0',
-            onTap: () => _showAboutDialog(context),
-          ),
-          const Divider(height: 1, color: Color(0xFFF3F3F3)),
-          _menuTile(
-            context,
-            icon: Icons.description_outlined,
-            title: 'Terms & Conditions',
-            onTap: () => _showPlaceholderPage(context, 'Terms & Conditions'),
-          ),
-          const Divider(height: 1, color: Color(0xFFF3F3F3)),
-          _menuTile(
-            context,
-            icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
-            onTap: () => _showPlaceholderPage(context, 'Privacy Policy'),
-          ),
-        ],
-      ),
-    ),
+        ),
       ),
     );
   }
 
-  Widget _menuTile(
+  static Widget _menuTile(
     BuildContext context, {
     required IconData icon,
     required String title,
@@ -354,7 +322,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
+  static Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
     return CustomButton(
       text: 'Log Out',
       icon: Icons.logout,
@@ -387,7 +355,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showAboutDialog(BuildContext context) {
+  static void _showAboutDialog(BuildContext context) {
     showAboutDialog(
       context: context,
       applicationName: 'FarmFresh',
@@ -409,9 +377,38 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showPlaceholderPage(BuildContext context, String title) {
+  static void _showPlaceholderPage(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$title page coming soon')),
     );
+  }
+
+  static Future<void> _uploadProfilePicture(
+    BuildContext context, WidgetRef ref, String userId, String base64Image) async {
+    try {
+      final response = await ref.read(authRepositoryProvider).uploadProfilePicture(userId, base64Image);
+
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profile picture updated successfully!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+            backgroundColor: const Color(0xFF2E7D32),
+          ),
+        );
+
+        ref.read(authProvider.notifier).clearMessages();
+        
+        if (context.mounted) {
+          ref.read(authProvider.notifier).loadCurrentUser();
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update profile picture: $e', style: GoogleFonts.plusJakartaSans()),
+          backgroundColor: const Color(0xFFFF4D6D),
+        ),
+      );
+    }
   }
 }
