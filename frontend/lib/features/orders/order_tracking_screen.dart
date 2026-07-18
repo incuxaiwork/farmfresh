@@ -583,19 +583,26 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     if (order.status.toUpperCase() == 'DELIVERED' || order.status.toUpperCase() == 'COMPLETED') {
       return const SizedBox.shrink();
     }
-    return Card(
-      elevation: 2,
-      color: const Color(0xFFE8F5E9),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFC8E6C9), width: 1.5),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF6EC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: const Color(0xFF2E7D32).withOpacity(0.1),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
               child: const Icon(Icons.key, color: Color(0xFF2E7D32)),
             ),
             const SizedBox(width: 16),
