@@ -12,9 +12,10 @@ model User {
   id                 String               @id @default(uuid()) @db.Uuid
   name               String               @db.VarChar(100)
   email              String               @unique @db.VarChar(150)
-  phone              String?              @db.VarChar(20)
+  phone              String?              @unique @db.VarChar(20)
   passwordHash       String               @map("password_hash") @db.VarChar(255)
   role               UserRole             @default(CUSTOMER)
+  avatar             String?              @db.VarChar(255)
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
   deletedAt          DateTime?            @map("deleted_at")
@@ -32,6 +33,7 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([phone])
   @@map("users")
 }
 
@@ -44,6 +46,8 @@ model UserAddress {
   state        String   @db.VarChar(100)
   postalCode   String   @map("postal_code") @db.VarChar(20)
   country      String   @db.VarChar(100)
+  latitude     Decimal? @db.Decimal(10, 8)
+  longitude    Decimal? @db.Decimal(11, 8)
   isDefault    Boolean  @default(false) @map("is_default")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -54,20 +58,22 @@ model UserAddress {
 }
 
 model FarmerProfile {
-  id          String                   @id @default(uuid()) @db.Uuid
-  userId      String                   @unique @map("user_id") @db.Uuid
-  farmName    String                   @map("farm_name") @db.VarChar(150)
-  farmAddress String                   @map("farm_address") @db.VarChar(255)
-  kycStatus   FarmerVerificationStatus @default(PENDING) @map("kyc_status")
-  kycDocUrl   String?                  @map("kyc_doc_url") @db.VarChar(255)
-  createdAt   DateTime                 @default(now()) @map("created_at")
-  updatedAt   DateTime                 @updatedAt @map("updated_at")
-  bankAccount BankAccount?
-  earnings    FarmerEarning[]
-  user        User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  inventories Inventory[]
-  orderItems  OrderItem[]
-  products    Product[]
+  id            String                   @id @default(uuid()) @db.Uuid
+  userId        String                   @unique @map("user_id") @db.Uuid
+  farmName      String                   @map("farm_name") @db.VarChar(150)
+  farmAddress   String                   @map("farm_address") @db.VarChar(255)
+  farmLatitude  Decimal?                 @map("farm_latitude") @db.Decimal(10, 8)
+  farmLongitude Decimal?                 @map("farm_longitude") @db.Decimal(11, 8)
+  kycStatus     FarmerVerificationStatus @default(PENDING) @map("kyc_status")
+  kycDocUrl     String?                  @map("kyc_doc_url") @db.VarChar(255)
+  createdAt     DateTime                 @default(now()) @map("created_at")
+  updatedAt     DateTime                 @updatedAt @map("updated_at")
+  bankAccount   BankAccount?
+  earnings      FarmerEarning[]
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inventories   Inventory[]
+  orderItems    OrderItem[]
+  products      Product[]
 
   @@map("farmer_profiles")
 }
@@ -248,6 +254,10 @@ model Order {
   total             Decimal             @db.Decimal(10, 2)
   otpCode           String              @map("otp_code") @db.VarChar(6)
   address           String              @db.VarChar(255)
+  customerLatitude  Decimal?            @map("customer_latitude") @db.Decimal(10, 8)
+  customerLongitude Decimal?            @map("customer_longitude") @db.Decimal(11, 8)
+  farmerLatitude   Decimal?             @map("farmer_latitude") @db.Decimal(10, 8)
+  farmerLongitude  Decimal?             @map("farmer_longitude") @db.Decimal(11, 8)
   notes             String?             @db.VarChar(255)
   estimatedDelivery DateTime?           @map("estimated_delivery")
   createdAt         DateTime            @default(now()) @map("created_at")

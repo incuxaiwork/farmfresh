@@ -1,4 +1,37 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_constants.dart';
+
+class AvatarPreset {
+  final String id;
+  final IconData icon;
+  final Color color;
+
+  const AvatarPreset({
+    required this.id,
+    required this.icon,
+    required this.color,
+  });
+}
+
+class FarmerAvatarPresets {
+  static const List<AvatarPreset> presets = [
+    AvatarPreset(id: 'avatar_leaf_green', icon: Icons.eco, color: Color(0xFF4CAF50)),
+    AvatarPreset(id: 'avatar_apple_red', icon: Icons.apple, color: Color(0xFFE53935)),
+    AvatarPreset(id: 'avatar_spa_teal', icon: Icons.spa, color: Color(0xFF00897B)),
+    AvatarPreset(id: 'avatar_tractor_blue', icon: Icons.agriculture, color: Color(0xFF1E88E5)),
+    AvatarPreset(id: 'avatar_flower_pink', icon: Icons.local_florist, color: Color(0xFFD81B60)),
+    AvatarPreset(id: 'avatar_droplet_blue', icon: Icons.water_drop, color: Color(0xFF039BE5)),
+    AvatarPreset(id: 'avatar_grass_green', icon: Icons.grass, color: Color(0xFF7CB342)),
+  ];
+
+  static AvatarPreset? getById(String id) {
+    try {
+      return presets.firstWhere((preset) => preset.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+}
 
 class FarmerAvatar extends StatelessWidget {
   final String? avatarUrl;
@@ -7,87 +40,69 @@ class FarmerAvatar extends StatelessWidget {
   const FarmerAvatar({
     super.key,
     required this.avatarUrl,
-    required this.radius,
+    this.radius = 40,
   });
-
-  bool _isEmoji(String str) {
-    if (str.isEmpty) return false;
-    return str.length <= 4 &&
-        !str.startsWith('http') &&
-        !str.startsWith('data') &&
-        !str.startsWith('/') &&
-        !str.startsWith('assets');
-  }
 
   @override
   Widget build(BuildContext context) {
     final url = avatarUrl ?? '';
 
     if (url.isEmpty) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundColor: const Color(0xFFE8F5E9),
+      return _buildDefaultAvatar();
+    }
+
+    final preset = FarmerAvatarPresets.getById(url);
+    if (preset != null) {
+      return Container(
+        width: radius * 2,
+        height: radius * 2,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: preset.color.withOpacity(0.15),
+        ),
         child: Icon(
-          Icons.person,
-          size: radius * 1.0,
-          color: const Color(0xFF2E7D32),
+          preset.icon,
+          color: preset.color,
+          size: radius,
         ),
       );
     }
 
-    if (_isEmoji(url)) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundColor: const Color(0xFFE8F5E9),
-        child: Text(
-          url,
-          style: TextStyle(
-            fontSize: radius * 1.1,
-          ),
-        ),
-      );
+    String fullUrl = url;
+    if (url.startsWith('/public/')) {
+      final baseUrl = AppConstants.apiBaseUrl.replaceAll('/api', '');
+      fullUrl = '$baseUrl$url';
+    } else if (!url.startsWith('http')) {
+      final baseUrl = AppConstants.apiBaseUrl.replaceAll('/api', '');
+      fullUrl = '$baseUrl/$url';
     }
 
-    // Otherwise render image
-    return CircleAvatar(
-      radius: radius,
-      backgroundImage: NetworkImage(url),
-      backgroundColor: const Color(0xFFE8F5E9),
-      onBackgroundImageError: (_, __) => Icon(
-        Icons.person,
-        size: radius * 1.0,
-        color: const Color(0xFF2E7D32),
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        image: DecorationImage(
+          image: NetworkImage(fullUrl),
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
-}
 
-class FarmerAvatarPreset {
-  final String id;
-  const FarmerAvatarPreset({required this.id});
-}
-
-class FarmerAvatarPresets {
-  static const List<FarmerAvatarPreset> presets = [
-    FarmerAvatarPreset(id: '🍎'),
-    FarmerAvatarPreset(id: '🍏'),
-    FarmerAvatarPreset(id: '🍊'),
-    FarmerAvatarPreset(id: '🍋'),
-    FarmerAvatarPreset(id: '🍌'),
-    FarmerAvatarPreset(id: '🍉'),
-    FarmerAvatarPreset(id: '🍓'),
-    FarmerAvatarPreset(id: '🍒'),
-    FarmerAvatarPreset(id: '🥭'),
-    FarmerAvatarPreset(id: '🍍'),
-    FarmerAvatarPreset(id: '🍇'),
-    FarmerAvatarPreset(id: '🍅'),
-    FarmerAvatarPreset(id: '🥑'),
-    FarmerAvatarPreset(id: '🥕'),
-    FarmerAvatarPreset(id: '🌽'),
-    FarmerAvatarPreset(id: '🥦'),
-    FarmerAvatarPreset(id: '🥬'),
-    FarmerAvatarPreset(id: '🥔'),
-    FarmerAvatarPreset(id: '🧅'),
-    FarmerAvatarPreset(id: '🍄'),
-  ];
+  Widget _buildDefaultAvatar() {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFFEAF3E4),
+      ),
+      child: Icon(
+        Icons.person,
+        color: const Color(0xFF2E7D32),
+        size: radius,
+      ),
+    );
+  }
 }

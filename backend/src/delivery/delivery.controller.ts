@@ -25,6 +25,14 @@ export class DeliveryController {
     return new SuccessResponseDto('Delivery driver assigned successfully', data);
   }
 
+  @Get('farmer-location/:farmerId')
+  @Roles('DELIVERY_PARTNER', 'ADMIN')
+  @ApiOperation({ summary: 'Get farmer GPS coordinates for delivery navigation' })
+  async getFarmerLocation(@CurrentUser() user: CurrentUserPayload, @Param('farmerId') farmerId: string) {
+    const data = await this.deliveryService.getFarmerLocation(farmerId);
+    return new SuccessResponseDto('Farmer location loaded successfully', data);
+  }
+
   @Get()
   @Roles('DELIVERY_PARTNER', 'ADMIN', 'CUSTOMER')
   @ApiOperation({ summary: 'Query active or historical delivery task assignments' })

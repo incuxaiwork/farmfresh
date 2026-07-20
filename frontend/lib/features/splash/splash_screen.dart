@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../providers/auth_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _transitionController;
   late AnimationController _buttonScaleController;
   late Animation<double> _buttonScale;
@@ -54,6 +56,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
+    if (authState.isLoading || authState.user != null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF2E7D32),
+          ),
+        ),
+      );
+    }
     final slideAnimation = Tween<Offset>(
       begin: const Offset(-0.08, 0.0), // slides slightly left as it exits
       end: Offset.zero,
@@ -88,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             child: SafeArea(
               child: Stack(
                 children: [
-                  // Floating decorative leaf top-left
+                   // Floating decorative leaf top-left
                   Positioned(
                     top: -10,
                     left: -30,
@@ -144,15 +157,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(32),
-                            child: Container(
-                              color: Colors.white,
-                              child: const Center(
-                                child: Icon(
-                                  Icons.eco,
-                                  size: 100,
-                                  color: Color(0xFF2E7D32),
-                                ),
-                              ),
+                            child: const Icon(
+                              Icons.shopping_basket_rounded,
+                              size: 160,
+                              color: Color(0xFF2E7D32),
                             ),
                           ),
                         ),

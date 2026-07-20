@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/product_model.dart';
+import 'product_image_widget.dart';
 import '../../providers/wishlist_provider.dart';
 import '../utils/app_snackbar.dart';
 
@@ -86,13 +87,9 @@ class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProv
                                 color: const Color(0xFFF1F8F4),
                                 child: const Icon(Icons.spa, color: Color(0xFF2E7D32), size: 30),
                               )
-                            : Image.network(
-                                widget.product.image,
+                            : ProductImageWidget(
+                                imageUrl: widget.product.image,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  color: const Color(0xFFF1F8F4),
-                                  child: const Icon(Icons.spa, color: Color(0xFF2E7D32), size: 30),
-                                ),
                               ),
                       ),
                     ),

@@ -1,0 +1,263 @@
+﻿Analyzing farmfresh team...
+
+  error - lib\app.dart:25:21 - The argument type 'Provider<GoRouter>' can't be assigned to the parameter type 'RouterConfig<Object>?'.  - argument_type_not_assignable
+  error - lib\features\authentication\login_screen.dart:89:37 - The constructor being called isn't a const constructor. Try removing 'const' from the constructor invocation. - const_with_non_const
+  error - lib\features\cart\cart_screen.dart:35:72 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:45:55 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:72:20 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:86:57 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:154:20 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:163:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:180:53 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:181:76 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:185:52 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:195:55 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:206:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:256:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:265:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:287:24 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:363:30 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:375:30 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:386:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:396:36 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:453:32 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:520:32 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:529:32 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:539:28 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:542:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:558:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:590:20 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:623:24 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:631:24 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:653:28 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:674:18 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:682:18 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:710:20 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:754:30 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:765:30 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:776:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:787:79 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:803:38 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:849:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:857:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:898:32 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:908:17 - The argument for the named parameter 'child' was already specified. Try removing one of the named arguments, or correcting one of the names to reference a different named parameter. - duplicate_named_argument
+  error - lib\features\cart\cart_screen.dart:943:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:953:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:975:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\cart\cart_screen.dart:1000:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_dashboard_screen.dart:142:44 - Undefined name 'profileState'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:40:55 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:51:54 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:70:20 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:106:17 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:106:17 - Expected to find ')'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:109:6 - Expected to find ')'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:138:44 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:178:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:187:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:192:17 - Expected to find ')'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:197:7 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:197:8 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:197:8 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:197:8 - Unexpected text ';'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:198:5 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:198:5 - Unexpected text ';'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:219:36 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:239:55 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:242:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:245:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:254:42 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:283:64 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:286:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:289:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:298:42 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:331:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:340:34 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:343:32 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:370:42 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:376:41 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:377:87 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:385:50 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:387:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:394:42 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:397:24 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:411:52 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:422:9 - Expected to find ']'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:423:7 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:423:8 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:423:8 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:423:8 - Unexpected text ';'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:424:5 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:424:5 - Unexpected text ';'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:445:28 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:447:60 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:450:11 - Expected to find ')'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:452:7 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:452:8 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:452:8 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:452:8 - Unexpected text ';'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:453:5 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:453:5 - Unexpected text ';'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:510:26 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:516:7 - Expected to find ';'. - expected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:516:8 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:516:8 - Unexpected text ')'. Try removing the text. - unexpected_token
+  error - lib\features\delivery\delivery_detail_screen.dart:550:18 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:553:28 - Undefined name 'color'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:569:51 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:573:73 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:580:22 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:583:28 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:596:42 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:604:76 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_detail_screen.dart:621:53 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_earnings_screen.dart:160:23 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_earnings_screen.dart:160:23 - Expected to find ']'. - expected_token
+  error - lib\features\delivery\delivery_main_screen.dart:101:35 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_main_screen.dart:115:28 - Undefined name 'deliveryOrdersState'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_main_screen.dart:119:28 - Undefined name 'deliveryOrdersState'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_main_screen.dart:176:9 - Expected an identifier. - missing_identifier
+  error - lib\features\delivery\delivery_main_screen.dart:176:9 - Expected to find ')'. - expected_token
+  error - lib\features\delivery\delivery_main_screen.dart:178:6 - Expected to find ')'. - expected_token
+  error - lib\features\delivery\delivery_main_screen.dart:198:24 - Undefined name 'GoogleFonts'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - lib\features\delivery\delivery_orders_screen.dart:480:6 - Expected to find ')'. - expected_token
+  error - test\widget_test.dart:16:35 - The name 'MyApp' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+warning - lib\core\constants\app_constants.dart:1:8 - Unused import: 'package:flutter/foundation.dart'. Try removing the import directive. - unused_import
+warning - lib\core\services\api_client.dart:88:8 - The declaration '_queuePendingRequest' isn't referenced. Try removing the declaration of '_queuePendingRequest'. - unused_element
+warning - lib\core\services\api_client.dart:93:8 - The declaration '_retryPendingRequests' isn't referenced. Try removing the declaration of '_retryPendingRequests'. - unused_element
+warning - lib\core\widgets\product_card.dart:173:44 - Dead code. Try removing the code, or fixing the code before it so that it can be reached. - dead_code
+warning - lib\core\widgets\product_card.dart:174:51 - Dead code. Try removing the code, or fixing the code before it so that it can be reached. - dead_code
+warning - lib\features\delivery\delivery_detail_screen.dart:197:8 - Dead code. Try removing the code, or fixing the code before it so that it can be reached. - dead_code
+warning - lib\features\delivery\delivery_detail_screen.dart:423:8 - Dead code. Try removing the code, or fixing the code before it so that it can be reached. - dead_code
+warning - lib\features\delivery\delivery_detail_screen.dart:452:8 - Dead code. Try removing the code, or fixing the code before it so that it can be reached. - dead_code
+warning - lib\features\delivery\delivery_earnings_screen.dart:168:10 - The declaration '_buildEarningsCards' isn't referenced. Try removing the declaration of '_buildEarningsCards'. - unused_element
+warning - lib\features\farmer\farmer_edit_profile_screen.dart:110:11 - The value of the local variable 'user' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - lib\features\farmer\farmer_order_detail_screen.dart:6:8 - Unused import: '../../models/cart_item_model.dart'. Try removing the import directive. - unused_import
+warning - lib\features\home\home_screen.dart:26:11 - The value of the local variable 'cartState' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - lib\features\home\home_screen.dart:35:98 - The operand can't be 'null', so the condition is always 'true'. Remove the condition. - unnecessary_null_comparison
+warning - lib\features\orders\order_tracking_screen.dart:26:11 - The value of the field '_driverLongitude' isn't used. Try removing the field, or using it. - unused_field
+warning - lib\features\profile\addresses_screen.dart:5:8 - Unused import: '../../models/address_model.dart'. Try removing the import directive. - unused_import
+warning - lib\features\profile\edit_profile_screen.dart:5:8 - Unused import: '../../models/user_model.dart'. Try removing the import directive. - unused_import
+warning - lib\features\profile\profile_screen.dart:5:8 - Unused import: '../../providers/address_provider.dart'. Try removing the import directive. - unused_import
+warning - lib\repositories\auth_repository.dart:2:8 - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart'. Try removing the import directive. - unused_import
+warning - lib\repositories\auth_repository.dart:5:8 - Unused import: '../core/services/api_client.dart'. Try removing the import directive. - unused_import
+warning - lib\repositories\auth_repository.dart:28:31 - The declaration '_getAuthHeaders' isn't referenced. Try removing the declaration of '_getAuthHeaders'. - unused_element
+warning - lib\repositories\order_repository.dart:4:8 - Unused import: '../models/cart_item_model.dart'. Try removing the import directive. - unused_import
+warning - lib\repositories\order_repository.dart:5:8 - Unused import: '../models/product_model.dart'. Try removing the import directive. - unused_import
+   info - lib\core\constants\app_enums.dart:1:1 - Dangling library doc comment. Add a 'library' directive after the library comment. - dangling_library_doc_comments
+   info - lib\core\widgets\product_card.dart:29:5 - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const'. - prefer_const_declarations
+   info - lib\core\widgets\product_card.dart:55:15 - 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\core\widgets\product_card.dart:56:15 - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\core\widgets\product_card.dart:162:49 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\core\widgets\product_card.dart:185:49 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\authentication\login_screen.dart:85:19 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\authentication\signup_screen.dart:91:19 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:47:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:198:46 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:216:67 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:233:13 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:234:55 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:289:38 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:403:50 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:405:69 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:437:94 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:472:53 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_dashboard_screen.dart:474:72 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:151:73 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:153:92 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:165:73 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:198:6 - Unnecessary empty statement. Try removing the empty statement or restructuring the code. - empty_statements
+   info - lib\features\delivery\delivery_detail_screen.dart:228:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:230:71 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:272:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:274:71 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:406:48 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:424:6 - Unnecessary empty statement. Try removing the empty statement or restructuring the code. - empty_statements
+   info - lib\features\delivery\delivery_detail_screen.dart:430:40 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:432:59 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:453:6 - Unnecessary empty statement. Try removing the empty statement or restructuring the code. - empty_statements
+   info - lib\features\delivery\delivery_detail_screen.dart:499:46 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:501:65 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_detail_screen.dart:516:9 - Unnecessary empty statement. Try removing the empty statement or restructuring the code. - empty_statements
+   info - lib\features\delivery\delivery_detail_screen.dart:533:30 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_earnings_screen.dart:61:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_earnings_screen.dart:73:51 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_earnings_screen.dart:128:45 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\delivery\delivery_earnings_screen.dart:241:55 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_earnings_screen.dart:241:99 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_history_screen.dart:134:44 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_main_screen.dart:73:44 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_main_screen.dart:77:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_main_screen.dart:83:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_navigation_screen.dart:70:51 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_navigation_screen.dart:96:48 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_notifications_screen.dart:76:49 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_notifications_screen.dart:80:75 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:143:92 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:199:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:201:71 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:248:56 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:250:75 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:272:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:359:101 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:421:44 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_orders_screen.dart:423:63 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_profile_screen.dart:119:50 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_profile_screen.dart:178:48 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_profile_screen.dart:180:67 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_profile_screen.dart:227:9 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_profile_screen.dart:233:66 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\delivery\delivery_profile_screen.dart:279:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_add_edit_product_screen.dart:206:15 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_add_edit_product_screen.dart:242:21 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_add_edit_product_screen.dart:250:21 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_add_edit_product_screen.dart:258:21 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_earnings_screen.dart:42:22 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_earnings_screen.dart:44:41 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_earnings_screen.dart:136:40 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_inventory_screen.dart:283:43 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_notifications_screen.dart:233:30 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_order_detail_screen.dart:196:20 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_orders_screen.dart:212:36 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_orders_screen.dart:214:55 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_products_screen.dart:323:70 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\farmer\farmer_profile_screen.dart:109:22 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\farmer\farmer_profile_screen.dart:111:24 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\farmer\farmer_profile_screen.dart:113:29 - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal. - prefer_const_literals_to_create_immutables
+   info - lib\features\farmer\farmer_profile_screen.dart:122:21 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\farmer\farmer_profile_screen.dart:128:21 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\home\home_screen.dart:585:46 - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\home\home_screen.dart:593:46 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\home\home_screen.dart:614:43 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\home\home_screen.dart:750:34 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\home\home_screen.dart:793:54 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\home\home_screen.dart:794:57 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\orders\order_detail_screen.dart:98:36 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\orders\order_detail_screen.dart:583:38 - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext. - use_build_context_synchronously
+   info - lib\features\orders\order_tracking_screen.dart:5:60 - The prefix 'IO' isn't a lower_case_with_underscores identifier. Try changing the prefix to follow the lower_case_with_underscores style. - library_prefixes
+   info - lib\features\orders\orders_screen.dart:251:42 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\orders\orders_screen.dart:253:61 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\products\products_screen.dart:171:7 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\products\products_screen.dart:173:7 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\products\products_screen.dart:231:21 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\products\products_screen.dart:246:21 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\profile\add_edit_address_screen.dart:169:21 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\features\profile\addresses_screen.dart:186:21 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\profile\addresses_screen.dart:188:30 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\profile\addresses_screen.dart:189:35 - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal. - prefer_const_literals_to_create_immutables
+   info - lib\features\profile\addresses_screen.dart:197:23 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\profile\addresses_screen.dart:199:32 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\features\profile\addresses_screen.dart:200:37 - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal. - prefer_const_literals_to_create_immutables
+   info - lib\features\search\search_screen.dart:29:16 - The private field _recentSearches could be 'final'. Try making the field 'final'. - prefer_final_fields
+   info - lib\main.dart:14:9 - 'anonKey' is deprecated and shouldn't be used. Use publishableKey instead. anonKey will be removed in a future major version. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\repositories\delivery_repository.dart:234:12 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\repositories\farmer_repository.dart:65:12 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\repositories\farmer_repository.dart:76:12 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\repositories\farmer_repository.dart:146:12 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\repositories\product_repository.dart:31:3 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\repositories\product_repository.dart:32:3 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\repositories\product_repository.dart:33:3 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\repositories\product_repository.dart:34:3 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+
+259 issues found.

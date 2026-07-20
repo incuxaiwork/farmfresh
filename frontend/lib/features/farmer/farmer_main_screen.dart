@@ -33,8 +33,8 @@ class _FarmerMainScreenState extends ConsumerState<FarmerMainScreen> {
     final unreadCount = notifState.unreadCount;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF4F7F2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,

@@ -1,33 +1,23 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import configuration from './config/configuration';
 import { configValidationSchema } from './config/validation.schema';
-import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
-import { CategoriesModule } from './categories/categories.module';
-import { ProductsModule } from './products/products.module';
-import { InventoryModule } from './inventory/inventory.module';
-import { CartModule } from './cart/cart.module';
-import { OrdersModule } from './orders/orders.module';
+import { DatabaseModule } from './database/database.module';
 import { DeliveryModule } from './delivery/delivery.module';
-import { HealthModule } from './health/health.module';
-import { AdminModule } from './admin/admin.module';
-import { AddressesModule } from './addresses/addresses.module';
 import { FarmerModule } from './farmer/farmer.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { AdminModule } from './admin/admin.module';
+import { OrdersModule } from './orders/orders.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
-    // Global environment variables profile config loading
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
       validationSchema: configValidationSchema,
     }),
-    
-    // API Rate-limiting configuration
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -38,27 +28,15 @@ import { NotificationsModule } from './notifications/notifications.module';
         },
       ],
     }),
-
     DatabaseModule,
     AuthModule,
-    CategoriesModule,
-    ProductsModule,
-    InventoryModule,
-    CartModule,
-    OrdersModule,
     DeliveryModule,
-    HealthModule,
-    AdminModule,
-    AddressesModule,
     FarmerModule,
-    NotificationsModule,
+    AdminModule,
+    OrdersModule,
+    UploadModule,
   ],
-  providers: [
-    // Wire up global API Throttler limiter
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

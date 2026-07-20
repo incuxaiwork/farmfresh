@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../models/product_model.dart';
 import '../core/services/api_client.dart';
 
@@ -171,17 +172,24 @@ class PostgresProductRepository implements ProductRepository {
   @override
   Future<String> uploadProductImage(String productId, String filePath) async {
     try {
-      // Backend expects a json list of image urls.
-      final String url = (filePath.startsWith('http://') || filePath.startsWith('https://'))
-          ? filePath
-          : 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
-      final res = await _apiClient.dio.post('/products/$productId/images', data: {
-        'imageUrls': [url],
+      MultipartFile multipartFile;
+      if (kIsWeb) {
+        final res = await Dio().get(filePath, options: Options(responseType: ResponseType.bytes));
+        multipartFile = MultipartFile.fromBytes(res.data, filename: 'image.png');
+      } else {
+        multipartFile = await MultipartFile.fromFile(filePath);
+      }
+
+      final formData = FormData.fromMap({
+        'image': multipartFile,
       });
+      final res = await _apiClient.dio.post('/products/$productId/upload-image', data: formData);
+      
       if (res.statusCode == 201 || res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
           final images = res.data['data']['images'] as List?;
           if (images != null && images.isNotEmpty) {
+            // Find the primary one or just take the first
             return images[0]['imageUrl'] as String;
           }
         }

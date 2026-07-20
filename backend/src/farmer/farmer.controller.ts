@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Patch, UseGuards, Req, Body } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -42,6 +42,13 @@ export class FarmerController {
     const limit = parseInt(req.query.limit) || 10;
     const data = await this.farmerService.getTransactions(req.user.id, page, limit);
     return new SuccessResponseDto('Transactions loaded successfully', data);
+  }
+
+  @Patch('location')
+  @ApiOperation({ summary: 'Update farm GPS coordinates for delivery navigation' })
+  async updateLocation(@Req() req: any, @Body() body: { latitude: number; longitude: number }) {
+    const data = await this.farmerService.updateLocation(req.user.id, body.latitude, body.longitude);
+    return new SuccessResponseDto('Farm location updated successfully', data);
   }
 }
 

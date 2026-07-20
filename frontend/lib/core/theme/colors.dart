@@ -7,6 +7,7 @@ class AppColors {
   static const Color primaryGreen = Color(0xFF4ADE80); // Primary accent green
   static const Color lightGreen = Color(0xFF6EE7B7);
   static const Color darkGreen = Color(0xFF1F5B3A); // Dimmed green for chips/backgrounds
+  static const Color farmerPrimary = Color(0xFF2E7D32); // Unified richer green for Farmer Dashboard
 
   static const Color accentOrange = Color(0xFFF59E0B);
 

@@ -1,4 +1,7 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Req, Query, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Req, Query, HttpCode, HttpStatus, BadRequestException, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterCustomerDto } from './dto/register-customer.dto';
@@ -156,6 +159,43 @@ export class AuthController {
   ) {
     const data = await this.authService.updateProfile(user.id, name, phone, farmName, farmAddress);
     return new SuccessResponseDto('Profile updated successfully', data);
+  }
+
+  @Post('upload-avatar')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './public/uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          const ext = extname(file.originalname);
+          cb(null, `avatar-${uniqueSuffix}${ext}`);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+          return cb(new BadRequestException('Only jpg, png, and webp images are allowed!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  @ApiOperation({ summary: 'Upload an avatar image file' })
+  async uploadAvatar(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Image file is required');
+    }
+    const imageUrl = `/public/uploads/${file.filename}`;
+    // Update the user's profile with the new avatar
+    const data = await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, imageUrl);
+    return new SuccessResponseDto('Avatar uploaded successfully', data);
   }
 
   @Post('change-password')

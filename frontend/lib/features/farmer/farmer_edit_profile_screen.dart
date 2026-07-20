@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -375,14 +376,38 @@ class _FarmerEditProfileScreenState
                       ),
                     ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Custom photo upload coming soon!'),
-                          backgroundColor: Color(0xFF2E7D32),
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        final picker = ImagePicker();
+                        final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                        if (pickedFile == null) return;
+
+                        final farmerRepo = ref.read(farmerRepositoryProvider);
+                        final newAvatarUrl = await farmerRepo.uploadAvatar(pickedFile.path);
+
+                        setState(() {
+                          _selectedAvatar = newAvatarUrl;
+                        });
+
+                        await ref.read(authProvider.notifier).updateProfile(
+                          name: _nameController.text.trim(),
+                          phone: _phoneController.text.trim(),
+                          avatar: newAvatarUrl,
+                        );
+
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to upload avatar: $e'),
+                              backgroundColor: const Color(0xFFFF4D6D),
+                            ),
+                          );
+                        }
+                      }
                     },
                     child: Container(
                       width: 68,

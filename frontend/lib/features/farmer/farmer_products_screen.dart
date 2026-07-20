@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/product_provider.dart';
 import '../../models/product_model.dart';
+import '../../core/widgets/product_image_widget.dart';
 
 class FarmerProductsScreen extends ConsumerStatefulWidget {
   const FarmerProductsScreen({super.key});
@@ -139,14 +140,6 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Color(0xFF23312B)),
-            onPressed: () {
-              context.push('/farmer-add-product');
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -317,17 +310,11 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                                       width: 60,
                                       height: 60,
                                       child: product.image.isNotEmpty
-                                          ? Image.network(
-                                              product.image,
+                                          ? ProductImageWidget(
+                                              imageUrl: product.image,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => Container(
-                                                color: const Color(0xFFEAF3E4),
-                                                child: Icon(
-                                                  _getCategoryIcon(product.category),
-                                                  color: const Color(0xFF2E7D32),
-                                                  size: 24,
-                                                ),
-                                              ),
+                                              width: 60,
+                                              height: 60,
                                             )
                                           : Container(
                                               color: const Color(0xFFEAF3E4),
@@ -440,6 +427,34 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                           },
                         ),
                       ),
+          ),
+          // Fixed Bottom Button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => context.push('/farmer-add-product'),
+                icon: const Icon(Icons.add, size: 20, color: Colors.white),
+                label: Text(
+                  'Add Crop',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

@@ -17,10 +17,10 @@ export class RegisterDeliveryDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: '+1234567892', description: 'Contact phone number' })
+  @ApiProperty({ example: '+911234567892', description: 'Contact phone number' })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Phone must be a valid E.164 phone number format' })
+  @Matches(/^\+91\d{10}$/, { message: 'Phone must be a valid Indian mobile number with +91 prefix and 10 digits (e.g., +911234567892)' })
   phone: string;
 
   @ApiProperty({ example: 'password123', description: 'Account password (minimum 8 characters)' })

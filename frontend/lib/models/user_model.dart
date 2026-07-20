@@ -31,6 +31,18 @@ class UserModel {
     );
   }
 
+  Map<String, dynamic> getProfilePayload({
+    String? newPhone,
+    String? newAvatar,
+  }) {
+    final Map<String, dynamic> payload = {};
+    
+    if (newPhone != null) payload['phone'] = newPhone;
+    if (newAvatar != null) payload['avatar'] = newAvatar;
+    
+    return payload;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -83,8 +83,10 @@ class ProductModel {
       originalPrice: originalPrice,
       discount: json['discount'] as String?,
       origin: json['origin'] as String? ?? 'Local',
-      category: json['category'] as String? ?? 'Produce',
-      image: json['image'] as String? ?? '',
+      category: json['category'] != null 
+          ? (json['category'] is Map ? json['category']['name'] : json['category'].toString())
+          : 'Produce',
+      image: _extractPrimaryImage(json['images']) ?? (json['image'] as String? ?? ''),
       description: json['description'] as String? ?? '',
       calories: json['calories'] as String? ?? '',
       protein: json['protein'] as String? ?? '',
@@ -236,6 +238,19 @@ class ProductModel {
       'seasonal': seasonal,
       'stock': stock,
     };
+  }
+
+  static String? _extractPrimaryImage(dynamic images) {
+    if (images == null || images is! List || images.isEmpty) return null;
+    try {
+      final primary = images.firstWhere(
+        (img) => img['isPrimary'] == true,
+        orElse: () => images.first,
+      );
+      return primary['imageUrl'] as String?;
+    } catch (e) {
+      return null;
+    }
   }
 
   ProductModel copyWith({

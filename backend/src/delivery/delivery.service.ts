@@ -92,6 +92,33 @@ export class DeliveryService {
     });
   }
 
+  async getFarmerLocation(farmerId: string) {
+    const farmerProfile = await this.prisma.farmerProfile.findUnique({
+      where: { id: farmerId },
+      select: {
+        farmName: true,
+        farmAddress: true,
+        farmLatitude: true,
+        farmLongitude: true,
+        user: { select: { name: true, phone: true } },
+      },
+    });
+
+    if (!farmerProfile) {
+      throw new NotFoundException('Farmer not found');
+    }
+
+    return {
+      farmerId,
+      farmName: farmerProfile.farmName,
+      farmAddress: farmerProfile.farmAddress,
+      latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : null,
+      longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : null,
+      contactName: farmerProfile.user.name,
+      contactPhone: farmerProfile.user.phone,
+    };
+  }
+
   async findAll(
     userId: string,
     role: string,
@@ -126,19 +153,26 @@ export class DeliveryService {
         },
       });
 
-      const assignedToMe = assignedRaw.map(a => ({
-        ...a,
-        deliveryFee: a.deliveryCharge,
-        customer: a.order.customer
-          ? {
-              id: a.order.customer.id,
-              name: a.order.customer.name,
-              phone: a.order.customer.phone,
-              email: a.order.customer.email,
-            }
-          : null,
-        deliveryAddress: a.order.address ? { fullAddress: a.order.address } : null,
-      }));
+      const assignedToMe = assignedRaw.map(a => {
+        const orderData = a.order as any;
+        return {
+          ...a,
+          deliveryFee: a.deliveryCharge,
+          farmerLatitude: orderData?.farmerLatitude ? Number(orderData.farmerLatitude) : null,
+          farmerLongitude: orderData?.farmerLongitude ? Number(orderData.farmerLongitude) : null,
+          customerLatitude: orderData?.customerLatitude ? Number(orderData.customerLatitude) : null,
+          customerLongitude: orderData?.customerLongitude ? Number(orderData.customerLongitude) : null,
+          customer: a.order.customer
+            ? {
+                id: a.order.customer.id,
+                name: a.order.customer.name,
+                phone: a.order.customer.phone,
+                email: a.order.customer.email,
+              }
+            : null,
+          deliveryAddress: a.order.address ? { fullAddress: a.order.address } : null,
+        };
+      });
 
       // 2. Get orders that need delivery and have no assignment
       const ordersWithoutAssignment = await this.prisma.order.findMany({
@@ -165,6 +199,10 @@ export class DeliveryService {
         distance: 3.5,
         createdAt: o.createdAt,
         updatedAt: o.updatedAt,
+        farmerLatitude: o.farmerLatitude ? Number(o.farmerLatitude) : null,
+        farmerLongitude: o.farmerLongitude ? Number(o.farmerLongitude) : null,
+        customerLatitude: o.customerLatitude ? Number(o.customerLatitude) : null,
+        customerLongitude: o.customerLongitude ? Number(o.customerLongitude) : null,
         order: {
           orderNumber: o.orderNumber,
           total: o.total,
@@ -226,24 +264,78 @@ export class DeliveryService {
       },
     });
 
-    return assignments.map(a => ({
-      ...a,
-      deliveryFee: a.deliveryCharge,
-      customer: a.order.customer
-        ? {
-            id: a.order.customer.id,
-            name: a.order.customer.name,
-            phone: a.order.customer.phone,
-            email: a.order.customer.email,
-          }
-        : null,
-      deliveryAddress: a.order.address ? { fullAddress: a.order.address } : null,
-    }));
+    return assignments.map(a => {
+      const orderData = a.order as any;
+      return {
+        ...a,
+        deliveryFee: a.deliveryCharge,
+        farmerLatitude: orderData?.farmerLatitude ? Number(orderData.farmerLatitude) : null,
+        farmerLongitude: orderData?.farmerLongitude ? Number(orderData.farmerLongitude) : null,
+        customerLatitude: orderData?.customerLatitude ? Number(orderData.customerLatitude) : null,
+        customerLongitude: orderData?.customerLongitude ? Number(orderData.customerLongitude) : null,
+        customer: a.order.customer
+          ? {
+              id: a.order.customer.id,
+              name: a.order.customer.name,
+              phone: a.order.customer.phone,
+              email: a.order.customer.email,
+            }
+          : null,
+        deliveryAddress: a.order.address ? { fullAddress: a.order.address } : null,
+      };
+    });
   }
 
   async findOne(id: string, userId: string, role: string) {
     try {
-      return await this._checkAssignmentOwnership(id, userId, role);
+      const assignment = await this._checkAssignmentOwnership(id, userId, role);
+      
+      // Enrich with coordinates from order and farmer profile
+      const order = await this.prisma.order.findUnique({
+        where: { id: assignment.orderId },
+        include: {
+          items: { include: { product: true } },
+          customer: { select: { name: true, email: true } },
+        },
+      });
+
+      let farmerCoords = null;
+      let farmerInfo = null;
+      if (order?.items?.[0]?.farmerId) {
+        const farmerProfile = await this.prisma.farmerProfile.findUnique({
+          where: { id: order.items[0].farmerId },
+          include: { user: { select: { name: true, phone: true } } },
+        });
+        if (farmerProfile) {
+          farmerCoords = {
+            latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : null,
+            longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : null,
+          };
+          farmerInfo = {
+            id: farmerProfile.userId,
+            name: farmerProfile.user.name,
+            phone: farmerProfile.user.phone || '',
+            farmName: farmerProfile.farmName,
+          };
+        }
+      }
+
+      return {
+        ...assignment,
+        deliveryFee: assignment.deliveryCharge,
+        farmerLatitude: order?.farmerLatitude ? Number(order.farmerLatitude) : farmerCoords?.latitude,
+        farmerLongitude: order?.farmerLongitude ? Number(order.farmerLongitude) : farmerCoords?.longitude,
+        customerLatitude: order?.customerLatitude ? Number(order.customerLatitude) : null,
+        customerLongitude: order?.customerLongitude ? Number(order.customerLongitude) : null,
+        customer: order?.customer ? {
+          id: order.customerId,
+          name: (order.customer as any).name,
+          phone: (order.customer as any).phone || '',
+          email: (order.customer as any).email,
+        } : null,
+        farmer: farmerInfo,
+        deliveryAddress: order?.address ? { fullAddress: order.address } : null,
+      };
     } catch (err) {
       if (err instanceof NotFoundException) {
         // Check if this is an available Order without assignment
@@ -255,6 +347,26 @@ export class DeliveryService {
           },
         });
         if (order && ['CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'].includes(order.status)) {
+          let farmerCoords = null;
+          let farmerInfo = null;
+          if (order.items[0]?.farmerId) {
+            const farmerProfile = await this.prisma.farmerProfile.findUnique({
+              where: { id: order.items[0].farmerId },
+              include: { user: { select: { name: true, phone: true } } },
+            });
+            if (farmerProfile) {
+              farmerCoords = {
+                latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : null,
+                longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : null,
+              };
+              farmerInfo = {
+                id: farmerProfile.userId,
+                name: farmerProfile.user.name,
+                phone: farmerProfile.user.phone || '',
+                farmName: farmerProfile.farmName,
+              };
+            }
+          }
           return {
             id: order.id,
             orderId: order.id,
@@ -262,7 +374,19 @@ export class DeliveryService {
             status: 'PENDING_ASSIGNMENT',
             deliveryCharge: 5.00,
             distance: 3.5,
+            farmerLatitude: order.farmerLatitude ? Number(order.farmerLatitude) : farmerCoords?.latitude,
+            farmerLongitude: order.farmerLongitude ? Number(order.farmerLongitude) : farmerCoords?.longitude,
+            customerLatitude: order.customerLatitude ? Number(order.customerLatitude) : null,
+            customerLongitude: order.customerLongitude ? Number(order.customerLongitude) : null,
             order,
+            farmer: farmerInfo,
+            customer: order.customer ? {
+              id: order.customerId,
+              name: (order.customer as any).name,
+              phone: (order.customer as any).phone || '',
+              email: (order.customer as any).email,
+            } : null,
+            deliveryAddress: order.address ? { fullAddress: order.address } : null,
           };
         }
       }

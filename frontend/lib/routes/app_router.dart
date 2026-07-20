@@ -39,13 +39,22 @@ import '../models/delivery_model.dart';
 import '../features/delivery/delivery_profile_screen.dart';
 import '../features/admin/admin_main_screen.dart';
 
+import 'package:flutter/foundation.dart';
+
 /// Riverpod provider for the GoRouter instance.
 /// Listens to authProvider changes for reactive routing and redirection.
 final appRouter = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  // Create a listenable to trigger GoRouter redirects when auth state changes
+  final authStateListenable = ValueNotifier<bool>(false);
+  
+  // Listen to auth state changes and notify the router
+  ref.listen<AuthState>(authProvider, (previous, next) {
+    authStateListenable.value = !authStateListenable.value;
+  });
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authStateListenable,
     routes: [
       GoRoute(
         path: '/',
@@ -98,41 +107,16 @@ final appRouter = Provider<GoRouter>((ref) {
         path: '/delivery-navigation',
         name: 'delivery-navigation',
         builder: (context, state) {
-          final delivery = state.extra as DeliveryOrder;
-          return DeliveryNavigationScreen(delivery: delivery);
+          final deliveryId = state.extra as String;
+          return DeliveryNavigationScreen(deliveryId: deliveryId);
         },
       ),
       GoRoute(
-        path: '/delivery-earnings',
-        name: 'delivery-earnings',
-        builder: (context, state) => const DeliveryEarningsScreen(),
-      ),
-      GoRoute(
-        path: '/delivery-history',
-        name: 'delivery-history',
-        builder: (context, state) => const DeliveryHistoryScreen(),
-      ),
-      GoRoute(
-        path: '/delivery-notifications',
-        name: 'delivery-notifications',
-        builder: (context, state) => const DeliveryNotificationsScreen(),
-      ),
-      GoRoute(
-        path: '/delivery-edit-profile',
-        name: 'delivery-edit-profile',
-        builder: (context, state) => const DeliveryProfileScreen(),
-      ),
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/product-details',
+        path: '/product-details/:id',
         name: 'product-details',
         builder: (context, state) {
-          final product = state.extra as ProductModel?;
-          return ProductDetailsScreen(product: product);
+          final id = state.pathParameters['id']!;
+          return ProductDetailsScreen(productId: id);
         },
       ),
       GoRoute(
@@ -140,7 +124,7 @@ final appRouter = Provider<GoRouter>((ref) {
         name: 'products',
         builder: (context, state) {
           final category = state.uri.queryParameters['category'];
-          return ProductsScreen(initialCategory: category);
+          return ProductsScreen(category: category);
         },
       ),
       GoRoute(
@@ -159,25 +143,25 @@ final appRouter = Provider<GoRouter>((ref) {
         builder: (context, state) => const OrdersScreen(),
       ),
       GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
-        path: '/order-detail',
+        path: '/order-detail/:id',
         name: 'order-detail',
         builder: (context, state) {
-          final orderId = state.extra as String;
+          final orderId = state.pathParameters['id']!;
           return OrderDetailScreen(orderId: orderId);
         },
       ),
       GoRoute(
-        path: '/order-tracking',
+        path: '/order-tracking/:id',
         name: 'order-tracking',
         builder: (context, state) {
-          final orderId = state.extra as String;
+          final orderId = state.pathParameters['id']!;
           return OrderTrackingScreen(orderId: orderId);
         },
+      ),
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/edit-profile',
@@ -223,20 +207,35 @@ final appRouter = Provider<GoRouter>((ref) {
         builder: (context, state) => const FarmerNotificationsScreen(),
       ),
       GoRoute(
-        path: '/farmer-order-detail',
+        path: '/farmer-order-detail/:id',
         name: 'farmer-order-detail',
         builder: (context, state) {
-          final orderId = state.extra as String;
-          return FarmerOrderDetailScreen(orderId: orderId);
+          final id = state.pathParameters['id']!;
+          return FarmerOrderDetailScreen(orderId: id);
         },
       ),
       GoRoute(
-        path: '/add-address',
-        name: 'add-address',
-        builder: (context, state) => const AddEditAddressScreen(),
+        path: '/delivery-earnings',
+        name: 'delivery-earnings',
+        builder: (context, state) => const DeliveryEarningsScreen(),
       ),
       GoRoute(
-        path: '/edit-address',
+        path: '/delivery-history',
+        name: 'delivery-history',
+        builder: (context, state) => const DeliveryHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/delivery-notifications',
+        name: 'delivery-notifications',
+        builder: (context, state) => const DeliveryNotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/delivery-profile',
+        name: 'delivery-profile',
+        builder: (context, state) => const DeliveryProfileScreen(),
+      ),
+      GoRoute(
+        path: '/add-edit-address',
         name: 'edit-address',
         builder: (context, state) {
           final address = state.extra as AddressModel;
@@ -245,6 +244,7 @@ final appRouter = Provider<GoRouter>((ref) {
       ),
     ],
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isLoading = authState.isLoading;
       final isLoggedIn = authState.user != null;
       final location = state.matchedLocation;

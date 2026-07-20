@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../models/farmer_dashboard_model.dart';
 import '../models/inventory_model.dart';
@@ -30,6 +31,7 @@ abstract class FarmerRepository {
 
   Future<UserModel> getProfile();
   Future<UserModel> updateProfile({String? name, String? phone, String? farmName, String? farmAddress, String? avatar});
+  Future<String> uploadAvatar(String filePath);
 }
 
 class PostgresFarmerRepository implements FarmerRepository {
@@ -232,6 +234,32 @@ class PostgresFarmerRepository implements FarmerRepository {
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update profile');
+    }
+  }
+  @override
+  Future<String> uploadAvatar(String filePath) async {
+    try {
+      MultipartFile multipartFile;
+      if (kIsWeb) {
+        final res = await Dio().get(filePath, options: Options(responseType: ResponseType.bytes));
+        multipartFile = MultipartFile.fromBytes(res.data, filename: 'avatar.png');
+      } else {
+        multipartFile = await MultipartFile.fromFile(filePath);
+      }
+
+      final formData = FormData.fromMap({
+        'image': multipartFile,
+      });
+      final res = await _apiClient.dio.post('/auth/upload-avatar', data: formData);
+      
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        if (res.data['success'] == true && res.data['data'] != null) {
+          return res.data['data']['avatar'] as String;
+        }
+      }
+      throw Exception('Failed to upload avatar');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to upload avatar');
     }
   }
 }

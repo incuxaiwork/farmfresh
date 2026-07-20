@@ -393,6 +393,28 @@ export class ProductsService {
     });
   }
 
+  async uploadImage(productId: string, imageUrl: string) {
+    const product = await this.findOne(productId);
+
+    // Check if a primary image already exists
+    const existingPrimary = await this.prisma.productImage.findFirst({
+      where: { productId, isPrimary: true },
+    });
+
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: {
+        images: {
+          create: {
+            imageUrl,
+            isPrimary: !existingPrimary,
+          },
+        },
+      },
+      include: { images: true },
+    });
+  }
+
   async deleteImage(productId: string, imageId: string) {
     await this.findOne(productId);
 
