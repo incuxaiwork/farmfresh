@@ -287,33 +287,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                         fontWeight: FontWeight.bold,
                                                       ),
                                                       textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                ),
                                             ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        // Delivery Partner App quick launcher
-                                        GestureDetector(
-                                          onTap: () {
-                                            context.push('/delivery-main');
-                                          },
-                                          child: Container(
-                                            width: 36,
-                                            height: 36,
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Color(0xFF0F172A),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Color(0x1F0F172A),
-                                                  offset: Offset(0, 2),
-                                                  blurRadius: 6,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Icon(Icons.local_shipping_outlined, color: Color(0xFFF97316), size: 18),
                                           ),
                                         ),
                                         const SizedBox(width: 8),

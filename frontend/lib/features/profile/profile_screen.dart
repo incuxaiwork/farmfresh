@@ -274,14 +274,6 @@ class ProfileScreen extends ConsumerWidget {
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(
                 context,
-                icon: Icons.local_shipping_outlined,
-                title: 'Delivery Partner App 🚚',
-                subtitle: 'Switch to Fleet & Logistics Mode',
-                onTap: () => context.push('/delivery-main'),
-              ),
-              const Divider(height: 1, color: Color(0xFFF3F3F3)),
-              _menuTile(
-                context,
                 icon: Icons.info_outlined,
                 title: 'About FarmFresh',
                 subtitle: 'Version 1.0.0',
