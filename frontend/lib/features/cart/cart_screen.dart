@@ -1,13 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import 'dart:ui';
 import '../../core/widgets/custom_button.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/address_provider.dart';
+import '../../providers/product_provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../models/address_model.dart';
 import '../../core/utils/app_snackbar.dart';
@@ -25,6 +29,94 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   AddressModel? _selectedAddress;
   bool _isApplyHovered = false;
   bool _showPromoField = false;
+  bool _isLocatingAddress = false;
+
+  Future<void> _useCurrentLocationForCart() async {
+    setState(() => _isLocatingAddress = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          showAppSnackBar(context, 'Location services are disabled on your device.', type: SnackBarType.error);
+        }
+        setState(() => _isLocatingAddress = false);
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            showAppSnackBar(context, 'Location permissions were denied.', type: SnackBarType.error);
+          }
+          setState(() => _isLocatingAddress = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          showAppSnackBar(context, 'Location permissions are permanently denied.', type: SnackBarType.error);
+        }
+        setState(() => _isLocatingAddress = false);
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?lat=${position.latitude}&lon=${position.longitude}&format=json&addressdetails=1',
+      );
+      final response = await http.get(url, headers: {'User-Agent': 'FarmFreshApp/1.0'});
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final address = data['address'] as Map<String, dynamic>? ?? {};
+
+        final road = address['road'] ?? address['pedestrian'] ?? address['suburb'] ?? address['neighbourhood'] ?? address['residential'] ?? '';
+        final houseNumber = address['house_number'] ?? address['building'] ?? '';
+        final streetParts = [houseNumber, road].where((s) => s.toString().trim().isNotEmpty).join(', ');
+
+        final city = address['city'] ?? address['town'] ?? address['village'] ?? address['county'] ?? address['state_district'] ?? '';
+        final state = address['state'] ?? '';
+        final postcode = address['postcode'] ?? '';
+        final country = address['country'] ?? 'India';
+
+        final newAddr = AddressModel(
+          id: 'loc_${DateTime.now().millisecondsSinceEpoch}',
+          label: 'Current Location',
+          street: streetParts.isNotEmpty ? streetParts : 'Current GPS Location',
+          city: city.toString().isNotEmpty ? city.toString() : 'Current Area',
+          state: state.toString().isNotEmpty ? state.toString() : '',
+          zipCode: postcode.toString(),
+          country: country.toString(),
+          isDefault: true,
+        );
+
+        await ref.read(addressProvider.notifier).addAddress(newAddr);
+
+        setState(() {
+          _selectedAddress = newAddr;
+        });
+
+        if (mounted) {
+          showAppSnackBar(context, 'Delivery address set to Current Location!', type: SnackBarType.success);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showAppSnackBar(context, 'Could not fetch location address. Please select address manually.', type: SnackBarType.error);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLocatingAddress = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -761,7 +853,63 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               color: const Color(0xFF23312B),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
+
+                          // Quick Use Current Location Button
+                          InkWell(
+                            onTap: _isLocatingAddress
+                                ? null
+                                : () async {
+                                    Navigator.pop(context);
+                                    await _useCurrentLocationForCart();
+                                  },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFFA5D6A7)),
+                              ),
+                              child: Row(
+                                children: [
+                                  if (_isLocatingAddress)
+                                    const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(color: Color(0xFF2E7D32), strokeWidth: 2),
+                                    )
+                                  else
+                                    const Icon(Icons.my_location, color: Color(0xFF2E7D32), size: 20),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Use Current Location',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: const Color(0xFF2E7D32),
+                                          ),
+                                        ),
+                                        Text(
+                                          'Auto-detect via GPS',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 10,
+                                            color: const Color(0xFF647C72),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_right, color: Color(0xFF2E7D32), size: 20),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
                           Expanded(
                             child: ListView.builder(
                               itemCount: addressState.addresses.length,
@@ -888,173 +1036,340 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildRecommendations(BuildContext context, WidgetRef ref) {
-    final recommendations = [
-      ProductModel(
-        id: 'rec_honey',
-        name: 'Fresh Organic Honey',
-        price: 240.00,
-        originalPrice: 280.00,
-        origin: 'Himalayas',
-        category: 'Grains & Millets',
-        image: '',
-        description: 'Pure, organic forest honey harvested raw.',
-        weight: '250g',
-        stock: 10,
-        farmName: 'Sweet Nectar Farms',
-        organic: true,
-      ),
-      ProductModel(
-        id: 'rec_strawberries',
-        name: 'Fresh Strawberries',
-        price: 180.00,
-        originalPrice: 200.00,
-        origin: 'Mahabaleshwar',
-        category: 'Fruits',
-        image: '',
-        description: 'Sweet, red strawberries picked fresh.',
-        weight: '200g',
-        stock: 15,
-        farmName: 'Strawberry Fields',
-        organic: true,
-      ),
-      ProductModel(
-        id: 'rec_avocados',
-        name: 'Organic Avocados',
-        price: 320.00,
-        originalPrice: 350.00,
-        origin: 'Ooty',
-        category: 'Vegetables',
-        image: '',
-        description: 'Rich, creamy Hass avocados grown organically.',
-        weight: '2 units',
-        stock: 8,
-        farmName: 'Green Valley Farms',
-        organic: true,
-      ),
-    ];
+    final productState = ref.watch(productProvider);
+    final recommendations = productState.products.isNotEmpty
+        ? productState.products.take(6).toList()
+        : [
+            ProductModel(
+              id: 'rec_mangoes',
+              name: 'Fresh Alphonso Mangoes',
+              price: 390.00,
+              originalPrice: 450.00,
+              origin: 'Ratnagiri',
+              category: 'Fruits',
+              image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=600&q=80',
+              description: 'Sweet, organic Alphonso mangoes.',
+              weight: '1 kg',
+              stock: 50,
+              farmName: 'Ratnagiri Farms',
+              organic: true,
+            ),
+            ProductModel(
+              id: 'rec_spinach',
+              name: 'Fresh Farm Spinach',
+              price: 35.00,
+              originalPrice: 40.00,
+              origin: 'Guntur',
+              category: 'Vegetables',
+              image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80',
+              description: 'Iron-rich organic spinach leaves.',
+              weight: '250g',
+              stock: 80,
+              farmName: 'Green Leaf Farms',
+              organic: true,
+            ),
+            ProductModel(
+              id: 'rec_honey',
+              name: 'Himalayan Raw Honey',
+              price: 340.00,
+              originalPrice: 380.00,
+              origin: 'Himalayas',
+              category: 'Dairy & Honey',
+              image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=600&q=80',
+              description: 'Unprocessed forest honey from wild hives.',
+              weight: '500g',
+              stock: 40,
+              farmName: 'Wild Bee Farms',
+              organic: true,
+            ),
+            ProductModel(
+              id: 'rec_apples',
+              name: 'Kashmiri Red Apples',
+              price: 195.00,
+              originalPrice: 220.00,
+              origin: 'Kashmir',
+              category: 'Fruits',
+              image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80',
+              description: 'Juicy, naturally sweet red apples.',
+              weight: '1 kg',
+              stock: 65,
+              farmName: 'Valley Fresh Orchards',
+              organic: true,
+            ),
+            ProductModel(
+              id: 'rec_turmeric',
+              name: 'Lakadong Turmeric',
+              price: 105.00,
+              originalPrice: 120.00,
+              origin: 'Meghalaya',
+              category: 'Spices & Herbs',
+              image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80',
+              description: 'High curcumin organic turmeric powder.',
+              weight: '200g',
+              stock: 60,
+              farmName: 'Spice Garden Organics',
+              organic: true,
+            ),
+          ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      margin: const EdgeInsets.only(top: 24, bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.recommend_outlined, color: Color(0xFF2E7D32), size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'You May Also Like',
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: const Color(0xFF23312B),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFE8F5E9),
+                      ),
+                      child: const Icon(Icons.auto_awesome, color: Color(0xFF2E7D32), size: 16),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'You May Also Like',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: const Color(0xFF23312B),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        Text(
+                          'Recommended fresh organic harvest for your basket',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            color: const Color(0xFF647C72),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F7F2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFC8E6C9)),
+                  ),
+                  child: Text(
+                    '100% Organic',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2E7D32),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           SizedBox(
-            height: 145,
+            height: 220,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: recommendations.length,
               itemBuilder: (context, index) {
                 final item = recommendations[index];
                 return Container(
-                  width: 150,
-                  margin: const EdgeInsets.only(right: 12),
+                  width: 165,
+                  margin: const EdgeInsets.only(right: 14),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE8F1EC), width: 1),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x06000000),
-                        offset: Offset(0, 4),
-                        blurRadius: 8,
+                        color: Color(0x0C2E5C45),
+                        offset: Offset(0, 8),
+                        blurRadius: 18,
                       ),
                     ],
-                    border: Border.all(color: const Color(0xFFECECEC)),
                   ),
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFFF1F8F4),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Image Stack with Fresh Badge
+                        Stack(
+                          children: [
+                            Container(
+                              height: 105,
+                              width: double.infinity,
+                              color: const Color(0xFFF7FAF8),
+                              child: item.image.isNotEmpty
+                                  ? (item.image.startsWith('http')
+                                      ? CachedNetworkImage(
+                                          imageUrl: item.image,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) => Container(
+                                            color: const Color(0xFFEAF4EE),
+                                            child: const Center(
+                                              child: SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(color: Color(0xFF2E7D32), strokeWidth: 2),
+                                              ),
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) => const Center(
+                                            child: Icon(Icons.eco, color: Color(0xFF81C784), size: 36),
+                                          ),
+                                        )
+                                      : const Center(child: Icon(Icons.eco, color: Color(0xFF81C784), size: 36)))
+                                  : const Center(child: Icon(Icons.eco, color: Color(0xFF81C784), size: 36)),
                             ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              item.id == 'rec_honey'
-                                  ? '🍯'
-                                  : item.id == 'rec_strawberries'
-                                      ? '🍓'
-                                      : '🥑',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              ref.read(cartProvider.notifier).addItem(item);
-                              showAppSnackBar(
-                                context,
-                                'Added ${item.name} to Basket!',
-                                type: SnackBarType.success,
-                              );
-                            },
-                            child: Container(
-                              width: 24,
-                              height: 24,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFFE8F5E9),
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2E7D32).withOpacity(0.85),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Fresh',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                              child: const Icon(Icons.add, size: 12, color: Color(0xFF2E7D32)),
+                            ),
+                          ],
+                        ),
+                        // Content Padding
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: const Color(0xFF23312B),
+                                        height: 1.2,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${item.weight} • ${item.farmName}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: const Color(0xFF647C72),
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                                // Price & Quick Add Button Row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '₹${item.price.toStringAsFixed(0)}',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF2E7D32),
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        if (item.originalPrice > item.price)
+                                          Text(
+                                            '₹${item.originalPrice.toStringAsFixed(0)}',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF9E9E9E),
+                                              fontSize: 10,
+                                              decoration: TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          ref.read(cartProvider.notifier).addItem(item);
+                                          showAppSnackBar(
+                                            context,
+                                            'Added ${item.name} to Basket!',
+                                            type: SnackBarType.success,
+                                          );
+                                        },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                                            ),
+                                            borderRadius: BorderRadius.circular(12),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                color: Color(0x1F2E7D32),
+                                                offset: Offset(0, 3),
+                                                blurRadius: 6,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.add, size: 12, color: Colors.white),
+                                              const SizedBox(width: 2),
+                                              Text(
+                                                'Add',
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Text(
-                        item.name,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                          color: const Color(0xFF23312B),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        item.farmName,
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF647C72),
-                          fontSize: 8,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '₹${item.price.toStringAsFixed(2)} / ${item.weight}',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF2E7D32),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
