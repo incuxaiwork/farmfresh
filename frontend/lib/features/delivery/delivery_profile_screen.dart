@@ -218,17 +218,26 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
                     ],
                   ),
                   child: ClipOval(
-                    child: profileImage != null && profileImage.image.startsWith('data:image')
-                        ? Transform.translate(
-                            offset: Offset(profileImage.dx, profileImage.dy),
-                            child: Transform.scale(
-                              scale: profileImage.scale,
-                              child: Image.memory(
-                                base64Decode(profileImage.image.split(',')[1]),
+                    child: profileImage != null && profileImage.image.isNotEmpty
+                        ? (profileImage.image.startsWith('http')
+                            ? Image.network(
+                                profileImage.image,
                                 fit: BoxFit.cover,
-                              ),
-                            ),
-                          )
+                              )
+                            : Transform.translate(
+                                offset: Offset(profileImage.dx, profileImage.dy),
+                                child: Transform.scale(
+                                  scale: profileImage.scale,
+                                  child: Image.memory(
+                                    base64Decode(
+                                      profileImage.image.contains(',')
+                                          ? profileImage.image.split(',')[1]
+                                          : profileImage.image,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ))
                         : Container(
                             color: Colors.green.shade50,
                             child: const Icon(Icons.person, size: 48, color: Colors.green),

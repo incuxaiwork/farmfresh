@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileImageState {
   final String image;
@@ -46,8 +47,18 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
 
   Future<void> _loadProfileImage() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final storedPref = prefs.getString('profile_image_state_$userId') ?? prefs.getString('profile_image_state_latest');
+      if (storedPref != null && storedPref.isNotEmpty) {
+        final decoded = jsonDecode(storedPref) as Map<String, dynamic>;
+        state = ProfileImageState.fromJson(decoded);
+        return;
+      }
+    } catch (_) {}
+
+    try {
       final stored = await _secureStorage.read(key: 'profile_image_state_$userId');
-      if (stored != null) {
+      if (stored != null && stored.isNotEmpty) {
         final decoded = jsonDecode(stored) as Map<String, dynamic>;
         state = ProfileImageState.fromJson(decoded);
         return;
@@ -56,7 +67,7 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
 
     try {
       final legacy = await _secureStorage.read(key: 'profile_image_$userId');
-      if (legacy != null) {
+      if (legacy != null && legacy.isNotEmpty) {
         state = ProfileImageState(image: legacy);
         return;
       }
@@ -68,12 +79,22 @@ class ProfileImageNotifier extends StateNotifier<ProfileImageState?> {
     state = newState;
     final jsonStr = jsonEncode(newState.toJson());
     try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profile_image_state_$userId', jsonStr);
+      await prefs.setString('profile_image_state_latest', jsonStr);
+    } catch (_) {}
+    try {
       await _secureStorage.write(key: 'profile_image_state_$userId', value: jsonStr);
     } catch (_) {}
   }
 
   Future<void> deleteProfileImage() async {
     state = null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('profile_image_state_$userId');
+      await prefs.remove('profile_image_state_latest');
+    } catch (_) {}
     try {
       await _secureStorage.delete(key: 'profile_image_state_$userId');
       await _secureStorage.delete(key: 'profile_image_$userId');

@@ -306,17 +306,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               ],
                                             ),
                                             child: ClipOval(
-                                              child: profileImage != null && profileImage.image.startsWith('data:image')
-                                                  ? Transform.translate(
-                                                      offset: Offset(profileImage.dx, profileImage.dy),
-                                                      child: Transform.scale(
-                                                        scale: profileImage.scale,
-                                                        child: Image.memory(
-                                                          base64Decode(profileImage.image.split(',')[1]),
+                                              child: profileImage != null && profileImage.image.isNotEmpty
+                                                  ? (profileImage.image.startsWith('http')
+                                                      ? Image.network(
+                                                          profileImage.image,
                                                           fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    )
+                                                        )
+                                                      : Transform.translate(
+                                                          offset: Offset(profileImage.dx, profileImage.dy),
+                                                          child: Transform.scale(
+                                                            scale: profileImage.scale,
+                                                            child: Image.memory(
+                                                              base64Decode(
+                                                                profileImage.image.contains(',')
+                                                                    ? profileImage.image.split(',')[1]
+                                                                    : profileImage.image,
+                                                              ),
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                          ),
+                                                        ))
                                                   : Image.network(
                                                       'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky',
                                                       fit: BoxFit.cover,

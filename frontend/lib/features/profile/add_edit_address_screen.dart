@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
 import '../../core/widgets/custom_button.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class AddEditAddressScreen extends ConsumerStatefulWidget {
   final AddressModel? address;
@@ -27,8 +31,144 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
   late TextEditingController _phoneController;
   bool _isDefault = false;
   bool _isSaving = false;
+  bool _isLocating = false;
 
   bool get _isEditing => widget.address != null;
+
+  Future<void> _useCurrentLocation() async {
+    setState(() => _isLocating = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          AppSnackBar.show(context, 'Location services are disabled on your device.', isError: true);
+        }
+        setState(() => _isLocating = false);
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            AppSnackBar.show(context, 'Location permissions were denied.', isError: true);
+          }
+          setState(() => _isLocating = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          AppSnackBar.show(context, 'Location permissions are permanently denied.', isError: true);
+        }
+        setState(() => _isLocating = false);
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?lat=${position.latitude}&lon=${position.longitude}&format=json&addressdetails=1',
+      );
+      final response = await http.get(url, headers: {'User-Agent': 'FarmFreshApp/1.0'});
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final address = data['address'] as Map<String, dynamic>? ?? {};
+
+        final road = address['road'] ?? address['pedestrian'] ?? address['suburb'] ?? address['neighbourhood'] ?? address['residential'] ?? '';
+        final houseNumber = address['house_number'] ?? address['building'] ?? '';
+        final streetParts = [houseNumber, road].where((s) => s.toString().trim().isNotEmpty).join(', ');
+
+        final city = address['city'] ?? address['town'] ?? address['village'] ?? address['county'] ?? address['state_district'] ?? '';
+        final state = address['state'] ?? '';
+        final postcode = address['postcode'] ?? '';
+        final country = address['country'] ?? 'India';
+
+        setState(() {
+          if (_labelController.text.trim().isEmpty) {
+            _labelController.text = 'Current Location';
+          }
+          if (streetParts.isNotEmpty) _streetController.text = streetParts;
+          if (city.toString().isNotEmpty) _cityController.text = city.toString();
+          if (state.toString().isNotEmpty) _stateController.text = state.toString();
+          if (postcode.toString().isNotEmpty) _zipController.text = postcode.toString();
+          if (country.toString().isNotEmpty) _countryController.text = country.toString();
+        });
+
+        if (mounted) {
+          AppSnackBar.show(context, 'Current location filled successfully!');
+        }
+      } else {
+        if (mounted) {
+          AppSnackBar.show(context, 'Location acquired (${position.latitude.toStringAsFixed(3)}, ${position.longitude.toStringAsFixed(3)}). Please enter street details.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.show(context, 'Could not fetch current location address. Please enter details manually.', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLocating = false);
+      }
+    }
+  }
+
+  Widget _buildUseCurrentLocationButton() {
+    return InkWell(
+      onTap: _isLocating ? null : _useCurrentLocation,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F5E9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFA5D6A7)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isLocating) ...[
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  color: Color(0xFF2E7D32),
+                  strokeWidth: 2,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Fetching location...',
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xFF2E7D32),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ] else ...[
+              const Icon(Icons.my_location, color: Color(0xFF2E7D32), size: 20),
+              const SizedBox(width: 10),
+              Text(
+                'Use Current Location',
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xFF2E7D32),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -139,6 +279,10 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Use Current Location Button
+                    _buildUseCurrentLocationButton(),
+                    const SizedBox(height: 20),
+
                     // Label Field
                     TextFormField(
                       controller: _labelController,

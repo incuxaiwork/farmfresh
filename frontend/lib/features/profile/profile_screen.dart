@@ -122,17 +122,26 @@ class ProfileScreen extends ConsumerWidget {
                         ],
                       ),
                       child: ClipOval(
-                        child: profileImage != null && profileImage.image.startsWith('data:image')
-                            ? Transform.translate(
-                                offset: Offset(profileImage.dx, profileImage.dy),
-                                child: Transform.scale(
-                                  scale: profileImage.scale,
-                                  child: Image.memory(
-                                    base64Decode(profileImage.image.split(',')[1]),
+                        child: profileImage != null && profileImage.image.isNotEmpty
+                            ? (profileImage.image.startsWith('http')
+                                ? Image.network(
+                                    profileImage.image,
                                     fit: BoxFit.cover,
-                                  ),
-                                ),
-                              )
+                                  )
+                                : Transform.translate(
+                                    offset: Offset(profileImage.dx, profileImage.dy),
+                                    child: Transform.scale(
+                                      scale: profileImage.scale,
+                                      child: Image.memory(
+                                        base64Decode(
+                                          profileImage.image.contains(',')
+                                              ? profileImage.image.split(',')[1]
+                                              : profileImage.image,
+                                        ),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ))
                             : (user.avatar != null && user.avatar!.isNotEmpty && !user.avatar!.contains('dicebear'))
                                 ? Image.network(
                                     user.avatar!,
