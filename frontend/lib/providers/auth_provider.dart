@@ -65,7 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       print('[AUTH] _loadCurrentUser failed error=$e');
       if (_mounted) {
-        state = AuthState(errorMessage: e.toString());
+        state = AuthState(errorMessage: _cleanErrorMessage(e));
       }
     }
   }
@@ -73,7 +73,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String email, String password, String role) async {
     if (!_mounted) return false;
     print('[AUTH] login start for $email, role=$role');
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final user = await _ref.read(authRepositoryProvider).login(email, password, role);
       print('[AUTH] login success user=${user?.email}, role=${user?.role}');
@@ -84,7 +84,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       print('[AUTH] login failed error=$e');
       if (_mounted) {
-        state = AuthState(errorMessage: e.toString());
+        state = AuthState(errorMessage: _cleanErrorMessage(e));
       }
       return false;
     }
@@ -105,7 +105,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? vehicleNumber,
   }) async {
     if (!_mounted) return false;
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final user = await _ref.read(authRepositoryProvider).signup(
             name,
@@ -127,7 +127,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       if (_mounted) {
-        state = AuthState(errorMessage: e.toString());
+        state = AuthState(errorMessage: _cleanErrorMessage(e));
       }
       return false;
     }
@@ -154,7 +154,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       if (_mounted) {
-        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+        state = state.copyWith(isLoading: false, errorMessage: _cleanErrorMessage(e));
       }
       return false;
     }
@@ -175,7 +175,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       if (_mounted) {
-        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+        state = state.copyWith(isLoading: false, errorMessage: _cleanErrorMessage(e));
       }
       return false;
     }
@@ -197,9 +197,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
     } catch (e) {
       if (_mounted) {
-        state = AuthState(errorMessage: e.toString());
+        state = AuthState(errorMessage: _cleanErrorMessage(e));
       }
     }
+  }
+
+  /// Strips the "Exception: " prefix that Flutter adds to thrown exceptions.
+  static String _cleanErrorMessage(Object e) {
+    final raw = e.toString();
+    if (raw.startsWith('Exception: ')) {
+      return raw.substring('Exception: '.length);
+    }
+    return raw;
   }
 }
 

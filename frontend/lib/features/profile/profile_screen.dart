@@ -35,13 +35,13 @@ class ProfileScreen extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFFF2F8F4),
-            const Color(0xFFE6F2EA),
-          ],
+        image: DecorationImage(
+          image: const AssetImage('assets/images/basket_vegetables.jpg'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withOpacity(0.3),
+            BlendMode.darken,
+          ),
         ),
       ),
       child: Scaffold(

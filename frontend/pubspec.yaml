@@ -39,3 +39,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/basket_vegetables.jpg
+    - assets/images/organic_strawberries.jpg
+    - assets/images/crisp_red_apples.jpg
+    - assets/images/organic_carrots.jpg
+    - assets/images/organic_broccolini.jpg

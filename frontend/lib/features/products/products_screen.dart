@@ -535,7 +535,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       children: [
                         Text('₹${prod.price.toStringAsFixed(2)} / ${prod.weight}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 14)),
                         IconButton(
-                          icon: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.green),
+                          icon: const Icon(Icons.shopping_basket, size: 20, color: Colors.green),
                           onPressed: prod.stock <= 0 ? null : () {
                             ref.read(cartProvider.notifier).addItem(prod);
                             showAppSnackBar(

@@ -261,9 +261,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                     ),
                                                   ],
                                                 ),
-                                                child: const Center(
-                                                  child: Icon(Icons.shopping_cart_outlined, color: Color(0xFF2E7D32), size: 18),
-                                                ),
+child: const Center(
+                              child: Icon(Icons.shopping_basket, color: Color(0xFF2E7D32), size: 18),
+                            ),
                                               ),
                                               if (cartItemCount > 0)
                                                 Positioned(

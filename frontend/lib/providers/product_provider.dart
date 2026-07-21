@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product_model.dart';
 import 'app_providers.dart';
@@ -82,11 +83,11 @@ class ProductNotifier extends StateNotifier<ProductState> {
     }
   }
 
-  Future<bool> addProduct(ProductModel product) async {
+  Future<bool> addProduct(ProductModel product, {Uint8List? imageBytes, String? imageFilename}) async {
     if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
-      await _ref.read(productRepositoryProvider).addProduct(product);
+      await _ref.read(productRepositoryProvider).addProduct(product, imageBytes: imageBytes, imageFilename: imageFilename);
       if (_mounted) {
         await loadProducts();
       }
@@ -99,11 +100,11 @@ class ProductNotifier extends StateNotifier<ProductState> {
     }
   }
 
-  Future<bool> updateProduct(ProductModel product) async {
+  Future<bool> updateProduct(ProductModel product, {Uint8List? imageBytes, String? imageFilename}) async {
     if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
-      await _ref.read(productRepositoryProvider).updateProduct(product);
+      await _ref.read(productRepositoryProvider).updateProduct(product, imageBytes: imageBytes, imageFilename: imageFilename);
       if (_mounted) {
         await loadProducts();
       }
@@ -172,11 +173,11 @@ class FarmerProductsNotifier extends StateNotifier<ProductState> {
     }
   }
 
-  Future<bool> addProduct(ProductModel product) async {
+  Future<bool> addProduct(ProductModel product, {Uint8List? imageBytes, String? imageFilename}) async {
     if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
-      await _ref.read(productRepositoryProvider).addProduct(product);
+      await _ref.read(productRepositoryProvider).addProduct(product, imageBytes: imageBytes, imageFilename: imageFilename);
       if (_mounted) {
         await loadFarmerProducts();
       }
@@ -189,11 +190,11 @@ class FarmerProductsNotifier extends StateNotifier<ProductState> {
     }
   }
 
-  Future<bool> updateProduct(ProductModel product) async {
+  Future<bool> updateProduct(ProductModel product, {Uint8List? imageBytes, String? imageFilename}) async {
     if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
-      await _ref.read(productRepositoryProvider).updateProduct(product);
+      await _ref.read(productRepositoryProvider).updateProduct(product, imageBytes: imageBytes, imageFilename: imageFilename);
       if (_mounted) {
         await loadFarmerProducts();
       }

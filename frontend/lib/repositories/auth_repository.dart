@@ -23,7 +23,6 @@ abstract class AuthRepository {
   Future<UserModel> updateProfile({String? name, String? phone, String? avatar});
   Future<void> changePassword({required String currentPassword, required String newPassword});
   Future<void> logout();
-  Future<void> refreshToken();
 }
 
 class PostgresAuthRepository implements AuthRepository {
@@ -43,7 +42,11 @@ class PostgresAuthRepository implements AuthRepository {
         final profile = res.data['data'];
         return UserModel.fromJson(profile as Map<String, dynamic>);
       }
-    } catch (_) {}
+    } on DioException catch (e) {
+      print('[AUTH] getCurrentUser failed: ${classifyDioError(e)}');
+    } catch (e) {
+      print('[AUTH] getCurrentUser unexpected error: $e');
+    }
     return null;
   }
 
@@ -72,11 +75,11 @@ class PostgresAuthRepository implements AuthRepository {
         phone: profile['phone'] as String?,
       );
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
-      throw Exception(message ?? 'Connection failed');
+      final message = classifyDioError(e);
+      throw Exception(message);
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception('Connection failed. Please ensure the backend server is running.');
+      throw Exception('An unexpected error occurred during login.');
     }
   }
 
@@ -150,11 +153,11 @@ class PostgresAuthRepository implements AuthRepository {
 
       return login(email, password, role);
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
-      throw Exception(message ?? 'Connection failed');
+      final message = classifyDioError(e);
+      throw Exception(message);
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception('Connection failed. Please ensure the backend server is running.');
+      throw Exception('An unexpected error occurred during signup.');
     }
   }
 
@@ -173,11 +176,11 @@ class PostgresAuthRepository implements AuthRepository {
       }
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
-      throw Exception(message ?? 'Connection failed');
+      final message = classifyDioError(e);
+      throw Exception(message);
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception('Connection failed');
+      throw Exception('An unexpected error occurred while updating profile.');
     }
   }
 
@@ -193,11 +196,11 @@ class PostgresAuthRepository implements AuthRepository {
         throw Exception(res.data['message'] ?? 'Failed to change password');
       }
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
-      throw Exception(message ?? 'Connection failed');
+      final message = classifyDioError(e);
+      throw Exception(message);
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception('Connection failed');
+      throw Exception('An unexpected error occurred while changing password.');
     }
   }
 
@@ -217,30 +220,5 @@ class PostgresAuthRepository implements AuthRepository {
     await _secureStorage.delete(key: 'access_token');
     await _secureStorage.delete(key: 'refresh_token');
     _apiClient.clearPendingRequests();
-  }
-
-  @override
-  Future<void> refreshToken() async {
-    final refreshToken = await _secureStorage.read(key: 'refresh_token');
-    if (refreshToken == null) return;
-
-    try {
-      final res = await _apiClient.dio.post('/auth/refresh', data: {
-        'refreshToken': refreshToken,
-      });
-
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final data = res.data['data'];
-        if (data['accessToken'] != null) {
-          await _secureStorage.write(key: 'access_token', value: data['accessToken']);
-        }
-        if (data['refreshToken'] != null) {
-          await _secureStorage.write(key: 'refresh_token', value: data['refreshToken']);
-        }
-      }
-    } catch (_) {
-      await _secureStorage.delete(key: 'access_token');
-      await _secureStorage.delete(key: 'refresh_token');
-    }
   }
 }
