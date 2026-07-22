@@ -1,18 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- Chicken drumstick behind -->
-  <path d="M22 28L10 40C8 42 8 45 10 47C12 49 15 49 17 47L29 35" stroke="#CFD8DC" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="9" cy="42" r="3.5" fill="#CFD8DC"/>
-  <circle cx="12" cy="45" r="3.5" fill="#CFD8DC"/>
-  <path d="M22 28C20 22 24 14 32 14C40 14 44 20 40 28C36 32 28 32 22 28Z" fill="#FFB74D"/>
-  <path d="M22 28C20 22 24 14 32 14C34 14 36 18 36 24C34 28 28 30 22 28Z" fill="#F57C00" opacity="0.35"/>
+  <defs>
+    <linearGradient id="meatGrad" x1="18" y1="16" x2="48" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C62828"/>
+      <stop offset="60%" stop-color="#8E0000"/>
+      <stop offset="100%" stop-color="#4A0000"/>
+    </linearGradient>
+    <linearGradient id="boneGrad" x1="10" y1="42" x2="22" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#D7CCC8"/>
+    </linearGradient>
+    <filter id="meatShadow" x="8" y="10" width="48" height="48" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="3.5" flood-color="#3E2723" flood-opacity="0.35"/>
+    </filter>
+  </defs>
 
-  <!-- Steak front -->
-  <path d="M22 46C20 40 22 34 28 32C38 28 52 30 52 40C52 48 46 52 36 52C28 52 24 50 22 46Z" fill="#C62828"/>
-  <!-- Steak Marbling (white fat border/lines) -->
-  <path d="M22 46C20 40 22 34 28 32C38 28 52 30 52 40" stroke="#ECEFF1" stroke-width="2.5" fill="none"/>
-  <path d="M30 38C34 36 40 37 44 40" stroke="#ECEFF1" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M28 44C32 43 36 44 38 46" stroke="#ECEFF1" stroke-width="1.5" stroke-linecap="round"/>
-  <!-- T-bone or round bone -->
-  <circle cx="44" cy="44" r="4.5" fill="white"/>
-  <circle cx="44" cy="44" r="2" fill="#C62828"/>
+  <g filter="url(#meatShadow)">
+    <!-- 3D Meat Body -->
+    <path d="M46 16C37 10 23 16 21 27C19 36 26 42 35 40C45 38 52 25 46 16Z" fill="url(#meatGrad)"/>
+  </g>
+
+  <!-- 3D Bone Shaft -->
+  <path d="M26 34L14 46" stroke="url(#boneGrad)" stroke-width="7.5" stroke-linecap="round"/>
+  <!-- 3D Bone Knuckles -->
+  <circle cx="12" cy="44" r="5" fill="#F5F5F5"/>
+  <circle cx="16" cy="50" r="5" fill="#E0E0E0"/>
+
+  <!-- 3D Meat Marbling Lines / Fat Trims -->
+  <path d="M30 22C36 20 42 24 40 28" stroke="#FFCDD2" stroke-width="2" stroke-linecap="round" opacity="0.65"/>
+  <path d="M26 28C32 27 36 31 34 35" stroke="#FFCDD2" stroke-width="1.8" stroke-linecap="round" opacity="0.65"/>
+  <circle cx="40" cy="20" r="2.5" fill="#FFFFFF" opacity="0.4"/>
 </svg>

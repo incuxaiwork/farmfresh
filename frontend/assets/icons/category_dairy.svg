@@ -1,21 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- Milk Carton -->
-  <path d="M16 26L22 16L32 16L38 26L38 52C38 54 36 56 34 56L20 56C18 56 16 54 16 52V26Z" fill="#F5F5F5"/>
-  <path d="M16 26L22 16L32 16L32 56L20 56C18 56 16 54 16 52V26Z" fill="#E0E0E0" opacity="0.5"/>
-  <!-- Carton Top Fold -->
-  <path d="M22 16L27 10L32 16H22Z" fill="#BBDEFB"/>
-  <path d="M27 10L32 16L37 16L32 10" fill="#90CAF9"/>
-  <!-- Carton Label/Blue stripe -->
-  <rect x="16" y="32" width="22" height="10" fill="#42A5F5"/>
-  <rect x="16" y="32" width="16" height="10" fill="#1E88E5" opacity="0.3"/>
-  <path d="M27 34C25 36 25 38 27 40" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="cheeseTop" x1="12" y1="20" x2="52" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD54F"/>
+      <stop offset="100%" stop-color="#FFB300"/>
+    </linearGradient>
+    <linearGradient id="cheeseFront" x1="12" y1="36" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    <filter id="cheeseShadow" x="8" y="14" width="48" height="38" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#E65100" flood-opacity="0.3"/>
+    </filter>
+  </defs>
 
-  <!-- Cheese Wedge -->
-  <path d="M30 48L52 38C54 37 56 39 56 42V50C56 52 54 54 52 54H34C32 54 30 52 30 50V48Z" fill="#FFCA28"/>
-  <path d="M30 48L52 38L52 54H34C32 54 30 52 30 50V48Z" fill="#FFB300" opacity="0.3"/>
-  <!-- Cheese Holes -->
-  <circle cx="36" cy="50" r="2" fill="#FF8F00"/>
-  <circle cx="44" cy="46" r="3" fill="#FF8F00"/>
-  <circle cx="48" cy="51" r="1.5" fill="#FF8F00"/>
-  <circle cx="51" cy="43" r="2" fill="#FF8F00"/>
+  <g filter="url(#cheeseShadow)">
+    <!-- 3D Cheese Front Side -->
+    <path d="M12 44L48 44L52 24L12 44Z" fill="url(#cheeseFront)"/>
+    <!-- 3D Cheese Top Side -->
+    <path d="M12 44L52 24C44 18 28 16 12 24V44Z" fill="url(#cheeseTop)"/>
+  </g>
+
+  <!-- 3D Cheese Holes with Depth Shadows -->
+  <ellipse cx="24" cy="33" rx="3.5" ry="3" fill="#E65100"/>
+  <ellipse cx="24" cy="32.5" rx="3" ry="2.5" fill="#BF360C"/>
+
+  <ellipse cx="36" cy="27" rx="3" ry="2.5" fill="#E65100"/>
+  <ellipse cx="36" cy="26.5" rx="2.5" ry="2" fill="#BF360C"/>
+
+  <ellipse cx="32" cy="37" rx="2.5" ry="2" fill="#E65100"/>
+  <ellipse cx="32" cy="36.5" rx="2" ry="1.5" fill="#BF360C"/>
+
+  <!-- Glossy Highlight -->
+  <path d="M15 26L42 20" stroke="#FFF9C4" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
 </svg>

@@ -2,8 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import helmet from 'helmet';
-import compression from 'compression';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const helmet = require('helmet');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const compression = require('compression');
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -49,7 +51,7 @@ async function bootstrap() {
   });
   
   // Security headers
-  app.use((helmet.default || helmet)({
+  app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -61,7 +63,7 @@ async function bootstrap() {
     },
     crossOriginEmbedderPolicy: false,
   }));
-  app.use((compression as any)());
+  app.use(compression());
 
   // Swagger OpenAPI Documentation Initialization
   const swaggerConfig = new DocumentBuilder()

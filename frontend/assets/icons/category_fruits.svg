@@ -1,16 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- Banana background/curve -->
-  <path d="M14 46C20 32 32 20 48 16C44 22 36 34 26 48C22 50 17 49 14 46Z" fill="#FBC02D"/>
-  <path d="M48 16C50 14 52 14 52 14C52 14 50 18 48 20" stroke="#F57F17" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Apple -->
-  <path d="M30 48C24 48 19 43 19 37C19 31 23 27 29 27C32 27 34 29 35 31C36 29 38 27 41 27C47 27 51 31 51 37C51 43 47 48 41 48C37 48 35 46 35 46C35 46 33 48 30 48Z" fill="#E53935"/>
-  <!-- Apple leaf -->
-  <path d="M35 27C35 23 37 19 41 19C41 23 39 27 35 27Z" fill="#4CAF50"/>
-  <!-- Grapes -->
-  <circle cx="20" cy="38" r="5" fill="#7B1FA2"/>
-  <circle cx="25" cy="42" r="5" fill="#8E24AA"/>
-  <circle cx="16" cy="43" r="4.5" fill="#8E24AA"/>
-  <circle cx="21" cy="47" r="4" fill="#6A1B9A"/>
-  <!-- Apple highlight -->
-  <ellipse cx="26" cy="33" rx="2" ry="4" fill="#FFCDD2" opacity="0.6" transform="rotate(-30 26 33)"/>
+  <defs>
+    <linearGradient id="appleBody" x1="16" y1="18" x2="48" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF4D4D"/>
+      <stop offset="60%" stop-color="#E60000"/>
+      <stop offset="100%" stop-color="#990000"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="32" y1="8" x2="44" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <radialGradient id="gloss" cx="26" cy="24" r="10" fx="24" fy="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="fruitShadow" x="10" y="14" width="44" height="46" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#800000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#fruitShadow)">
+    <!-- 3D Apple Main Body -->
+    <path d="M32 20C26 13 14 16 14 30C14 45 26 52 32 52C38 52 50 45 50 30C50 16 38 13 32 20Z" fill="url(#appleBody)"/>
+  </g>
+
+  <!-- 3D Stem -->
+  <path d="M32 20C32 13 37 9 39 8" stroke="#4E2A1E" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- 3D Leaf with shadow & highlight -->
+  <path d="M34 14C40 10 46 14 45 18C40 22 34 18 34 14Z" fill="url(#leafGrad)"/>
+  <path d="M35 15C39 13 43 15 43 15" stroke="#A5D6A7" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Glossy 3D Highlight Curve -->
+  <ellipse cx="24" cy="26" rx="5" ry="9" fill="url(#gloss)" transform="rotate(-28 24 26)"/>
+  <circle cx="21" cy="36" r="2.5" fill="#FFFFFF" opacity="0.4"/>
 </svg>

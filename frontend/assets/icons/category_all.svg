@@ -1,18 +1,53 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- Shopping bag (kraft paper color) -->
-  <path d="M18 28L20 52C20 54 22 56 24 56H40C42 56 44 54 44 52L46 28H18Z" fill="#D7CCC8"/>
-  <path d="M18 28L20 52C20 54 22 56 24 56H32V28H18Z" fill="#BCAAA4" opacity="0.5"/>
-  <!-- Bag handles -->
-  <path d="M26 28V24C26 20 28 18 32 18C36 18 38 20 38 24V28" stroke="#8D6E63" stroke-width="2.5" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="basketGrad" x1="12" y1="22" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#40916C"/>
+      <stop offset="100%" stop-color="#1B4332"/>
+    </linearGradient>
+    <linearGradient id="handleGrad" x1="20" y1="10" x2="44" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#52B788"/>
+      <stop offset="100%" stop-color="#2D6A4F"/>
+    </linearGradient>
+    <linearGradient id="appleGrad" x1="20" y1="12" x2="30" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF5252"/>
+      <stop offset="100%" stop-color="#C62828"/>
+    </linearGradient>
+    <linearGradient id="carrotGrad" x1="32" y1="10" x2="42" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF9800"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    <filter id="shadow" x="8" y="20" width="48" height="38" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#1B4332" flood-opacity="0.25"/>
+    </filter>
+  </defs>
 
-  <!-- Overflowing items -->
-  <!-- Carrot top -->
-  <path d="M22 28L25 20" stroke="#FF7043" stroke-width="4" stroke-linecap="round"/>
-  <path d="M25 20C27 18 29 18 29 18" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
-  <!-- Apple top -->
-  <circle cx="32" cy="24" r="5.5" fill="#E53935"/>
-  <path d="M32 18C33 16 35 16 35 16" stroke="#4CAF50" stroke-width="1.5"/>
-  <!-- Milk bottle neck -->
-  <rect x="37" y="20" width="6" height="8" rx="1" fill="#E3F2FD"/>
-  <rect x="36" y="18" width="8" height="2" fill="#42A5F5"/>
+  <!-- Items inside basket (3D produce sticking out) -->
+  <!-- Apple -->
+  <circle cx="24" cy="20" r="7" fill="url(#appleGrad)"/>
+  <path d="M25 13C27 11 29 12 29 12" stroke="#2E7D32" stroke-width="1.5" stroke-linecap="round"/>
+  <ellipse cx="22" cy="18" rx="2" ry="3" fill="#FFEBEE" opacity="0.6" transform="rotate(-25 22 18)"/>
+
+  <!-- Carrot -->
+  <path d="M38 12L42 22L34 22Z" fill="url(#carrotGrad)"/>
+  <path d="M38 12C38 9 36 7 36 7M38 12C40 9 42 8 42 8" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Milk carton top -->
+  <rect x="28" y="14" width="7" height="10" rx="1.5" fill="#E3F2FD"/>
+  <path d="M28 14L31.5 11L35 14Z" fill="#90CAF9"/>
+
+  <!-- Basket Handle -->
+  <path d="M20 25C20 14 44 14 44 25" stroke="url(#handleGrad)" stroke-width="4.5" stroke-linecap="round"/>
+
+  <!-- Basket Body with Drop Shadow -->
+  <g filter="url(#shadow)">
+    <path d="M12 24H52L46 50H18L12 24Z" fill="url(#basketGrad)"/>
+  </g>
+
+  <!-- Basket 3D Rim Highlight -->
+  <path d="M11 24C11 22.5 13 22.5 14 22.5H50C51 22.5 53 22.5 53 24C53 25.5 51 25.5 50 25.5H14C13 25.5 11 25.5 11 24Z" fill="#74C69D"/>
+
+  <!-- Basket Vertical Slats with 3D Depth -->
+  <rect x="21" y="28" width="4" height="16" rx="2" fill="#74C69D" opacity="0.9"/>
+  <rect x="30" y="28" width="4" height="16" rx="2" fill="#74C69D" opacity="0.9"/>
+  <rect x="39" y="28" width="4" height="16" rx="2" fill="#74C69D" opacity="0.9"/>
 </svg>

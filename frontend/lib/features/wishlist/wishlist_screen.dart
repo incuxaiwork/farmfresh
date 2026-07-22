@@ -37,23 +37,30 @@ class WishlistScreen extends ConsumerWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        context.pop();
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/customer-main');
+                        }
                       },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0x0F2E5C45),
-                              offset: Offset(0, 4),
-                              blurRadius: 10,
-                            ),
-                          ],
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x0F2E5C45),
+                                offset: Offset(0, 4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
                         ),
-                        child: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
                       ),
                     ),
                     Text(

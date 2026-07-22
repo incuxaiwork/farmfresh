@@ -8,6 +8,9 @@ import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../core/theme/app_theme.dart';
 
+/// Provider to control the active tab in CustomerMainScreen from anywhere in the app.
+final mainTabProvider = StateProvider<int>((ref) => 0);
+
 class CustomerMainScreen extends ConsumerStatefulWidget {
   const CustomerMainScreen({super.key});
 
@@ -16,8 +19,6 @@ class CustomerMainScreen extends ConsumerStatefulWidget {
 }
 
 class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
-  int _selectedIndex = 0;
-
   final List<Widget> _screens = const [
     HomeScreen(),
     CartScreen(),
@@ -28,6 +29,7 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
   @override
   Widget build(BuildContext context) {
     final cartItemCount = ref.watch(cartProvider).itemCount;
+    final selectedIndex = ref.watch(mainTabProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -36,7 +38,7 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: IndexedStack(
-          index: _selectedIndex,
+          index: selectedIndex,
           children: _screens,
         ),
         bottomNavigationBar: Container(
@@ -47,11 +49,9 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
             ),
           ),
           child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
+            currentIndex: selectedIndex,
             onTap: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
+              ref.read(mainTabProvider.notifier).state = index;
             },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.transparent,
