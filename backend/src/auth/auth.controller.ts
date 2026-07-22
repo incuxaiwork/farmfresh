@@ -59,13 +59,12 @@ export class AuthController {
     return new SuccessResponseDto('Login successful', data);
   }
 
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Log out active session and revoke refresh tokens' })
-  async logout(@CurrentUser() user: CurrentUserPayload, @Body('refreshToken') token: string) {
-    const data = await this.authService.logout(user.id, token || '');
+  async logout(@Body('refreshToken') token: string) {
+    const data = await this.authService.logoutByToken(token || '');
     return new SuccessResponseDto('Logout successful', data);
   }
 

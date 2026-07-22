@@ -32,16 +32,20 @@ async function main() {
   const email = 'admin@farmfresh.com';
   const password = 'Admin@123';
   
+  const passwordHash = await bcrypt.hash(password, 12);
+
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    console.log('Admin user already exists:');
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { passwordHash, role: 'ADMIN' },
+    });
+    console.log('Admin user password updated successfully:');
     console.log('Email: admin@farmfresh.com');
     console.log('Password: Admin@123');
     await prisma.$disconnect();
     return;
   }
-
-  const passwordHash = await bcrypt.hash(password, 12);
   
   const admin = await prisma.user.create({
     data: {

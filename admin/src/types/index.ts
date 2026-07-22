@@ -132,6 +132,13 @@ export interface DeliveryPartner {
   vehicleType?: string;
   vehicleNumber?: string;
   licenseNumber?: string;
+  bankAccount?: {
+    bankName?: string;
+    accountNumber?: string;
+    routingNumber?: string;
+    ifscCode?: string;
+    accountHolder?: string;
+  };
   isAvailable: boolean;
   isActive: boolean;
   status: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
@@ -139,6 +146,11 @@ export interface DeliveryPartner {
   avgRating?: number;
   totalEarnings?: number;
   joinedAt: string;
+  createdAt?: string;
+  address?: string;
+  onTimePercentage?: number;
+  averageDeliveryTime?: number;
+  totalDistance?: number;
 }
 
 export interface Coupon {

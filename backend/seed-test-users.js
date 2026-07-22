@@ -53,6 +53,33 @@ async function main() {
         });
       }
     }
+
+    if (u.role === 'DELIVERY_PARTNER') {
+      try {
+        await prisma.driverProfile.upsert({
+          where: { userId: existing.id },
+          update: {
+            vehicleType: 'BIKE',
+            vehicleNumber: 'AP2670983',
+            licenseNumber: 'AP16 20210001234',
+            bankName: 'boi',
+            accountNumber: '256789867890',
+            routingNumber: 'BKID000789745',
+          },
+          create: {
+            userId: existing.id,
+            vehicleType: 'BIKE',
+            vehicleNumber: 'AP2670983',
+            licenseNumber: 'AP16 20210001234',
+            bankName: 'boi',
+            accountNumber: '256789867890',
+            routingNumber: 'BKID000789745',
+          },
+        });
+      } catch (err) {
+        console.warn('DriverProfile seed error:', err.message);
+      }
+    }
   }
 
   const allUsers = await prisma.user.findMany({

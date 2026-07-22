@@ -66,9 +66,9 @@ class PostgresAuthRepository implements AuthRepository {
       final selectedRoleUpper = role.trim().toUpperCase();
 
       bool roleMatches = false;
-      if (selectedRoleUpper == 'CUSTOMER' && userRoleStr == 'CUSTOMER') roleMatches = true;
-      else if (selectedRoleUpper == 'FARMER' && userRoleStr == 'FARMER') roleMatches = true;
-      else if ((selectedRoleUpper == 'DELIVERY' || selectedRoleUpper == 'DELIVERY_PARTNER') && (userRoleStr == 'DELIVERY' || userRoleStr == 'DELIVERY_PARTNER')) roleMatches = true;
+      if (selectedRoleUpper.contains('CUSTOMER') && userRoleStr == 'CUSTOMER') roleMatches = true;
+      else if (selectedRoleUpper.contains('FARMER') && userRoleStr == 'FARMER') roleMatches = true;
+      else if (selectedRoleUpper.contains('DELIVERY') && (userRoleStr == 'DELIVERY' || userRoleStr == 'DELIVERY_PARTNER')) roleMatches = true;
 
       if (!roleMatches) {
         final prettyActualRole = userRoleStr == 'FARMER'

@@ -713,6 +713,7 @@ export class DeliveryService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
+        driverProfile: true,
         deliveries: {
           where: { status: 'DELIVERED' as any },
           select: { deliveryCharge: true },
@@ -727,15 +728,31 @@ export class DeliveryService {
       0,
     );
 
+    if (!(global as any).driverProfileStore) {
+      (global as any).driverProfileStore = new Map<string, any>();
+    }
+    const store = (global as any).driverProfileStore as Map<string, any>;
+
+    const dp = (user as any).driverProfile || store.get(userId);
+
     return {
       id: user.id,
       name: user.name,
       phone: user.phone || '',
       email: user.email,
       profileImage: null,
-      vehicle: null,
-      license: null,
-      bankAccount: null,
+      vehicle: dp?.vehicleType || dp?.vehicleNumber ? {
+        type: dp.vehicleType || 'BIKE',
+        plateNumber: dp.vehicleNumber || '',
+      } : null,
+      license: dp?.licenseNumber ? {
+        number: dp.licenseNumber,
+      } : null,
+      bankAccount: dp?.bankName || dp?.accountNumber ? {
+        bankName: dp.bankName || '',
+        accountNumber: dp.accountNumber || '',
+        ifscCode: dp.routingNumber || '',
+      } : null,
       rating: {
         average: 0,
         total: 0,
@@ -752,10 +769,65 @@ export class DeliveryService {
     if (dto.phone) updateData.phone = dto.phone;
     if (dto.email) updateData.email = dto.email;
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-    });
+    if (Object.keys(updateData).length > 0) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+      });
+    }
+
+    const vehicleType = dto.vehicle?.type || dto.vehicleType || dto.type;
+    const vehicleNumber = dto.vehicle?.plateNumber || dto.vehicle?.number || dto.vehicleNumber || dto.plateNumber;
+    const licenseNumber = dto.license?.number || dto.licenseNumber;
+
+    const bankObj = dto.bank || dto.bankAccount || dto.bank_account || {};
+    const bankName = bankObj.bankName || bankObj.bank_name || dto.bankName || dto.bank_name;
+    const accountNumber = bankObj.accountNumber || bankObj.account_number || dto.accountNumber || dto.account_number;
+    const routingNumber = bankObj.ifscCode || bankObj.ifsc_code || bankObj.routingNumber || bankObj.routing_number || dto.ifscCode || dto.ifsc_code || dto.routingNumber;
+
+    if (!(global as any).driverProfileStore) {
+      (global as any).driverProfileStore = new Map<string, any>();
+    }
+    const store = (global as any).driverProfileStore as Map<string, any>;
+
+    const existingStore = store.get(userId) || {};
+    const updatedStore = {
+      ...existingStore,
+      ...(vehicleType ? { vehicleType } : {}),
+      ...(vehicleNumber ? { vehicleNumber } : {}),
+      ...(licenseNumber ? { licenseNumber } : {}),
+      ...(bankName ? { bankName } : {}),
+      ...(accountNumber ? { accountNumber } : {}),
+      ...(routingNumber ? { routingNumber } : {}),
+    };
+    store.set(userId, updatedStore);
+
+    if (vehicleType || vehicleNumber || licenseNumber || bankName || accountNumber || routingNumber) {
+      try {
+        await (this.prisma as any).driverProfile.upsert({
+          where: { userId },
+          create: {
+            userId,
+            vehicleType: updatedStore.vehicleType,
+            vehicleNumber: updatedStore.vehicleNumber,
+            licenseNumber: updatedStore.licenseNumber,
+            bankName: updatedStore.bankName,
+            accountNumber: updatedStore.accountNumber,
+            routingNumber: updatedStore.routingNumber,
+          },
+          update: {
+            vehicleType: updatedStore.vehicleType,
+            vehicleNumber: updatedStore.vehicleNumber,
+            licenseNumber: updatedStore.licenseNumber,
+            bankName: updatedStore.bankName,
+            accountNumber: updatedStore.accountNumber,
+            routingNumber: updatedStore.routingNumber,
+          },
+        });
+      } catch (err) {
+        console.warn('DriverProfile DB sync warning:', err);
+      }
+    }
 
     return this.getProfile(userId);
   }

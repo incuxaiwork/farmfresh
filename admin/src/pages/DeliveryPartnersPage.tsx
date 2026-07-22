@@ -267,28 +267,70 @@ export default function DeliveryPartnersPage() {
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="subtitle2" gutterBottom>
-              Vehicle Details
+              VEHICLE DETAILS
             </Typography>
             <Grid container spacing={1}>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">
                   Vehicle Type
                 </Typography>
-                <Typography variant="body2">{selectedPartner.vehicleType}</Typography>
+                <Typography variant="body2">{selectedPartner.vehicleType || 'BIKE'}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">
                   Vehicle Number
                 </Typography>
-                <Typography variant="body2">{selectedPartner.vehicleNumber}</Typography>
+                <Typography variant="body2">{selectedPartner.vehicleNumber || 'N/A'}</Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="caption" color="text.secondary">
                   License Number
                 </Typography>
-                <Typography variant="body2">{selectedPartner.licenseNumber}</Typography>
+                <Typography variant="body2">{selectedPartner.licenseNumber || 'N/A'}</Typography>
               </Grid>
             </Grid>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle2" gutterBottom>
+              BANK ACCOUNT
+            </Typography>
+            {(() => {
+              const b = selectedPartner.bankAccount || {};
+              const accNo = b.accountNumber && b.accountNumber !== 'N/A' ? b.accountNumber : (selectedPartner.accountNumber || 'N/A');
+              const ifsc = (b.ifscCode && b.ifscCode !== 'N/A') ? b.ifscCode : ((b.routingNumber && b.routingNumber !== 'N/A') ? b.routingNumber : (selectedPartner.ifscCode || selectedPartner.routingNumber || 'N/A'));
+              const bankName = b.bankName && b.bankName !== 'N/A' ? b.bankName : (selectedPartner.bankName || 'N/A');
+              const holder = b.accountHolder || selectedPartner.name || 'N/A';
+
+              return (
+                <Grid container spacing={1}>
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary">
+                      Account Holder
+                    </Typography>
+                    <Typography variant="body2">{holder}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      Account Number
+                    </Typography>
+                    <Typography variant="body2">{accNo}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary">
+                      IFSC
+                    </Typography>
+                    <Typography variant="body2">{ifsc}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary">
+                      Bank
+                    </Typography>
+                    <Typography variant="body2">{bankName}</Typography>
+                  </Grid>
+                </Grid>
+              );
+            })()}
 
             <Divider sx={{ my: 2 }} />
 

@@ -3,7 +3,7 @@ import type { AuthResponse, User } from '../types';
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
-    const { data } = await api.post('/auth/login', { username: email, password });
+    const { data } = await api.post('/auth/login', { email, username: email, password, role: 'ADMIN' });
     const result = data.data || data;
     localStorage.setItem('accessToken', result.accessToken);
     localStorage.setItem('refreshToken', result.refreshToken);

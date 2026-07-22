@@ -398,11 +398,17 @@ export class AdminService {
               deliveryStartTime: true,
             },
           },
+          driverProfile: true,
           addresses: { select: { addressLine1: true, city: true, state: true }, take: 1 },
         },
       }),
       this.prisma.user.count({ where }),
     ]);
+
+    if (!(global as any).driverProfileStore) {
+      (global as any).driverProfileStore = new Map<string, any>();
+    }
+    const store = (global as any).driverProfileStore as Map<string, any>;
 
     const items = users.map(u => {
       const completedDeliveries = u.deliveries.filter(d => d.status === 'DELIVERED').length;
@@ -429,6 +435,8 @@ export class AdminService {
             }, 0))
         : 0;
 
+      const dp = (u as any).driverProfile || store.get(u.id);
+
       return {
         id: u.id,
         name: u.name,
@@ -439,9 +447,20 @@ export class AdminService {
         isActive: !u.deletedAt,
         isAvailable: !u.deletedAt,
         status: u.deletedAt ? 'SUSPENDED' : 'ACTIVE',
-        vehicleType: 'Bike',
-        vehicleNumber: 'N/A',
-        licenseNumber: 'N/A',
+        vehicleType: dp?.vehicleType || 'BIKE',
+        vehicleNumber: dp?.vehicleNumber || 'N/A',
+        licenseNumber: dp?.licenseNumber || 'N/A',
+        bankName: dp?.bankName || 'N/A',
+        accountNumber: dp?.accountNumber || 'N/A',
+        routingNumber: dp?.routingNumber || 'N/A',
+        ifscCode: dp?.routingNumber || 'N/A',
+        bankAccount: {
+          bankName: dp?.bankName || 'N/A',
+          accountNumber: dp?.accountNumber || 'N/A',
+          routingNumber: dp?.routingNumber || 'N/A',
+          ifscCode: dp?.routingNumber || 'N/A',
+          accountHolder: u.name,
+        },
         completedDeliveries,
         rating: 0,
         avgRating: 0,

@@ -226,11 +226,13 @@ export class AuthService {
       if (selectedRoleUpper.includes('CUSTOMER') && userRoleUpper === 'CUSTOMER') matches = true;
       else if (selectedRoleUpper.includes('FARMER') && userRoleUpper === 'FARMER') matches = true;
       else if (selectedRoleUpper.includes('DELIVERY') && (userRoleUpper === 'DELIVERY' || userRoleUpper === 'DELIVERY_PARTNER')) matches = true;
+      else if (selectedRoleUpper.includes('ADMIN') && userRoleUpper === 'ADMIN') matches = true;
+      else if (selectedRoleUpper === userRoleUpper) matches = true;
 
       if (!matches) {
         const prettyActualRole = userRoleUpper === 'FARMER'
           ? 'Farmer Partner'
-          : (userRoleUpper === 'DELIVERY_PARTNER' || userRoleUpper === 'DELIVERY' ? 'Delivery Express Partner' : 'Customer Marketplace');
+          : (userRoleUpper === 'DELIVERY_PARTNER' || userRoleUpper === 'DELIVERY' ? 'Delivery Express Partner' : (userRoleUpper === 'ADMIN' ? 'Admin Portal' : 'Customer Marketplace'));
         throw new UnauthorizedException(`Access denied. Account '${user.email}' is registered as a ${prettyActualRole}. Please select '${prettyActualRole}' from the portal role dropdown.`);
       }
     }
@@ -250,7 +252,7 @@ export class AuthService {
 
     let deleted = false;
     for (const t of tokens) {
-      const match = await bcrypt.compare(refreshToken, t.tokenHash);
+      const match = await this._comparePassword(refreshToken, t.tokenHash);
       if (match) {
         await this.prisma.refreshToken.delete({ where: { id: t.id } });
         deleted = true;
@@ -258,11 +260,25 @@ export class AuthService {
       }
     }
 
-    // If no specific token found, clear all tokens for this user as fallback
     if (!deleted) {
       await this.prisma.refreshToken.deleteMany({ where: { userId } });
     }
 
+    return { success: true };
+  }
+
+  async logoutByToken(refreshToken: string) {
+    if (!refreshToken) return { success: true };
+    try {
+      const tokens = await this.prisma.refreshToken.findMany();
+      for (const t of tokens) {
+        const match = await this._comparePassword(refreshToken, t.tokenHash);
+        if (match) {
+          await this.prisma.refreshToken.delete({ where: { id: t.id } });
+          break;
+        }
+      }
+    } catch (_) {}
     return { success: true };
   }
 
