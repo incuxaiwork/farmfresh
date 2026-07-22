@@ -111,10 +111,13 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              UserAvatarWidget(
-                user: user,
-                size: 80,
-                onTap: () => context.push('/edit-profile'),
+              Hero(
+                tag: 'profile-avatar',
+                child: UserAvatarWidget(
+                  user: user,
+                  size: 80,
+                  onTap: () => context.push('/edit-profile'),
+                ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -225,15 +228,6 @@ class ProfileScreen extends ConsumerWidget {
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(
                 context,
-                icon: Icons.agriculture_outlined,
-                title: 'Farmer Portal (Manage Crops)',
-                subtitle: 'Add new products, track sales & earnings',
-                onTap: () => context.go('/farmer-main'),
-              ),
-
-              const Divider(height: 1, color: Color(0xFFF3F3F3)),
-              _menuTile(
-                context,
                 icon: Icons.info_outlined,
                 title: 'About FarmFresh',
                 subtitle: 'Version 1.0.0',
@@ -244,14 +238,14 @@ class ProfileScreen extends ConsumerWidget {
                 context,
                 icon: Icons.description_outlined,
                 title: 'Terms & Conditions',
-                onTap: () => _showPlaceholderPage(context, 'Terms & Conditions'),
+                onTap: () => context.push('/terms-conditions'),
               ),
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(
                 context,
                 icon: Icons.privacy_tip_outlined,
                 title: 'Privacy Policy',
-                onTap: () => _showPlaceholderPage(context, 'Privacy Policy'),
+                onTap: () => context.push('/privacy-policy'),
               ),
             ],
           ),

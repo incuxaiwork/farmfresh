@@ -223,64 +223,70 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     Center(
                       child: GestureDetector(
                         onTap: _showAvatarPicker,
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 90,
-                              height: 90,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _selectedAvatar == null ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'User' : _nameController.text) : null,
-                                border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x0F2E5C45),
-                                    offset: Offset(0, 4),
-                                    blurRadius: 10,
+                        child: Hero(
+                          tag: 'profile-avatar',
+                          child: Material(
+                            type: MaterialType.transparency,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  width: 90,
+                                  height: 90,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _selectedAvatar == null ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'User' : _nameController.text) : null,
+                                    border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x0F2E5C45),
+                                        offset: Offset(0, 4),
+                                        blurRadius: 10,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              child: _selectedAvatar != null && _selectedAvatar!.isNotEmpty
-                                ? (_selectedAvatar!.startsWith('emoji:')
-                                    ? Text(
-                                        _selectedAvatar!.substring(6),
-                                        style: const TextStyle(fontSize: 40),
-                                      )
-                                    : ClipOval(
-                                        child: Image.network(
-                                          _selectedAvatar!,
-                                          fit: BoxFit.cover,
-                                          width: 90,
-                                          height: 90,
+                                  alignment: Alignment.center,
+                                  child: _selectedAvatar != null && _selectedAvatar!.isNotEmpty
+                                    ? (_selectedAvatar!.startsWith('emoji:')
+                                        ? Text(
+                                            _selectedAvatar!.substring(6),
+                                            style: const TextStyle(fontSize: 40),
+                                          )
+                                        : ClipOval(
+                                            child: Image.network(
+                                              _selectedAvatar!,
+                                              fit: BoxFit.cover,
+                                              width: 90,
+                                              height: 90,
+                                            ),
+                                          ))
+                                    : Text(
+                                        _getInitials(_nameController.text.trim().isEmpty ? 'U' : _nameController.text),
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 36,
+                                          fontWeight: FontWeight.w600,
                                         ),
-                                      ))
-                                : Text(
-                                    _getInitials(_nameController.text.trim().isEmpty ? 'U' : _nameController.text),
-                                    style: GoogleFonts.outfit(
+                                      ),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF2E7D32),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.edit,
                                       color: Colors.white,
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.w600,
+                                      size: 14,
                                     ),
                                   ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF2E7D32),
-                                  shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),

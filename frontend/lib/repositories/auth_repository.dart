@@ -189,7 +189,7 @@ class PostgresAuthRepository implements AuthRepository {
         'newPassword': newPassword,
       });
 
-      if (res.statusCode != 200 || res.data['success'] != true) {
+      if ((res.statusCode != 200 && res.statusCode != 201) || res.data['success'] != true) {
         throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to change password');
       }
     } on DioException catch (e) {

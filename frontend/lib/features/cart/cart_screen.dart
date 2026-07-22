@@ -534,6 +534,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
     ),
   );
+}
 
   Widget _buildCartItemCard(CartItemModel item) {
     return Container(

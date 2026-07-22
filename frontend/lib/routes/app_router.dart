@@ -18,6 +18,8 @@ import '../features/orders/order_tracking_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/change_password_screen.dart';
+import '../features/profile/privacy_policy_screen.dart';
+import '../features/profile/terms_conditions_screen.dart';
 import '../features/profile/addresses_screen.dart';
 import '../features/profile/add_edit_address_screen.dart';
 import '../models/address_model.dart';
@@ -195,6 +197,16 @@ final appRouter = Provider<GoRouter>((ref) {
         path: '/change-password',
         name: 'change-password',
         builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/privacy-policy',
+        name: 'privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/terms-conditions',
+        name: 'terms-conditions',
+        builder: (context, state) => const TermsConditionsScreen(),
       ),
       GoRoute(
         path: '/addresses',
